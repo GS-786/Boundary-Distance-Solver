@@ -272,6 +272,18 @@ table.grid tr.bad td{background:color-mix(in srgb,var(--err-soft) 60%,var(--card
 .fgrid .seg{justify-self:start}
 .lay-wrap{height:clamp(460px,calc(100vh - 260px),860px)}
 .lay-wrap canvas{cursor:grab}
+.smap{position:relative;z-index:0;height:clamp(440px,calc(100vh - 280px),760px);border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.sdot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;vertical-align:middle;box-shadow:0 0 0 1.5px var(--card)}
+#sCats .chip .sdot{margin-right:2px}
+.scnt{font-weight:700;opacity:.8}
+.sar{font-size:12.5px;color:var(--muted)}
+.skind{font:500 11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.sroads{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.spop{font:13px/1.45 var(--sans);color:#1f2933;min-width:200px}.spop b{font-size:14px}
+.spop-k{display:flex;align-items:center;gap:6px;color:#55606b;margin:2px 0 4px}.spop-k i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.spop-m{font-family:var(--mono);font-size:12px}
+.spop-a{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.spop-a a{font-weight:600}
+.surr-main{display:flex;flex-direction:column;gap:20px;min-width:0}
 #printSheet{display:none}
 @media (max-width:1060px){.lay-grid,.crs-grid{grid-template-columns:minmax(0,1fr)}}
 
@@ -378,6 +390,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
     <button role="tab" data-tab="dist" aria-selected="false">Distances <span class="num">B-03</span></button>
     <button role="tab" data-tab="measure" aria-selected="false">Measure <span class="num">B-04</span><span class="cnt" id="cntMeas">0</span></button>
     <button role="tab" data-tab="layout" aria-selected="false">Layout <span class="num">B-05</span></button>
+    <button role="tab" data-tab="surr" aria-selected="false">Surroundings <span class="num">B-06</span><span class="cnt" id="cntSurr">0</span></button>
   </nav>
   <div class="rule-glow"></div>
   <div class="steps"><span><b>1</b>Import or type coordinates</span><span><b>2</b>Check the columns it found</span><span><b>3</b>See the boundary drawn</span><span><b>4</b>Read every distance &amp; bearing</span><span><b>5</b>Measure anything on screen</span></div>
@@ -597,7 +610,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
               <span class="lbl">Grid</span><select class="sel" id="lGrid"><option value="cross">Crosses + frame ticks</option><option value="lines">Grid lines</option><option value="off">Off</option></select>
             </div>
             <div class="opts" id="lShow"><span class="lbl">Show</span>
-              <button class="chip" type="button" data-ls="dist">Distances</button><button class="chip" type="button" data-ls="brg">Bearings</button><button class="chip" type="button" data-ls="ids">Point IDs</button><button class="chip" type="button" data-ls="xy">Corner coords</button><button class="chip" type="button" data-ls="table">Coordinate table</button><button class="chip" type="button" data-ls="edges">Distance table</button><button class="chip" type="button" data-ls="area">Area</button><button class="chip" type="button" data-ls="meas">Measurements</button>
+              <button class="chip" type="button" data-ls="dist">Distances</button><button class="chip" type="button" data-ls="brg">Bearings</button><button class="chip" type="button" data-ls="ids">Point IDs</button><button class="chip" type="button" data-ls="xy">Corner coords</button><button class="chip" type="button" data-ls="table">Coordinate table</button><button class="chip" type="button" data-ls="edges">Distance table</button><button class="chip" type="button" data-ls="area">Area</button><button class="chip" type="button" data-ls="meas">Measurements</button><button class="chip" type="button" data-ls="surr">Surroundings</button><button class="chip" type="button" data-ls="key">Key plan</button>
             </div>
             <div id="lMsgs" style="margin-top:14px"></div>
           </div>
@@ -619,6 +632,50 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
         <div class="card-b">
           <div class="canvas-wrap lay-wrap" id="lWrap"><canvas></canvas><div class="coordbar" id="lCoord"></div></div>
           <p class="diagram-foot">The DXF is in model space at <b>true coordinates</b>: the boundary sits at its real Easting and Northing, and the sheet frame, tables and title block are drawn around it at 1:<span id="lScaleTxt">N</span>. It drops straight onto other survey drawings. Plot it at that scale to get the paper sheet. Print / PDF prints the sheet at its paper size.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-surr" role="tabpanel" hidden>
+    <div class="lay-grid">
+      <div class="side-col">
+        <div class="card">
+          <div class="card-h"><div><h2>Find nearby</h2><p class="sub">Facilities, roads and buildings around the site.</p></div><span class="badge">B-06</span></div>
+          <div class="card-b">
+            <div class="fgrid">
+              <span class="lbl">Radius</span><select class="sel" id="sRad"><option value="250">250 m</option><option value="500">500 m</option><option value="1000">1 km</option><option value="2000">2 km</option><option value="3000">3 km</option><option value="5000">5 km</option></select>
+            </div>
+            <div class="opts"><button class="btn primary" type="button" id="sGo">Find nearby</button><button class="btn sm" type="button" id="sGmap">Open site in Google Maps</button></div>
+            <div class="opts" id="sCats"></div>
+            <div id="sMsgs" style="margin-top:14px"></div>
+            <p class="diagram-foot">Data comes from OpenStreetMap, the open map that is free to use and export. Google's own map data can't be downloaded without a paid key, so every facility links to Google Maps instead.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Nearest facilities</h2><p class="sub">Closest of each kind, measured from the boundary.</p></div></div>
+          <div class="card-b" id="sNear"></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Export</h2><p class="sub">Only the categories shown are exported.</p></div></div>
+          <div class="card-b">
+            <div class="opts tight" id="sExp" style="margin-top:0"><button class="btn sm primary" type="button" id="sDxf">DXF</button><button class="btn sm" type="button" id="sKml">KML</button><button class="btn sm" type="button" id="sCsv">CSV</button><button class="btn sm" type="button" id="sGeo">GeoJSON</button></div>
+            <div class="opts" id="sToLay"><span class="lbl">On the layout sheet</span><button class="chip" type="button" data-ls="surr">Surroundings</button><button class="chip" type="button" data-ls="key">Key plan</button></div>
+            <p class="diagram-foot">DXF is at true coordinates in the project system, one layer per category, so it overlays the boundary DXF. KML opens in Google Earth and imports into Google My Maps. CSV opens in Excel.</p>
+          </div>
+        </div>
+      </div>
+      <div class="surr-main">
+        <div class="card">
+          <div class="card-h">
+            <div><h2>Site map</h2><p class="sub" id="sSub">Site on the map.</p></div>
+            <div class="opts tight" style="margin:0"><div class="seg" id="sBase" role="group" aria-label="Base map"><button type="button" data-b="osm">Map</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="light">Light</button></div><button class="btn sm" type="button" id="sFit">Fit</button></div>
+          </div>
+          <div class="card-b"><div class="smap" id="sMap"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Facilities</h2><p class="sub" id="sListSub">Nothing loaded yet.</p></div><input class="fin wide" id="sQ" placeholder="Filter by name or type" style="max-width:260px;text-align:left;font-family:var(--sans)"></div>
+          <div class="card-b"><div class="tbl-wrap" style="max-height:560px"><table class="grid"><thead><tr><th></th><th>Name / type</th><th class="r">To boundary</th><th>Direction</th><th class="r">Easting</th><th class="r">Northing</th><th></th></tr></thead><tbody id="sTb"></tbody></table></div></div>
         </div>
       </div>
     </div>
@@ -721,16 +778,16 @@ const CU={m:{f:1,l:'m'},mm:{f:.001,l:'mm'},ft:{f:.3048,l:'ft'},usft:{f:1200/3937
 const DEF={pts:[],closed:true,cu:'m',du:'m',dec:3,brg:'wcb',csf:1,theme:'auto',tab:'coords',
   lab:{id:true,dist:true,brg:false,xy:false,area:true,grid:true},mlab:true,meas:[],mseq:1,
   snap:{end:true,mid:true,edge:true,perp:true,meas:true,ortho:false},tool:'dist',
-  crs:null,crsCustom:[],showLL:false,
+  crs:null,crsCustom:[],showLL:false,surr:{rad:1000,off:[],base:'osm'},
   lay:{paper:'A3',orient:'L',scale:'auto',scaleC:'',grid:'cross',notes:'',
-    show:{dist:true,brg:true,ids:true,xy:false,table:true,edges:true,area:true,meas:false},
+    show:{dist:true,brg:true,ids:true,xy:false,table:true,edges:true,area:true,meas:false,surr:false,key:false},
     revs:'',tb:{code:'',project:'',client:'',location:'',title:'SITE BOUNDARY PLAN',subtitle:'',drawn:'',drawnNo:'',designed:'',designedNo:'',checked:'',checkedNo:'',approved:'',approvedNo:'',date:'',qaqc:'',stage:'',rev:'0',dwg:''}}};
 let S=JSON.parse(JSON.stringify(DEF));
 try{
   const j=JSON.parse(localStorage.getItem(KEY)||'null');
   if(j&&typeof j==='object'){
     const jl=j.lay&&typeof j.lay==='object'?j.lay:{};
-    S={...S,...j,lab:{...DEF.lab,...(j.lab||{})},snap:{...DEF.snap,...(j.snap||{})},
+    S={...S,...j,lab:{...DEF.lab,...(j.lab||{})},snap:{...DEF.snap,...(j.snap||{})},surr:{...DEF.surr,...(j.surr||{})},
       lay:{...DEF.lay,...jl,show:{...DEF.lay.show,...(jl.show||{})},tb:{...DEF.lay.tb,...(jl.tb||{})}}};
     if(!S.crs||typeof S.crs!=='object'||!S.crs.def)S.crs=null;
     if(!Array.isArray(S.crsCustom))S.crsCustom=[];
@@ -1922,8 +1979,8 @@ $('#kmlBtn').addEventListener('click',()=>{
 /* ================= Layout sheet ================= */
 const PAPER={A4:[297,210],A3:[420,297],A2:[594,420],A1:[841,594],A0:[1189,841]};
 const STD_SCALES=[10,20,25,50,75,100,125,150,200,250,300,400,500,600,750,1000,1250,1500,2000,2500,3000,4000,5000,7500,10000,12500,15000,20000,25000,50000,100000];
-const LAYERS={LOGO:5,SHEET:7,TITLE:7,TABLES:7,NOTES:7,GRID:8,GRID_TEXT:8,BOUNDARY:1,BOUNDARY_DIMS:3,POINTS:5,POINT_IDS:5,CORNER_COORDS:4,AREA:6,NORTH:7,SCALEBAR:7,MEASURE:30};
-const LHEX={GRID:'#a3abb4',GRID_TEXT:'#6b7480',BOUNDARY:'#d0213a',BOUNDARY_DIMS:'#137a3a',POINTS:'#1d4ed8',POINT_IDS:'#1d4ed8',CORNER_COORDS:'#0e7490',AREA:'#a21caf',MEASURE:'#d97706'};
+const LAYERS={LOGO:5,SHEET:7,TITLE:7,TABLES:7,NOTES:7,GRID:8,GRID_TEXT:8,BOUNDARY:1,BOUNDARY_DIMS:3,POINTS:5,POINT_IDS:5,CORNER_COORDS:4,AREA:6,NORTH:7,SCALEBAR:7,MEASURE:30,SURR_ROADS:8,SURR_BUILDINGS:9,SURR_TEXT:8,SURR_POI:144,KEY_PLAN:8,KEY_SITE:1};
+const LHEX={GRID:'#a3abb4',GRID_TEXT:'#6b7480',BOUNDARY:'#d0213a',BOUNDARY_DIMS:'#137a3a',POINTS:'#1d4ed8',POINT_IDS:'#1d4ed8',CORNER_COORDS:'#0e7490',AREA:'#a21caf',MEASURE:'#d97706',SURR_ROADS:'#7d8794',SURR_BUILDINGS:'#b3bac3',SURR_TEXT:'#6b7480',SURR_POI:'#0f766e',KEY_PLAN:'#6b7480',KEY_SITE:'#d0213a'};
 const TBF=[['code','Project code'],['project','Project'],['client','Client / owner'],['location','Site / plot'],['title','Sheet title'],['subtitle','Sheet subtitle'],['drawn','Drawn',1],['designed','Designed',1],['checked','Checked',1],['approved','Approved',1],['date','Date'],['qaqc','QAQC reviewer'],['stage','Project stage'],['rev','Revision'],['dwg','Sheet number']];
 function cw(ch){if(/[0-9]/.test(ch))return .78;if(ch===' ')return .39;if(/[.,:;'|!il1]/.test(ch))return .3;if(/[A-Z]/.test(ch))return /[MW]/.test(ch)?1.17:.93;if(/[mw]/.test(ch))return 1.17;if(/[a-z]/.test(ch))return .72;return .8}
 function tw(s,h){let w=0;for(const c of String(s))w+=cw(c);return w*h}
@@ -1951,12 +2008,20 @@ function buildLayout(){
   const area={x:m,y:m,w:sx-SG-m,h:F};B.rect('SHEET',area.x,area.y,area.w,area.h,.35);
   // notes text
   const fx=S.crs&&P4&&st.c?crsFactors(st.c.e,st.c.n):null;
-  const notes=[S.crs?`Coordinate system: ${S.crs.name}${/^EPSG:/.test(S.crs.id||'')?' ('+S.crs.id+')':''}.`:'Coordinates are on a local site grid.',
-    `Coordinates in ${({m:'metres',mm:'millimetres',ft:'feet',usft:'US survey feet'})[S.cu]}. Lengths in ${({m:'metres',mm:'millimetres',ft:'feet',ftin:'feet-inches'})[S.du]}.`,
-    S.brg==='quad'?'Bearings are grid quadrant bearings.':'Bearings are grid bearings, clockwise from grid north.',
-    Math.abs(S.csf-1)>1e-12?`Distances are grid distances. Ground = grid ÷ ${(+S.csf).toFixed(6)} (CSF).`:'Distances are grid (plane) distances.'];
-  if(fx&&fx.ll)notes.push(`Site centre ${fmtLLs(fx.ll).replace(/\s+/g,' ')}. Scale factor ${fx.k.toFixed(6)}. True north is ${convText(fx.gamma)} of grid north.`);
+  const SDv=(sh.surr||sh.key)&&S.crs&&P4?surrDerived():null;
+  // general notes, in the usual order for survey / setting-out drawings; printed in capitals
+  const UC={m:'METRES',mm:'MILLIMETRES',ft:'FEET',usft:'US SURVEY FEET'}[S.cu],UD={m:'METRES',mm:'MILLIMETRES',ft:'FEET',ftin:'FEET AND INCHES'}[S.du];
+  const notes=[UC===UD?`ALL COORDINATES AND DIMENSIONS ARE IN ${UC} UNLESS OTHERWISE STATED.`:`ALL COORDINATES ARE IN ${UC} AND ALL DIMENSIONS ARE IN ${UD} UNLESS OTHERWISE STATED.`,
+    S.crs?`COORDINATES ARE REFERENCED TO ${S.crs.name}${/^EPSG:/.test(S.crs.id||'')?' ('+S.crs.id+')':''}.`:'COORDINATES ARE REFERENCED TO A LOCAL SITE GRID.',
+    S.brg==='quad'?'BEARINGS ARE GRID QUADRANT BEARINGS IN DEGREES, MINUTES AND SECONDS.':S.brg==='deg'?'BEARINGS ARE GRID BEARINGS IN DECIMAL DEGREES, MEASURED CLOCKWISE FROM GRID NORTH.':'BEARINGS ARE GRID BEARINGS IN DEGREES, MINUTES AND SECONDS, MEASURED CLOCKWISE FROM GRID NORTH.',
+    Math.abs(S.csf-1)>1e-12?`DISTANCES ARE HORIZONTAL GRID DISTANCES. GROUND DISTANCE = GRID DISTANCE ÷ ${(+S.csf).toFixed(6)} (COMBINED SCALE FACTOR).`:'DISTANCES ARE HORIZONTAL GRID (PLANE) DISTANCES. NO SCALE FACTOR HAS BEEN APPLIED.'];
+  if(closed)notes.push('AREAS ARE COMPUTED FROM THE SCHEDULED COORDINATES ON THE GRID PLANE.');
+  if(P.length)notes.push(anyZ?`LEVELS ARE IN ${UC}.${P.some(p=>p.z==null)?' N/A DENOTES LEVEL NOT PROVIDED.':''}`:'LEVELS ARE NOT PROVIDED (N/A).');
+  if(fx&&fx.ll)notes.push(`SITE CENTRE (WGS 84): ${fmtLLs(fx.ll).replace(/\s+/g,' ')}. POINT SCALE FACTOR ${fx.k.toFixed(6)}. GRID CONVERGENCE: TRUE NORTH IS ${convText(fx.gamma)} OF GRID NORTH.`);
+  if(SDv)notes.push('SURROUNDING FEATURES ARE FROM OPENSTREETMAP (© OPENSTREETMAP CONTRIBUTORS, ODbL). FOR INFORMATION ONLY; NOT SURVEYED.');
+  notes.push('DO NOT SCALE FROM THIS DRAWING. USE THE SCHEDULED COORDINATES AND FIGURED DIMENSIONS ONLY.','ANY DISCREPANCY SHALL BE REPORTED TO THE ENGINEER BEFORE WORK PROCEEDS.');
   String(ly.notes||'').split('\n').map(s=>s.trim()).filter(Boolean).forEach(s=>notes.push(s));
+  notes.forEach((s,i)=>notes[i]=s.toUpperCase());
   // schedule panel inside the drawing frame
   const AH=closed&&sh.area?17*sz:0,useC=sh.table&&P.length,useE=sh.edges&&segList().length>0,gap=2.5*sz;
   const colsC=[{h:'POINT'},{h:`EASTING (${uC})`},{h:`NORTHING (${uC})`},{h:'LEVEL'}],rowsC=P.map((p,i)=>[p.id||'#'+(i+1),fcd(p.e),fcd(p.n),p.z!=null?fcd(p.z):'N/A']);
@@ -1991,6 +2056,27 @@ function buildLayout(){
       if(y>vp.y+cl&&y<vp.y+vp.h-cl)B.tx('GRID_TEXT',[vp.x+tk+g+lh,y],'N '+n.toFixed(dp),lh,1,0,90)}
     if(ly.grid==='cross'){let c2=0;for(let e=Math.ceil(e0/gs)*gs;e<=e1;e+=gs)for(let n=Math.ceil(n0/gs)*gs;n<=n1&&c2<900;n+=gs,c2++){const [x,y]=mp(e,n);if(!inVp(x,y,gm*.7))continue;B.l('GRID',[x-arm,y],[x+arm,y],.18);B.l('GRID',[x,y-arm],[x,y+arm],.18)}}
   }
+  // surroundings from OpenStreetMap, under the boundary
+  if(sh.surr&&SDv){
+    const wr={x0:cx+(vp.x-vcx)*k,x1:cx+(vp.x+vp.w-vcx)*k,y0:cy+(vp.y-vcy)*k,y1:cy+(vp.y+vp.h-vcy)*k},inR=q=>q&&q[0]>=wr.x0&&q[0]<=wr.x1&&q[1]>=wr.y0&&q[1]<=wr.y1;
+    SDv.bldg.forEach(b=>{if(b.en.every(inR))B.pl('SURR_BUILDINGS',b.en.map(q=>mp(q[0],q[1])),true,.13,b.en);else clipPL([...b.en,b.en[0]],wr).forEach(pc=>B.pl('SURR_BUILDINGS',pc.map(q=>mp(q[0],q[1])),false,.13,pc))});
+    const lab=new Map();
+    SDv.roads.forEach(r=>{const rk=ROAD_RANK[r.c]||1;clipPL(r.en,wr).forEach(pc=>{const pp=pc.map(q=>mp(q[0],q[1]));B.pl('SURR_ROADS',pp,false,rk>=3?.35:.25,pc);
+      if(r.name)for(let i=1;i<pp.length;i++){const L=Math.hypot(pp[i][0]-pp[i-1][0],pp[i][1]-pp[i-1][1]),o=lab.get(r.name);if(L>tw(r.name,th*.75)+6*g&&(!o||L>o.L))lab.set(r.name,{a:pp[i-1],b:pp[i],L})}})});
+    lab.forEach((o,name)=>{let r=Math.atan2(o.b[1]-o.a[1],o.b[0]-o.a[0])*180/Math.PI;if(r>90)r-=180;if(r<=-90)r+=180;B.tx('SURR_TEXT',[(o.a[0]+o.b[0])/2,(o.a[1]+o.b[1])/2],name.toUpperCase(),th*.75,1,2,r)});
+    let np=0;surrVisible(false).forEach(p=>{if(np>=80||p.e==null||!inR([p.e,p.n]))return;const [x,y]=mp(p.e,p.n);if(!inVp(x,y,gm))return;np++;B.ci('SURR_POI',[x,y],.7*sz,.2);B.tx('SURR_POI',[x+1.3*sz,y],fitT(p.name,th*.7,45*sz).s,th*.7,0,2)});
+  }
+  // key plan (title block): roads around the site from OpenStreetMap, true north up
+  const keyPlan=sh.key&&SDv&&SDv.site.length?(bx,s2)=>{
+    const R=Math.min(SURR.rad,1500),bw=bx.x1-bx.x0,bh=bx.y1-bx.y0,kk=Math.min(bw,bh)/(2*R),cxp=(bx.x0+bx.x1)/2,cyp=(bx.y0+bx.y1)/2,c0=SDv.cc;
+    const KP=q=>[cxp+(q[0]-c0[0])*kk,cyp+(q[1]-c0[1])*kk],rr={x0:c0[0]-bw/2/kk,x1:c0[0]+bw/2/kk,y0:c0[1]-bh/2/kk,y1:c0[1]+bh/2/kk},lab=new Map();
+    SDv.roads.forEach(r=>{const rk=ROAD_RANK[r.c]||1;clipPL(r.xy,rr).forEach(pc=>{const pp=pc.map(KP);B.pl('KEY_PLAN',pp,false,rk>=4?.5:rk>=2?.3:.15);
+      if(r.name&&rk>=2)for(let i=1;i<pp.length;i++){const L=Math.hypot(pp[i][0]-pp[i-1][0],pp[i][1]-pp[i-1][1]),o=lab.get(r.name);if(L>tw(r.name,1.3*s2)+2*s2&&(!o||L>o.L))lab.set(r.name,{a:pp[i-1],b:pp[i],L})}})});
+    lab.forEach((o,name)=>{let r=Math.atan2(o.b[1]-o.a[1],o.b[0]-o.a[0])*180/Math.PI;if(r>90)r-=180;if(r<=-90)r+=180;B.tx('KEY_PLAN',[(o.a[0]+o.b[0])/2,(o.a[1]+o.b[1])/2],name.toUpperCase(),1.3*s2,1,2,r)});
+    const sp=SDv.site.map(KP),[sx0,sy0]=KP(c0);B.pl('KEY_SITE',sp,SDv.closed,.5);B.ci('KEY_SITE',[sx0,sy0],Math.max(3.2*s2,...sp.map(q=>Math.hypot(q[0]-sx0,q[1]-sy0)+1.2*s2)),.35);
+    B.tx('KEY_SITE',[sx0,sy0+Math.max(4.4*s2,...sp.map(q=>q[1]-sy0+2*s2))],'SITE',2*s2,1,0,0,true);
+    const nx=bx.x1-4*s2,ny=bx.y1-6*s2;B.pl('KEY_PLAN',[[nx,ny+3.2*s2],[nx+1.6*s2,ny-2*s2],[nx,ny-1*s2],[nx-1.6*s2,ny-2*s2]],true,.25);B.so('KEY_PLAN',[[nx,ny+3.2*s2],[nx+1.6*s2,ny-2*s2],[nx,ny-1*s2]]);B.tx('KEY_PLAN',[nx,ny+3.9*s2],'N',1.8*s2,1,0,0,true);
+    B.tx('KEY_PLAN',[bx.x1-1*s2,bx.y0+1*s2],'N.T.S.',1.5*s2,2,0)}:null;
   // boundary
   if(P.length){
     const sp=P.map(p=>mp(p.e,p.n)),A=closed?polyArea(P):0,sgn=A>=0?1:-1,c=polyCentroid(P),cp=mp(c.e,c.n);
@@ -2046,13 +2132,13 @@ function buildLayout(){
     if(AH)areaB(panel.x+panel.w-gap-aw2,panel.y+panel.h-gap-AH,aw2);
   }
   // ---------- title strip ----------
-  titleStrip(B,{sx,m,F,sc,N,notes,today,paper:ly.paper,warn});
+  titleStrip(B,{sx,m,F,sc,N,notes,today,paper:ly.paper,warn,keyPlan});
   B.tx('SHEET',[m,m*.42],`Boundary Distance Solver · ${S.crs?S.crs.name+' · ':''}produced ${today}`,Math.min(1.7*sz,m*.32),0,0);
   return {W,H,N,k,cx,cy,vcx,vcy,vp,auto,items:B.it,warn,sz};
 }
 /* MSCEB A1 title strip. Template units are mm on the A1 sheet (strip 78 mm wide, 564 mm tall), scaled by sc for other sizes. */
 function titleStrip(B,o){
-  const {sx,m,F,sc,N,notes,today,paper,warn}=o,tb=S.lay.tb,L='TITLE',lw=.18,Wt=77.99,Ht=F/sc;
+  const {sx,m,F,sc,N,notes,today,paper,warn,keyPlan}=o,tb=S.lay.tb,L='TITLE',lw=.18,Wt=77.99,Ht=F/sc;
   // the middle boxes (site, notes, key plan) take up any extra height, e.g. in portrait
   const extra=Ht-563.98,bx1=75.02+extra*.2,bx2=75.01+extra*.6,bx3=78.07+extra*.2;
   const yT=d=>m+F-d*sc,yB=v=>m+v*sc,X=u=>sx+u*sc;
@@ -2084,6 +2170,7 @@ function titleStrip(B,o){
     lines.forEach((l,i)=>t(0,yT(d+10.6+i*nh*pitch),l,nh))}
   d+=bx2;hl(yT(d));
   t(0,yT(d+6.26),'KEY PLAN',2.51);
+  if(keyPlan)keyPlan({x0:X(1.5),x1:X(Wt-1.5),y0:yT(d+bx3)+1.5*sc,y1:yT(d+9)},sc);
   // bottom block (measured up from the frame bottom)
   [179.84,125.23,83.23,77.31,71.47,65.54,59.61,53.77,47.84,38.02,32.52,16.26,0].forEach(v=>hl(yB(v)));
   const rl=[130.99,135.98,140.81,145.72,150.55,155.37,160.28,165.11,169.94,174.76];
@@ -2172,7 +2259,7 @@ $('#lOrient').addEventListener('click',e=>{const b=e.target.closest('[data-o]');
 $('#lScale').addEventListener('change',e=>{S.lay.scale=e.target.value;$('#lScaleC').hidden=S.lay.scale!=='custom';if(S.lay.scale==='custom'){$('#lScaleC').focus()}layoutChanged()});
 $('#lScaleC').addEventListener('input',e=>{S.lay.scaleC=e.target.value;layoutChanged()});
 $('#lGrid').addEventListener('change',e=>{S.lay.grid=e.target.value;layoutChanged()});
-$('#lShow').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;const k=b.dataset.ls;S.lay.show[k]=!S.lay.show[k];b.setAttribute('aria-pressed',String(S.lay.show[k]));layDirty=true;LV.request();save()});
+$('#lShow').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;const k=b.dataset.ls;S.lay.show[k]=!S.lay.show[k];syncShowChips();if((k==='surr'||k==='key')&&S.lay.show[k]&&!SURR)toast('Load the surroundings first on the Surroundings tab (B-06)',4000);layDirty=true;LV.request();save()});
 $('#lTb').addEventListener('input',e=>{const i=e.target.closest('[data-tb]');if(!i)return;S.lay.tb[i.dataset.tb]=i.value;layDirty=true;LV.request();save()});
 $('#lNotes').addEventListener('input',e=>{S.lay.notes=e.target.value;layDirty=true;LV.request();save()});
 $('#lRevs').addEventListener('input',e=>{S.lay.revs=e.target.value;layDirty=true;LV.request();save()});
@@ -2228,12 +2315,228 @@ $('#lPdf').addEventListener('click',()=>{
   window.addEventListener('afterprint',done);setTimeout(()=>window.print(),50);
 });
 
+/* ================= Surroundings (OpenStreetMap) ================= */
+// Facility categories: [OSM key, allowed values ('' = any value)]
+const SCATS=[
+  {k:'health',n:'Healthcare',c:'#dc2626',r:[['amenity','hospital|clinic|doctors|dentist|pharmacy'],['healthcare','']]},
+  {k:'edu',n:'Education',c:'#2563eb',r:[['amenity','school|kindergarten|college|university|childcare|language_school|training']]},
+  {k:'relig',n:'Places of worship',c:'#7c3aed',r:[['amenity','place_of_worship']]},
+  {k:'gov',n:'Government & emergency',c:'#475569',r:[['amenity','police|fire_station|townhall|courthouse|post_office|embassy|community_centre|social_facility'],['office','government|diplomatic'],['emergency','ambulance_station']]},
+  {k:'trans',n:'Transport & fuel',c:'#ea580c',r:[['amenity','fuel|bus_station|parking|charging_station|car_wash|car_rental|taxi|ferry_terminal'],['highway','bus_stop'],['public_transport','station'],['railway','station'],['aeroway','aerodrome|terminal']]},
+  {k:'shop',n:'Shopping',c:'#db2777',r:[['shop','mall|supermarket|department_store|convenience|hardware|doityourself|electronics|furniture|car|car_repair|car_parts|bakery|butcher|greengrocer|optician|mobile_phone|chemist'],['amenity','marketplace']]},
+  {k:'food',n:'Food & drink',c:'#ca8a04',r:[['amenity','restaurant|cafe|fast_food|food_court|ice_cream']]},
+  {k:'fin',n:'Banks & ATMs',c:'#059669',r:[['amenity','bank|atm|bureau_de_change']]},
+  {k:'leis',n:'Parks & sport',c:'#16a34a',r:[['leisure','park|playground|sports_centre|stadium|pitch|fitness_centre|swimming_pool|garden|track|marina']]},
+  {k:'hotel',n:'Hotels',c:'#0891b2',r:[['tourism','hotel|guest_house|apartment|motel|hostel']]},
+  {k:'util',n:'Utilities',c:'#78716c',r:[['power','substation|plant'],['man_made','water_tower|wastewater_plant|water_works|telecom|reservoir_covered|storage_tank']]}];
+const SCAT=Object.fromEntries(SCATS.map(c=>[c.k,c]));
+SCATS.forEach(c=>c.re=c.r.map(([k,v])=>[k,v?new RegExp('^('+v+')$'):null]));
+const ROADS='motorway|trunk|primary|secondary|tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|unclassified|residential|service|living_street|pedestrian';
+const ROAD_RANK={motorway:5,trunk:5,primary:4,secondary:3,tertiary:2,motorway_link:3,trunk_link:3,primary_link:3,secondary_link:2,tertiary_link:2};
+const OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+const SKEY='bds.surr.v1';
+let SURR=null;try{SURR=JSON.parse(localStorage.getItem(SKEY)||'null');if(!SURR||!Array.isArray(SURR.pois))SURR=null}catch(e){SURR=null}
+function saveSurr(){try{localStorage.setItem(SKEY,JSON.stringify(SURR))}catch(e){try{localStorage.setItem(SKEY,JSON.stringify({...SURR,bldg:[]}))}catch(e2){}}}
+function fromLL(lon,lat,c=S.crs){if(!c||!P4)return null;try{const r=conv(GEO.def,c.def).forward([lon,lat]);return isFinite(r[0])&&isFinite(r[1])?fromNative(r[0],r[1],c):null}catch(err){return null}}
+const fmtM=d=>!isFinite(d)?'—':d<1?'adjoining':d<1000?`${Math.round(d)} m`:`${(d/1000).toFixed(d<10000?2:1)} km`;
+const COMPASS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+const dirTxt=b=>`${COMPASS[Math.round(b/22.5)%16]} ${String(Math.round(b)%360).padStart(3,'0')}°`;
+const gmLink=(lat,lon)=>`https://www.google.com/maps/search/?api=1&query=${lat.toFixed(7)},${lon.toFixed(7)}`;
+const human=v=>{const s=String(v||'').replace(/_/g,' ');return s.charAt(0).toUpperCase()+s.slice(1)};
+function kindOf(t){
+  if(t.amenity==='place_of_worship')return ({muslim:'Mosque',christian:'Church',hindu:'Temple',buddhist:'Temple',jewish:'Synagogue',sikh:'Gurdwara'})[t.religion]||'Place of worship';
+  const v=t.amenity||t.shop&&(t.shop+' shop')||t.leisure||t.tourism||t.healthcare||t.office&&(t.office+' office')||t.public_transport&&'Transit station'||t.railway&&'Railway station'||t.aeroway||t.highway||t.power||t.man_made||t.emergency;
+  return ({atm:'ATM',fuel:'Fuel station',doctors:'Doctors / clinic',bus_stop:'Bus stop',fast_food:'Fast food',aerodrome:'Airport',townhall:'Town hall',car_shop:'Car dealer','car shop':'Car dealer','car_repair shop':'Car repair','doityourself shop':'DIY store'})[v]||human(v);
+}
+function catOf(t){for(const c of SCATS)for(const [k,re] of c.re)if(t[k]!=null&&(!re||re.test(t[k])))return c.k;return null}
+
+/* Derived data (distances, project coordinates) for the current points and coordinate system */
+let SD=null,SDkey='';
+function surrDerived(){
+  if(!SURR||!S.crs||!P4)return null;
+  const key=JSON.stringify([S.pts,S.closed,S.crs.id,S.crs.def,S.cu,SURR.at]);if(SD&&SDkey===key)return SD;
+  const [lon0,lat0]=SURR.ctr,f=lat0*Math.PI/180,mLat=111132.92-559.82*Math.cos(2*f)+1.175*Math.cos(4*f),mLon=111412.84*Math.cos(f)-93.5*Math.cos(3*f);
+  const lp=(lon,lat)=>[(lon-lon0)*mLon,(lat-lat0)*mLat];   // local plane in metres, true north up
+  const LL=S.pts.map(p=>toLL(p.e,p.n));const site=LL.every(Boolean)?LL.map(l=>lp(l[0],l[1])):[];const closed=S.closed&&site.length>2;
+  const st=boundaryStats(),cl=st.c&&toLL(st.c.e,st.c.n),cc=cl?lp(cl[0],cl[1]):[0,0];
+  const segD=(x,y,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L2=dx*dx+dy*dy,t=L2?Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/L2)):0;return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy)};
+  const inside=(x,y)=>{let c=false;for(let i=0,j=site.length-1;i<site.length;j=i++){const a=site[i],b=site[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])c=!c}return c};
+  const dB=(x,y)=>{if(!site.length)return Math.hypot(x-cc[0],y-cc[1]);if(closed&&inside(x,y))return 0;let d=1e12;const n=site.length;for(let i=0;i<(closed?n:n-1);i++)d=Math.min(d,segD(x,y,site[i],site[(i+1)%n]));if(n===1)d=Math.hypot(x-site[0][0],y-site[0][1]);return d};
+  const pois=SURR.pois.map(p=>{const [x,y]=lp(p.lon,p.lat),en=fromLL(p.lon,p.lat),dx=x-cc[0],dy=y-cc[1];return {...p,x,y,e:en?en[0]:null,n:en?en[1]:null,d:dB(x,y),dc:Math.hypot(dx,dy),brg:(Math.atan2(dx,dy)*180/Math.PI+360)%360}}).sort((a,b)=>a.d-b.d);
+  const roads=SURR.roads.map(r=>{const xy=r.g.map(g=>lp(g[0],g[1]));let d=Math.min(...xy.map(p=>dB(p[0],p[1])));for(const s of site)for(let i=1;i<xy.length;i++)d=Math.min(d,segD(s[0],s[1],xy[i-1],xy[i]));
+    return {...r,xy,en:r.g.map(g=>fromLL(g[0],g[1])),d}}).sort((a,b)=>a.d-b.d);
+  const bldg=(SURR.bldg||[]).map(b=>({...b,xy:b.g.map(g=>lp(g[0],g[1])),en:b.g.map(g=>fromLL(g[0],g[1]))}));
+  SD={lp,site,closed,cc,pois,roads,bldg};SDkey=key;return SD;
+}
+const surrOn=k=>!(S.surr.off||[]).includes(k);
+function surrVisible(useQ=true){const D=surrDerived();if(!D)return [];const q=useQ?($('#sQ')?.value||'').trim().toLowerCase():'';
+  return D.pois.filter(p=>surrOn(p.k)&&(!q||(p.name+' '+(p.ar||'')+' '+p.kind+' '+SCAT[p.k].n).toLowerCase().includes(q)))}
+
+/* Fetch from Overpass */
+async function findNearby(){
+  if(!S.pts.length){toast('Import or type the site coordinates first');return}
+  if(!S.crs){toast('Set the coordinate system first, so the site can be placed on the map');openCrs();return}
+  await proj();const st=boundaryStats(),cl=st.c&&toLL(st.c.e,st.c.n);if(!cl){toast('The site could not be converted to latitude / longitude. Check the coordinate system.',4500);return}
+  const R=+S.surr.rad||1000,LL=S.pts.map(p=>toLL(p.e,p.n)).filter(Boolean);
+  const f=cl[1]*Math.PI/180,siteR=Math.max(0,...LL.map(l=>Math.hypot((l[0]-cl[0])*111320*Math.cos(f),(l[1]-cl[1])*110574)));
+  const A=(r)=>`(around:${Math.round(r)},${cl[1].toFixed(7)},${cl[0].toFixed(7)})`,Rq=R+siteR;
+  const sel=SCATS.flatMap(c=>c.r.map(([k,v])=>`nwr["${k}"${v?`~"^(${v})$"`:''}]${A(Rq)};`)).join('');
+  const q=`[out:json][timeout:120];(${sel});out center tags;way["highway"~"^(${ROADS})$"]${A(Math.min(Rq,2500))};out geom tags;way["building"]${A(Math.min(Rq,600))};out geom 4000;`;
+  const btn=$('#sGo');btn.disabled=true;let data=null,err='';
+  try{
+    for(const [i,url] of OVERPASS.entries()){
+      prog(true,`Asking OpenStreetMap for facilities within ${fmtM(R)}${i?` (server ${i+1})`:''}…`,15+i*25);
+      try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),130000);const r=await fetch(url,{method:'POST',body:new URLSearchParams({data:q}),signal:ac.signal});clearTimeout(tm);
+        if(!r.ok)throw new Error('server said '+r.status);data=await r.json();break}catch(e){err=e.name==='AbortError'?'timed out':e.message}}
+    if(!data)throw new Error(err||'no answer');
+    prog(true,'Sorting the results…',90);
+    const pois=[],roads=[],bldg=[],seen=new Map(),r7=v=>+v.toFixed(7);
+    for(const el of data.elements||[]){const t=el.tags||{};
+      if(el.geometry){const g=el.geometry.filter(p=>p&&isFinite(p.lat)).map(p=>[r7(p.lon),r7(p.lat)]);if(g.length<2)continue;
+        if(t.highway&&new RegExp('^('+ROADS+')$').test(t.highway))roads.push({id:'w'+el.id,name:t['name:en']||t.name||t.ref||'',ar:t['name:ar']||'',c:t.highway,g});
+        else if(t.building)bldg.push({g,lv:t['building:levels']||''});continue}
+      const lat=el.lat??el.center?.lat,lon=el.lon??el.center?.lon;if(!isFinite(lat)||!isFinite(lon))continue;
+      const k=catOf(t);if(!k)continue;const kind=kindOf(t),name=t['name:en']||t.name||t['name:ar']||'',id=el.type[0]+el.id;
+      const dk=k+'|'+(name||kind).toLowerCase(),prev=seen.get(dk);
+      if(prev&&Math.hypot((prev.lon-lon)*111320*Math.cos(f),(prev.lat-lat)*110574)<(name?60:15))continue;
+      const o={id,k,kind,name:name||kind,ar:t['name:ar']&&t['name:ar']!==name?t['name:ar']:'',lat:r7(lat),lon:r7(lon),
+        ph:t.phone||t['contact:phone']||'',web:t.website||t['contact:website']||'',hrs:t.opening_hours||'',addr:[t['addr:housenumber'],t['addr:street'],t['addr:city']].filter(Boolean).join(', ')};
+      pois.push(o);seen.set(dk,o)}
+    SURR={at:Date.now(),ctr:[cl[0],cl[1]],rad:R,pois,roads,bldg,src:'OpenStreetMap'};saveSurr();SD=null;
+    renderSurr(true);layDirty=true;
+    toast(`Found ${pois.length} facilities, ${roads.length} road sections and ${bldg.length} buildings`,4000);
+  }catch(e){$('#sMsgs').innerHTML=msgsHtml([['err',`Could not get the surroundings: ${esc(e.message)}. Check the internet connection and try again, or pick a smaller radius.`]])}
+  finally{btn.disabled=false;prog(false)}
+}
+
+/* Map */
+LIB.leaflet='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';LIB.leafletCss='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+async function leafletLib(){if(!document.getElementById('lfCss')){const l=document.createElement('link');l.id='lfCss';l.rel='stylesheet';l.href=LIB.leafletCss;document.head.appendChild(l)}await loadScript(LIB.leaflet);return window.L}
+const SM={map:null,base:{},cur:null,g:{},mk:new Map()};
+async function ensureMap(){
+  if(SM.map)return SM.map;const Lf=await leafletLib();
+  const m=Lf.map('sMap',{preferCanvas:true,zoomControl:true});
+  SM.base={osm:Lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}),
+    sat:Lf.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'}),
+    light:Lf.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'})};
+  ['bldg','roads','rad','site','poi'].forEach(k=>SM.g[k]=Lf.layerGroup().addTo(m));
+  SM.map=m;setBase(S.surr.base);m.setView([26.07,50.55],10);return m;
+}
+function setBase(b){if(!SM.base[b])b='osm';S.surr.base=b;if(SM.cur)SM.map.removeLayer(SM.cur);SM.cur=SM.base[b].addTo(SM.map);SM.cur.bringToBack();$$('#sBase button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.b===b)));save()}
+function poiPopup(p){const c=SCAT[p.k],D=SD;const cl=SURR.ctr;
+  return `<div class="spop"><b>${esc(p.name)}</b>${p.ar?`<div dir="rtl">${esc(p.ar)}</div>`:''}<div class="spop-k"><i style="background:${c.c}"></i>${esc(p.kind)} · ${esc(c.n)}</div>
+  <div>${fmtM(p.d)} from the boundary · ${dirTxt(p.brg)}</div>${p.e!=null?`<div class="spop-m">E ${fcd(p.e)} &nbsp;N ${fcd(p.n)}</div>`:''}
+  ${p.addr?`<div>${esc(p.addr)}</div>`:''}${p.ph?`<div>Tel ${esc(p.ph)}</div>`:''}${p.hrs?`<div>Hours ${esc(p.hrs)}</div>`:''}
+  <div class="spop-a"><a href="${gmLink(p.lat,p.lon)}" target="_blank" rel="noopener">Google Maps</a><a href="https://www.google.com/maps/dir/?api=1&origin=${cl[1].toFixed(7)},${cl[0].toFixed(7)}&destination=${p.lat},${p.lon}" target="_blank" rel="noopener">Directions from site</a>${p.web?`<a href="${esc(/^https?:/i.test(p.web)?p.web:'https://'+p.web)}" target="_blank" rel="noopener">Website</a>`:''}</div></div>`}
+function drawSurrMap(fit){
+  const Lf=window.L,m=SM.map;if(!m)return;Object.values(SM.g).forEach(g=>g.clearLayers());SM.mk.clear();
+  const LL=S.pts.map(p=>toLL(p.e,p.n)),ok=LL.length&&LL.every(Boolean),sll=ok?LL.map(l=>[l[1],l[0]]):[];
+  const D=surrDerived();
+  if(D){
+    Lf.circle([SURR.ctr[1],SURR.ctr[0]],{radius:SURR.rad,color:'#64748b',weight:1.2,dashArray:'6 6',fill:false,interactive:false}).addTo(SM.g.rad);
+    D.bldg.forEach(b=>Lf.polygon(b.g.map(g=>[g[1],g[0]]),{color:'#8b95a1',weight:.6,fillColor:'#b8c0ca',fillOpacity:.35,interactive:false}).addTo(SM.g.bldg));
+    D.roads.forEach(r=>{const rk=ROAD_RANK[r.c]||1;const pl=Lf.polyline(r.g.map(g=>[g[1],g[0]]),{color:rk>=4?'#e8a33c':rk>=2?'#d4b64a':'#9aa3ad',weight:rk>=4?5:rk>=2?4:2.5,opacity:.9});if(r.name)pl.bindTooltip(`${esc(r.name)} · ${human(r.c)} · ${fmtM(r.d)}`,{sticky:true});pl.addTo(SM.g.roads)});
+    surrVisible().forEach(p=>{const mk=Lf.circleMarker([p.lat,p.lon],{radius:6.5,color:'#fff',weight:1.6,fillColor:SCAT[p.k].c,fillOpacity:.95}).bindTooltip(esc(p.name)).bindPopup(()=>poiPopup(p),{maxWidth:300});mk.addTo(SM.g.poi);SM.mk.set(p.id,mk)});
+  }
+  if(sll.length){(S.closed&&sll.length>2?Lf.polygon(sll,{color:'#d0213a',weight:3,fillColor:'#d0213a',fillOpacity:.15}):Lf.polyline(sll,{color:'#d0213a',weight:3})).bindTooltip('Site boundary').addTo(SM.g.site);
+    S.pts.forEach((p,i)=>Lf.circleMarker(sll[i],{radius:4,color:'#d0213a',weight:2,fillColor:'#fff',fillOpacity:1}).bindTooltip(esc(p.id||'#'+(i+1))).addTo(SM.g.site))}
+  if(fit){if(D)m.fitBounds(Lf.latLng(SURR.ctr[1],SURR.ctr[0]).toBounds(SURR.rad*2.1));else if(sll.length)m.fitBounds(Lf.latLngBounds(sll).pad(sll.length>1?.6:0),{maxZoom:18});}
+}
+function focusPoi(id){const mk=SM.mk.get(id);if(!mk||!SM.map)return;SM.map.setView(mk.getLatLng(),Math.max(SM.map.getZoom(),17));mk.openPopup();$('#sMap').scrollIntoView({behavior:'smooth',block:'center'})}
+
+/* Side panels and table */
+async function renderSurr(fit){
+  const msgs=[];const D0=S.crs&&P4?surrDerived():null;
+  if(!S.pts.length)msgs.push(['info','Import or type the site coordinates first. The site is placed on the map from them.']);
+  else if(!S.crs)msgs.push(['warn','Set the coordinate system (toolbar, top right) so the site can be placed on the map.']);
+  else if(!SURR)msgs.push(['info','Pick a radius and press <b>Find nearby</b> to load the facilities, roads and buildings around the site.']);
+  if(SURR&&S.crs){const [lon,lat]=SURR.ctr,c=boundaryStats().c,ll=c&&P4?toLL(c.e,c.n):null;if(ll&&Math.hypot((ll[0]-lon)*111320*Math.cos(lat*Math.PI/180),(ll[1]-lat)*110574)>Math.max(100,SURR.rad*.25))msgs.push(['warn','The site has moved since the surroundings were loaded. Press <b>Find nearby</b> to refresh them.'])}
+  $('#sMsgs').innerHTML=msgsHtml(msgs);$('#sRad').value=String(S.surr.rad);syncShowChips();
+  const all=D0?D0.pois:[],cnt={};all.forEach(p=>cnt[p.k]=(cnt[p.k]||0)+1);
+  $('#sCats').innerHTML='<span class="lbl">Show</span>'+SCATS.map(c=>`<button class="chip" type="button" data-sc="${c.k}" aria-pressed="${surrOn(c.k)}"><i class="sdot" style="background:${c.c}"></i>${esc(c.n)}${cnt[c.k]?` <span class="scnt">${cnt[c.k]}</span>`:''}</button>`).join('')+'<button class="btn sm" type="button" data-sc="*all">All</button><button class="btn sm" type="button" data-sc="*none">None</button>';
+  $('#cntSurr').textContent=all.length;$('#sGo').textContent=SURR?'Refresh':'Find nearby';
+  const vis=surrVisible();
+  $('#sSub').textContent=SURR?`${all.length} facilities · ${SURR.roads.length} road sections · ${(SURR.bldg||[]).length} buildings within ${fmtM(SURR.rad)} · loaded ${new Date(SURR.at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}`:'Site on the map. Surroundings not loaded yet.';
+  $('#sListSub').textContent=SURR?`${vis.length} shown, nearest first. Distances are from the nearest point of the boundary (0 = inside).`:'Nothing loaded yet.';
+  $('#sTb').innerHTML=vis.length?vis.slice(0,600).map(p=>`<tr data-id="${p.id}" style="cursor:pointer"><td><i class="sdot" style="background:${SCAT[p.k].c}"></i></td><td><b>${esc(p.name)}</b>${p.ar?`<div class="sar" dir="rtl">${esc(p.ar)}</div>`:''}<div class="skind">${esc(p.kind)}</div></td><td class="r m">${fmtM(p.d)}</td><td class="m">${dirTxt(p.brg)}</td><td class="r m">${p.e!=null?fcd(p.e):'—'}</td><td class="r m">${p.n!=null?fcd(p.n):'—'}</td><td><a class="btn sm" href="${gmLink(p.lat,p.lon)}" target="_blank" rel="noopener" title="Open in Google Maps">Google</a></td></tr>`).join(''):`<tr><td colspan="7" class="empty">${SURR?'Nothing matches.':'Press Find nearby to load the surroundings.'}</td></tr>`;
+  // nearest of each category + access roads
+  if(D0&&all.length){const near=SCATS.map(c=>all.find(p=>p.k===c.k)).filter(Boolean);
+    const acc=[];const seenR=new Set();D0.roads.filter(r=>r.d<=40).forEach(r=>{const k=(r.name||human(r.c)).toLowerCase();if(seenR.has(k))return;seenR.add(k);acc.push(r)});
+    $('#sNear').innerHTML=`<div class="tbl-wrap"><table class="grid"><thead><tr><th></th><th>Nearest</th><th class="r">Distance</th><th>Direction</th></tr></thead><tbody>${near.map(p=>`<tr data-id="${p.id}" style="cursor:pointer"><td><i class="sdot" style="background:${SCAT[p.k].c}"></i></td><td><div class="skind">${esc(SCAT[p.k].n)}</div><b>${esc(p.name)}</b></td><td class="r m">${fmtM(p.d)}</td><td class="m">${dirTxt(p.brg)}</td></tr>`).join('')}</tbody></table></div>
+      ${acc.length?`<div style="margin-top:14px"><span class="lbl">Roads next to the site (within 40 m)</span><div class="sroads">${acc.slice(0,8).map(r=>`<span class="badge">${esc(r.name||'Unnamed '+human(r.c).toLowerCase())} · ${human(r.c)} · ${fmtM(r.d)}</span>`).join('')}</div></div>`:''}`;
+  }else $('#sNear').innerHTML=`<div class="empty">${SURR?'No facilities found. Try a bigger radius.':'The nearest hospital, school, mosque, fuel station and so on appear here.'}</div>`;
+  $$('#sExp button').forEach(b=>b.disabled=!all.length&&!(SURR&&SURR.roads.length));
+  if(S.tab!=='surr')return;
+  try{await ensureMap();SM.map.invalidateSize();drawSurrMap(fit||!SM.fitted);SM.fitted=true}catch(e){$('#sMsgs').innerHTML+=msgsHtml([['err','The map could not load. Check the internet connection.']])}
+}
+$('#sGo').addEventListener('click',findNearby);
+$('#sRad').addEventListener('change',e=>{S.surr.rad=+e.target.value;save()});
+$('#sBase').addEventListener('click',e=>{const b=e.target.closest('[data-b]');if(b&&SM.map)setBase(b.dataset.b)});
+$('#sFit').addEventListener('click',()=>drawSurrMap(true));
+$('#sQ').addEventListener('input',()=>{renderSurr()});
+$('#sCats').addEventListener('click',e=>{const b=e.target.closest('[data-sc]');if(!b)return;const k=b.dataset.sc;
+  S.surr.off=k==='*all'?[]:k==='*none'?SCATS.map(c=>c.k):surrOn(k)?[...S.surr.off,k]:S.surr.off.filter(x=>x!==k);save();renderSurr();layDirty=true});
+['#sTb','#sNear'].forEach(s=>$(s).addEventListener('click',e=>{if(e.target.closest('a'))return;const tr=e.target.closest('tr[data-id]');if(tr)focusPoi(tr.dataset.id)}));
+$('#sGmap').addEventListener('click',()=>{const c=boundaryStats().c,ll=c&&P4&&S.crs?toLL(c.e,c.n):null;if(!ll){toast('Needs points and a coordinate system');return}window.open(gmLink(ll[1],ll[0]),'_blank','noopener')});
+
+/* Exports */
+function surrNeed(){if(!surrDerived()){toast('Load the surroundings first');return null}return SD}
+const csvQ=v=>{const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+$('#sCsv').addEventListener('click',()=>{const D=surrNeed();if(!D)return;const v=surrVisible();
+  const rows=[['Category','Name','Name (Arabic)','Type','Distance to boundary (m)','Distance from site centre (m)','Bearing from centre (true, deg)','Direction','Easting','Northing','Latitude','Longitude','Address','Phone','Google Maps','OSM id'],
+    ...v.map(p=>[SCAT[p.k].n,p.name,p.ar,p.kind,p.d.toFixed(1),p.dc.toFixed(1),p.brg.toFixed(1),COMPASS[Math.round(p.brg/22.5)%16],p.e!=null?fc(p.e):'',p.n!=null?fc(p.n):'',p.lat,p.lon,p.addr,p.ph,gmLink(p.lat,p.lon),p.id])];
+  download('surroundings.csv','﻿'+rows.map(r=>r.map(csvQ).join(',')).join('\r\n'),'text/csv');toast('CSV saved')});
+$('#sGeo').addEventListener('click',()=>{const D=surrNeed();if(!D)return;const F=[];
+  const LL=S.pts.map(p=>toLL(p.e,p.n));if(LL.length&&LL.every(Boolean))F.push({type:'Feature',properties:{layer:'site',name:'Site boundary'},geometry:S.closed&&LL.length>2?{type:'Polygon',coordinates:[[...LL,LL[0]]]}:{type:'LineString',coordinates:LL}});
+  surrVisible().forEach(p=>F.push({type:'Feature',properties:{layer:'facility',category:SCAT[p.k].n,name:p.name,name_ar:p.ar,type:p.kind,distance_m:+p.d.toFixed(1),bearing_deg:+p.brg.toFixed(1),easting:p.e,northing:p.n,osm_id:p.id},geometry:{type:'Point',coordinates:[p.lon,p.lat]}}));
+  D.roads.forEach(r=>F.push({type:'Feature',properties:{layer:'road',name:r.name,name_ar:r.ar,class:r.c,distance_m:+r.d.toFixed(1)},geometry:{type:'LineString',coordinates:r.g}}));
+  D.bldg.forEach(b=>F.push({type:'Feature',properties:{layer:'building',levels:b.lv||null},geometry:{type:'Polygon',coordinates:[b.g]}}));
+  download('surroundings.geojson',JSON.stringify({type:'FeatureCollection',name:'Surroundings',attribution:'© OpenStreetMap contributors, ODbL',features:F}),'application/geo+json');toast('GeoJSON saved')});
+$('#sKml').addEventListener('click',()=>{const D=surrNeed();if(!D)return;const x=s=>esc(s),kc=h=>'ff'+h.slice(5,7)+h.slice(3,5)+h.slice(1,3),c3=g=>g.map(p=>`${p[0]},${p[1]},0`).join(' ');
+  const LL=S.pts.map(p=>toLL(p.e,p.n)),v=surrVisible();
+  const site=LL.length&&LL.every(Boolean)?`<Placemark><name>Site boundary</name><styleUrl>#site</styleUrl>${S.closed&&LL.length>2?`<Polygon><outerBoundaryIs><LinearRing><coordinates>${c3([...LL,LL[0]])}</coordinates></LinearRing></outerBoundaryIs></Polygon>`:`<LineString><coordinates>${c3(LL)}</coordinates></LineString>`}</Placemark>`:'';
+  const kml=`<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Site surroundings</name><description>Facilities, roads and buildings within ${fmtM(SURR.rad)}. Data © OpenStreetMap contributors (ODbL).</description>
+<Style id="site"><LineStyle><color>ff3a21d0</color><width>3</width></LineStyle><PolyStyle><color>403a21d0</color></PolyStyle></Style><Style id="road"><LineStyle><color>ff3ca3e8</color><width>2</width></LineStyle></Style>
+${SCATS.map(c=>`<Style id="c_${c.k}"><IconStyle><color>${kc(c.c)}</color><scale>0.9</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>`).join('')}
+${site}${SCATS.filter(c=>v.some(p=>p.k===c.k)).map(c=>`<Folder><name>${x(c.n)}</name>${v.filter(p=>p.k===c.k).map(p=>`<Placemark><name>${x(p.name)}</name><description>${x(`${p.kind}${p.ar?' · '+p.ar:''} · ${fmtM(p.d)} from boundary, ${dirTxt(p.brg)}${p.e!=null?` · E ${fcd(p.e)} N ${fcd(p.n)}`:''}`)}</description><styleUrl>#c_${c.k}</styleUrl><Point><coordinates>${p.lon},${p.lat},0</coordinates></Point></Placemark>`).join('')}</Folder>`).join('')}
+<Folder><name>Roads</name>${D.roads.filter(r=>r.name).map(r=>`<Placemark><name>${x(r.name)}</name><description>${x(human(r.c))}</description><styleUrl>#road</styleUrl><LineString><coordinates>${c3(r.g)}</coordinates></LineString></Placemark>`).join('')}</Folder>
+</Document></kml>`;
+  download('surroundings.kml',kml,'application/vnd.google-earth.kml+xml');toast('KML saved. Open it in Google Earth, or import it into Google My Maps.',4500)});
+$('#sDxf').addEventListener('click',()=>{const D=surrNeed();if(!D)return;if(crsMeta(S.crs.def).geo){toast('DXF needs a projected coordinate system (Easting / Northing), not latitude / longitude',4500);return}
+  const n6=v=>(+v).toFixed(6),out=[],add=(...a)=>out.push(...a.map(String)),uw=1/CU[S.cu].f,h=Math.max(.8,SURR.rad/450)*uw;
+  const lay={SITE_BOUNDARY:1,SURR_RADIUS:8,SURR_ROADS:8,SURR_ROAD_NAMES:8,SURR_BUILDINGS:9};SCATS.forEach(c=>lay['SURR_'+c.k.toUpperCase()]=ACI([1,3,5].map(i=>parseInt(c.c.slice(i,i+2),16))));
+  const poly=(L,pts,closed)=>{const p=pts.filter(Boolean);if(p.length<2)return;add(0,'POLYLINE',8,L,66,1,10,0,20,0,30,0,70,closed?1:0);p.forEach(q=>add(0,'VERTEX',8,L,10,n6(q[0]),20,n6(q[1]),30,0));add(0,'SEQEND',8,L)};
+  const text=(L,p,s,hh,r=0,ha=0,va=0)=>{add(0,'TEXT',8,L,10,n6(p[0]),20,n6(p[1]),30,0,40,n6(hh),1,dxfStr(s),50,(+r).toFixed(4),7,'BDS');if(ha||va)add(72,ha,11,n6(p[0]),21,n6(p[1]),31,0,73,va)};
+  // site
+  if(S.pts.length>1)poly('SITE_BOUNDARY',S.pts.map(p=>[p.e,p.n]),S.closed&&S.pts.length>2);
+  const ce=fromLL(SURR.ctr[0],SURR.ctr[1]);if(ce)add(0,'CIRCLE',8,'SURR_RADIUS',10,n6(ce[0]),20,n6(ce[1]),30,0,40,n6(SURR.rad*uw));
+  D.bldg.forEach(b=>poly('SURR_BUILDINGS',b.en,true));
+  const named=new Map();
+  D.roads.forEach(r=>{poly('SURR_ROADS',r.en,false);if(!r.name)return;let best=null;for(let i=1;i<r.en.length;i++){const a=r.en[i-1],b=r.en[i];if(!a||!b)continue;const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(!best||L>best.L)best={a,b,L}}
+    if(best&&best.L>h*8){const o=named.get(r.name);if(!o||best.L>o.L)named.set(r.name,best)}});
+  named.forEach((s,name)=>{let ang=Math.atan2(s.b[1]-s.a[1],s.b[0]-s.a[0])*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;text('SURR_ROAD_NAMES',[(s.a[0]+s.b[0])/2,(s.a[1]+s.b[1])/2],name,h*.9,ang,1,2)});
+  surrVisible().forEach(p=>{if(p.e==null)return;const L='SURR_'+p.k.toUpperCase();add(0,'POINT',8,L,10,n6(p.e),20,n6(p.n),30,0);add(0,'CIRCLE',8,L,10,n6(p.e),20,n6(p.n),30,0,40,n6(h*.45));text(L,[p.e+h*.8,p.n],p.name,h,0,0,2);text(L,[p.e+h*.8,p.n-h*1.25],`${p.kind} · ${fmtM(p.d)}`,h*.65,0,0,2)});
+  const used=Object.keys(lay);const hdr=[];const H=(...a)=>hdr.push(...a.map(String));
+  H(0,'SECTION',2,'HEADER',9,'$ACADVER',1,'AC1009',9,'$INSUNITS',70,{m:6,mm:4,ft:2,usft:2}[S.cu],0,'ENDSEC',0,'SECTION',2,'TABLES',0,'TABLE',2,'LTYPE',70,1,0,'LTYPE',2,'CONTINUOUS',70,0,3,'Solid line',72,65,73,0,40,'0.0',0,'ENDTAB');
+  H(0,'TABLE',2,'LAYER',70,used.length+1,0,'LAYER',2,'0',70,0,62,7,6,'CONTINUOUS');used.forEach(l=>H(0,'LAYER',2,l,70,0,62,lay[l],6,'CONTINUOUS'));H(0,'ENDTAB');
+  H(0,'TABLE',2,'STYLE',70,2,0,'STYLE',2,'STANDARD',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'txt',4,'',0,'STYLE',2,'BDS',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'arial.ttf',4,'',0,'ENDTAB',0,'ENDSEC',0,'SECTION',2,'ENTITIES');
+  download('surroundings.dxf',[...hdr,...out,0,'ENDSEC',0,'EOF'].join('\r\n'),'application/dxf');toast(`DXF saved in ${S.crs.name}. Data © OpenStreetMap contributors.`,4500)});
+$('#sToLay').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;const k=b.dataset.ls;S.lay.show[k]=!S.lay.show[k];syncShowChips();layDirty=true;save();toast(S.lay.show[k]?`${b.textContent} added to the layout sheet (B-05)`:`${b.textContent} removed from the layout sheet`)});
+function syncShowChips(){$$('[data-ls]').forEach(b=>b.setAttribute('aria-pressed',String(!!S.lay.show[b.dataset.ls])))}
+
+/* Layout sheet: surroundings in the drawing, and the key plan */
+function clipPL(pts,r){const out=[];let cur=null;
+  for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(!a||!b){cur=null;continue}const dx=b[0]-a[0],dy=b[1]-a[1],p=[-dx,dx,-dy,dy],q=[a[0]-r.x0,r.x1-a[0],a[1]-r.y0,r.y1-a[1]];let t0=0,t1=1,ok=true;
+    for(let k=0;k<4;k++){if(p[k]===0){if(q[k]<0){ok=false;break}}else{const t=q[k]/p[k];if(p[k]<0){if(t>t1){ok=false;break}if(t>t0)t0=t}else{if(t<t0){ok=false;break}if(t<t1)t1=t}}}
+    if(!ok){cur=null;continue}const A=[a[0]+t0*dx,a[1]+t0*dy],Bp=[a[0]+t1*dx,a[1]+t1*dy];if(cur&&t0===0)cur.push(Bp);else{cur=[A,Bp];out.push(cur)}if(t1<1)cur=null}
+  return out}
+
 /* ================= Tabs & global render ================= */
 function setTab(t){
-  const TABS=['coords','boundary','dist','measure','layout'];if(!TABS.includes(t))t='coords';
+  const TABS=['coords','boundary','dist','measure','layout','surr'];if(!TABS.includes(t))t='coords';
   S.tab=t;$$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
   TABS.forEach(k=>$('#tab-'+k).hidden=k!==t);
-  if(t==='boundary')BV.resize();if(t==='measure'){MV.resize();updHud()}if(t==='layout'){layDirty=true;LV.resize();LV.fitAll()}
+  if(t==='boundary')BV.resize();if(t==='measure'){MV.resize();updHud()}if(t==='layout'){layDirty=true;LV.resize();LV.fitAll()}if(t==='surr')(S.crs&&!P4?proj():Promise.resolve()).then(()=>renderSurr()).catch(()=>renderSurr())
   save();
 }
 $$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
@@ -2248,7 +2551,7 @@ function renderDerived(){
   $('#bSub').textContent=P.length?`${P.length} points · coordinates in ${CU[S.cu].l} · lengths in ${duLabel()}`:'No points yet';
   $('#closedChk').checked=S.closed;
   renderDist();renderMeasList();if(UL)renderCal();renderCrsPill();
-  layDirty=true;BV.request();MV.request();if(S.tab==='layout')LV.request();
+  layDirty=true;BV.request();MV.request();if(S.tab==='layout')LV.request();if(S.tab==='surr')renderSurr();
 }
 function renderAll(){renderPts();renderDerived()}
 
