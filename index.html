@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Boundary Distance Solver</title>
+<title>Site Plan Solver</title>
 <meta name="description" content="Read site coordinates from PDF, Excel, images or manual entry, draw the boundary with every distance, bearing and area, and measure anything on screen with CAD-style snaps.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -280,10 +280,31 @@ table.grid tr.bad td{background:color-mix(in srgb,var(--err-soft) 60%,var(--card
 .skind{font:500 11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .sroads{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .spop{font:13px/1.45 var(--sans);color:#1f2933;min-width:200px}.spop b{font-size:14px}
+.leaflet-tooltip.scorner{background:#fff;border:1.5px solid #d0213a;color:#d0213a;font:700 11px/1 var(--mono);padding:3px 5px;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,.25)}.leaflet-tooltip.scorner:before{display:none}
 .spop-k{display:flex;align-items:center;gap:6px;color:#55606b;margin:2px 0 4px}.spop-k i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .spop-m{font-family:var(--mono);font-size:12px}
 .spop-a{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.spop-a a{font-weight:600}
 .surr-main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.si-typ{display:flex;flex-direction:column;gap:6px}
+.si-typ button{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line-strong);background:var(--card);border-radius:10px;padding:7px 10px;font:700 12px var(--sans);color:var(--ink);cursor:pointer;transition:.15s}
+.si-typ button:hover{border-color:var(--accent)}
+.si-typ button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent);background:var(--accent-soft)}
+.si-typ svg{flex:none}.si-typ .scnt{margin-left:auto;font:600 11px var(--mono);color:var(--muted)}
+table.si td{padding:5px 8px}table.si td svg{display:block}
+table.si tr.sel td{background:color-mix(in srgb,var(--accent-soft) 75%,var(--card))}
+.facc{display:flex;flex-direction:column;gap:7px;margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.4}
+.facc>div{display:flex;gap:9px;align-items:flex-start}.facc>div>b{flex:none;width:19px;height:19px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font:700 11px/19px var(--mono);text-align:center}
+.facc span b{color:var(--ink)}
+.frow{display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer;flex-wrap:wrap}
+.frow.sel{border-color:var(--accent);background:var(--accent-soft)}
+.frow .fin{flex:1;min-width:110px;width:auto;text-align:left;font-family:var(--sans)}
+.frow .fmeta{flex-basis:100%;order:3;font:500 11.5px var(--mono);color:var(--muted)}
+.bd-grid{display:grid;grid-template-columns:minmax(240px,340px) minmax(0,1fr);gap:20px}
+@media(max-width:760px){.bd-grid{grid-template-columns:1fr}}
+.bd-layers{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px;padding:4px}
+.bdl{display:flex;align-items:center;gap:8px;padding:5px 8px;font-size:13px;cursor:pointer;border-radius:7px}.bdl:hover{background:var(--accent-soft)}
+.bdl span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bdl i{font:500 11px var(--mono);color:var(--muted);font-style:normal;white-space:nowrap}
+.bd-cv{width:100%;height:300px;display:block;border:1px solid var(--line);border-radius:12px;background:#fff}
 #printSheet{display:none}
 @media (max-width:1060px){.lay-grid,.crs-grid{grid-template-columns:minmax(0,1fr)}}
 
@@ -338,9 +359,9 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
   <header class="top">
     <div class="brand">
       <div class="kicker">MSCEB · BIM Structural Department</div>
-      <h1>Boundary Distance Solver</h1>
-      <div class="subtitle">Site coordinates, boundaries &amp; measured distances</div>
-      <p>Read coordinates from a PDF, spreadsheet, photo or your own typing. Get the boundary drawn with every distance, bearing and area, then measure anything on screen with CAD-style snaps.</p>
+      <h1>Site Plan Solver</h1>
+      <div class="subtitle">Site coordinates, boundary plans, surroundings &amp; investigation points</div>
+      <p>Read coordinates from a PDF, spreadsheet, photo or your own typing. Get the boundary drawn with every distance, bearing and area, measure on screen, issue the layout sheet to CAD, map the surroundings and set out boreholes and tests.</p>
       <span class="status" id="status"><i></i><span id="statusTxt">PDF · Excel · Image OCR · Manual entry</span></span>
     </div>
     <div class="actions">
@@ -391,6 +412,8 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
     <button role="tab" data-tab="measure" aria-selected="false">Measure <span class="num">B-04</span><span class="cnt" id="cntMeas">0</span></button>
     <button role="tab" data-tab="layout" aria-selected="false">Layout <span class="num">B-05</span></button>
     <button role="tab" data-tab="surr" aria-selected="false">Surroundings <span class="num">B-06</span><span class="cnt" id="cntSurr">0</span></button>
+    <button role="tab" data-tab="si" aria-selected="false">Boreholes <span class="num">B-07</span><span class="cnt" id="cntSI">0</span></button>
+    <button role="tab" data-tab="bld" aria-selected="false">Footprint <span class="num">B-08</span><span class="cnt" id="cntBld">0</span></button>
   </nav>
   <div class="rule-glow"></div>
   <div class="steps"><span><b>1</b>Import or type coordinates</span><span><b>2</b>Check the columns it found</span><span><b>3</b>See the boundary drawn</span><span><b>4</b>Read every distance &amp; bearing</span><span><b>5</b>Measure anything on screen</span></div>
@@ -610,7 +633,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
               <span class="lbl">Grid</span><select class="sel" id="lGrid"><option value="cross">Crosses + frame ticks</option><option value="lines">Grid lines</option><option value="off">Off</option></select>
             </div>
             <div class="opts" id="lShow"><span class="lbl">Show</span>
-              <button class="chip" type="button" data-ls="dist">Distances</button><button class="chip" type="button" data-ls="brg">Bearings</button><button class="chip" type="button" data-ls="ids">Point IDs</button><button class="chip" type="button" data-ls="xy">Corner coords</button><button class="chip" type="button" data-ls="table">Coordinate table</button><button class="chip" type="button" data-ls="edges">Distance table</button><button class="chip" type="button" data-ls="area">Area</button><button class="chip" type="button" data-ls="meas">Measurements</button><button class="chip" type="button" data-ls="surr">Surroundings</button><button class="chip" type="button" data-ls="key">Key plan</button>
+              <button class="chip" type="button" data-ls="dist">Distances</button><button class="chip" type="button" data-ls="brg">Bearings</button><button class="chip" type="button" data-ls="ids">Point IDs</button><button class="chip" type="button" data-ls="xy">Corner coords</button><button class="chip" type="button" data-ls="table">Coordinate table</button><button class="chip" type="button" data-ls="edges">Distance table</button><button class="chip" type="button" data-ls="area">Area</button><button class="chip" type="button" data-ls="meas">Measurements</button><button class="chip" type="button" data-ls="surr">Surroundings</button><button class="chip" type="button" data-ls="key">Key plan</button><button class="chip" type="button" data-ls="si">Boreholes</button><button class="chip" type="button" data-ls="bld">Buildings</button>
             </div>
             <div id="lMsgs" style="margin-top:14px"></div>
           </div>
@@ -659,9 +682,9 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
         <div class="card">
           <div class="card-h"><div><h2>Export</h2><p class="sub">Only the categories shown are exported.</p></div></div>
           <div class="card-b">
-            <div class="opts tight" id="sExp" style="margin-top:0"><button class="btn sm primary" type="button" id="sDxf">DXF</button><button class="btn sm" type="button" id="sKml">KML</button><button class="btn sm" type="button" id="sCsv">CSV</button><button class="btn sm" type="button" id="sGeo">GeoJSON</button></div>
+            <div class="opts tight" id="sExp" style="margin-top:0"><button class="btn sm primary" type="button" id="sDxf">DXF</button><button class="btn sm" type="button" id="sKml">KML</button><button class="btn sm" type="button" id="sCsv">CSV</button><button class="btn sm" type="button" id="sGeo">GeoJSON</button><button class="btn sm" type="button" id="sPng">Colour map PNG</button><button class="btn sm" type="button" id="sSvg">Colour map SVG</button></div>
             <div class="opts" id="sToLay"><span class="lbl">On the layout sheet</span><button class="chip" type="button" data-ls="surr">Surroundings</button><button class="chip" type="button" data-ls="key">Key plan</button></div>
-            <p class="diagram-foot">DXF is at true coordinates in the project system, one layer per category, so it overlays the boundary DXF. KML opens in Google Earth and imports into Google My Maps. CSV opens in Excel.</p>
+            <p class="diagram-foot">Every export includes the plot corners (P1, P2…) at their coordinates. DXF is at true coordinates in the project system, with a coloured layer per category, road class and land use, so it overlays the boundary DXF. The colour map PNG is the current map view with the street or satellite map underneath and see-through colours on top; the SVG is the same overlay as a vector drawing. KML opens in Google Earth and Google My Maps. CSV opens in Excel.</p>
           </div>
         </div>
       </div>
@@ -669,13 +692,122 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
         <div class="card">
           <div class="card-h">
             <div><h2>Site map</h2><p class="sub" id="sSub">Site on the map.</p></div>
-            <div class="opts tight" style="margin:0"><div class="seg" id="sBase" role="group" aria-label="Base map"><button type="button" data-b="osm">Map</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="light">Light</button></div><button class="btn sm" type="button" id="sFit">Fit</button></div>
+            <div class="opts tight" style="margin:0"><div class="seg" id="sBase" role="group" aria-label="Base map"><button type="button" data-b="streets">Streets</button><button type="button" data-b="osm">Map</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="light">Light</button></div><button class="btn sm" type="button" id="sFit">Fit</button></div>
           </div>
           <div class="card-b"><div class="smap" id="sMap"></div></div>
         </div>
         <div class="card">
           <div class="card-h"><div><h2>Facilities</h2><p class="sub" id="sListSub">Nothing loaded yet.</p></div><input class="fin wide" id="sQ" placeholder="Filter by name or type" style="max-width:260px;text-align:left;font-family:var(--sans)"></div>
           <div class="card-b"><div class="tbl-wrap" style="max-height:560px"><table class="grid"><thead><tr><th></th><th>Name / type</th><th class="r">To boundary</th><th>Direction</th><th class="r">Easting</th><th class="r">Northing</th><th></th></tr></thead><tbody id="sTb"></tbody></table></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-si" role="tabpanel" hidden>
+    <div class="lay-grid">
+      <div class="side-col">
+        <div class="card">
+          <div class="card-h"><div><h2>Investigation points</h2><p class="sub">Boreholes, CBR and permeability tests.</p></div><span class="badge">B-07</span></div>
+          <div class="card-b">
+            <span class="lbl">Type to place</span>
+            <div class="si-typ" id="iTypes" style="margin-top:8px"></div>
+            <div class="opts"><span class="lbl">Mouse</span><div class="seg" id="iMode" role="group" aria-label="Mouse mode"><button type="button" data-m="place">Place points</button><button type="button" data-m="move">Select / move</button></div></div>
+            <div style="margin-top:16px"><span class="lbl">Or type the coordinates</span>
+              <div class="fgrid" style="margin-top:8px">
+                <span class="lbl">ID</span><input class="fin" id="iId" autocomplete="off">
+                <span class="lbl">Easting</span><input class="fin" id="iE" inputmode="decimal" autocomplete="off">
+                <span class="lbl">Northing</span><input class="fin" id="iN" inputmode="decimal" autocomplete="off">
+                <span class="lbl">Level</span><input class="fin" id="iZ" inputmode="decimal" autocomplete="off" placeholder="optional">
+              </div>
+              <div class="opts"><button class="btn primary sm" type="button" id="iAdd">Add point</button></div>
+            </div>
+            <details style="margin-top:14px"><summary class="lbl" style="cursor:pointer">Paste a list</summary>
+              <textarea class="ta" id="iPaste" spellcheck="false" style="min-height:90px;margin-top:8px" placeholder="BH-1  452310.250  2898420.180&#10;CBR-1  452356.870  2898431.540&#10;PT-1  452342.600  2898340.910"></textarea>
+              <div class="opts tight"><button class="btn sm" type="button" id="iPasteGo">Add these</button></div>
+              <p class="diagram-foot">One point per line: ID, Easting, Northing and an optional level. IDs starting BH, CBR or PT pick their own type; anything else uses the type selected above.</p>
+            </details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Show &amp; export</h2><p class="sub">Labels on the plan, and files.</p></div></div>
+          <div class="card-b">
+            <div class="opts" id="iShow" style="margin-top:0"><span class="lbl">Show</span><button class="chip" type="button" data-il="id">Labels</button><button class="chip" type="button" data-il="xy">Coordinates</button><button class="chip" type="button" data-il="legend">Legend</button><button class="chip" type="button" data-il="corners">Plot corners</button><button class="chip" type="button" data-il="dims">Site distances</button></div>
+            <div class="fgrid" style="margin-top:14px"><span class="lbl">Symbol size in CAD</span><select class="sel" id="iSize"><option value="s">Small</option><option value="m">Medium</option><option value="l">Large</option></select></div>
+            <div class="opts tight" id="iExp"><button class="btn sm primary" type="button" id="iDxf">DXF</button><button class="btn sm" type="button" id="iCsv">CSV</button><button class="btn sm" type="button" id="iPng">PNG</button></div>
+            <div class="opts" id="iToLay"><span class="lbl">On the layout sheet</span><button class="chip" type="button" data-ls="si">Investigation points</button></div>
+            <p class="diagram-foot">The DXF is at true coordinates: filled symbols on a layer per type, boxed labels, the legend and the coordinate schedule beside the plan. To place points over a drawing, load it as an underlay in the Measure tab (B-04) and calibrate it; it shows here too.</p>
+          </div>
+        </div>
+      </div>
+      <div class="surr-main">
+        <div class="card">
+          <div class="card-h">
+            <div><h2>Location plan</h2><p class="sub" id="iSub">Click on the plan to place a point.</p></div>
+            <div class="opts tight" style="margin:0"><button class="btn sm" type="button" id="iFit">Fit</button></div>
+          </div>
+          <div class="card-b"><div class="canvas-wrap" id="iWrap"><canvas></canvas><div class="coordbar" id="iCoord"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Coordinate schedule</h2><p class="sub" id="iListSub">No points yet.</p></div><button class="btn sm" type="button" id="iClear">Clear all</button></div>
+          <div class="card-b"><div class="tbl-wrap" style="max-height:520px"><table class="grid si"><thead id="iHead"></thead><tbody id="iTb"></tbody></table></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-bld" role="tabpanel" hidden>
+    <div class="lay-grid">
+      <div class="side-col">
+        <div class="card">
+          <div class="card-h"><div><h2>Building footprint</h2><p class="sub">Load it, trace it or type its corners.</p></div><span class="badge">B-08</span></div>
+          <div class="card-b">
+            <input type="file" id="fFile" accept=".dxf,.dwg,.pdf,image/*" hidden>
+            <div class="opts" style="margin-top:0"><button class="btn primary" type="button" id="fDxf">Load DXF</button><button class="btn sm" type="button" id="fUl">Load PDF / image to trace</button></div>
+            <div class="opts"><span class="lbl">Mouse</span><div class="seg" id="fMode" role="group" aria-label="Mouse mode"><button type="button" data-m="select">Select / move</button><button type="button" data-m="trace">Trace on plan</button></div></div>
+            <div id="fMsgs" style="margin-top:14px"></div>
+            <div class="facc">
+              <div><b>1</b><span><b>DXF: exact.</b> True geometry and coordinates, to the millimetre. Best choice.</span></div>
+              <div><b>2</b><span><b>Corner coordinates: exact.</b> Paste the Easting and Northing of each corner.</span></div>
+              <div><b>3</b><span><b>PDF: good.</b> Traced over the drawing after calibrating it. As accurate as the calibration, usually a few centimetres.</span></div>
+              <div><b>4</b><span><b>Image / photo: approximate.</b> Traced the same way, limited by the picture's resolution and distortion.</span></div>
+              <div><b>!</b><span><b>DWG</b> can't be read in a browser. Save it as DXF in AutoCAD (SAVEAS, AutoCAD 2000 DXF). Nothing is lost.</span></div>
+            </div>
+            <details style="margin-top:14px"><summary class="lbl" style="cursor:pointer">Paste corner coordinates</summary>
+              <input class="fin wide" id="fPasteName" placeholder="Name (optional)" style="width:100%;text-align:left;margin-top:8px;font-family:var(--sans)">
+              <textarea class="ta" id="fPaste" spellcheck="false" style="min-height:90px;margin-top:8px" placeholder="452330.000  2898395.000&#10;452365.000  2898395.000&#10;452365.000  2898370.000&#10;452330.000  2898370.000"></textarea>
+              <div class="opts tight"><button class="btn sm" type="button" id="fPasteGo">Add footprint</button></div>
+            </details>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Footprints</h2><p class="sub">Name, size and position.</p></div><button class="btn sm" type="button" id="fClear">Clear all</button></div>
+          <div class="card-b">
+            <div id="fList"></div>
+            <div id="fSelBox" hidden style="margin-top:14px">
+              <span class="lbl">Place the selected footprint</span>
+              <div class="row" style="margin-top:8px;flex-wrap:nowrap"><input class="fin" id="fDE" placeholder="ΔE" inputmode="decimal" style="flex:1;width:auto"><input class="fin" id="fDN" placeholder="ΔN" inputmode="decimal" style="flex:1;width:auto"><button class="btn sm" type="button" id="fMove">Move</button></div>
+              <div class="row" style="flex-wrap:nowrap"><input class="fin" id="fAng" placeholder="Angle °, clockwise" inputmode="decimal" style="flex:1;width:auto"><button class="btn sm" type="button" id="fRot">Rotate</button></div>
+              <div class="opts tight"><button class="btn sm" type="button" id="fCentre">Centre on the site</button></div>
+            </div>
+            <div class="opts" id="fShow"><span class="lbl">Show</span><button class="chip" type="button" data-fl="name">Names</button><button class="chip" type="button" data-fl="dims">Edge lengths</button><button class="chip" type="button" data-fl="hatch">Hatch on sheet</button></div>
+            <div class="opts" id="fToLay"><span class="lbl">On the layout sheet</span><button class="chip" type="button" data-ls="bld">Buildings</button></div>
+            <div class="opts tight"><button class="btn sm" type="button" id="fCsv">Corners CSV</button></div>
+            <p class="diagram-foot">Footprints also show on the Boundary, Measure and Boreholes plans and the Surroundings map, and go into every DXF export on a BUILDING layer.</p>
+          </div>
+        </div>
+      </div>
+      <div class="surr-main">
+        <div class="card">
+          <div class="card-h">
+            <div><h2>Site plan</h2><p class="sub" id="fSub">Click a footprint to select it.</p></div>
+            <div class="opts tight" style="margin:0"><button class="btn sm" type="button" id="fFit">Fit</button></div>
+          </div>
+          <div class="card-b"><div class="canvas-wrap" id="fWrap"><canvas></canvas><div class="coordbar" id="fCoord"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Corner schedule</h2><p class="sub" id="fTbSub">No footprint yet.</p></div></div>
+          <div class="card-b"><div class="tbl-wrap" style="max-height:480px"><table class="grid si"><thead><tr><th>#</th><th class="r">Easting</th><th class="r">Northing</th><th class="r">Length to next</th><th>Bearing</th><th></th></tr></thead><tbody id="fTb"></tbody></table></div></div>
         </div>
       </div>
     </div>
@@ -695,7 +827,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
   </section>
 
   <footer class="foot">
-    <span>MSCEB · © <span id="yr">2026</span> · Boundary Distance Solver · 🔒 runs in your browser · prepared by Gouse Shaik, BIM Manager · Bahrain · <span id="today"></span></span>
+    <span>MSCEB · © <span id="yr">2026</span> · Site Plan Solver · 🔒 runs in your browser · prepared by Gouse Shaik, BIM Manager · Bahrain · <span id="today"></span></span>
     <span class="fine">Distances are plane (grid) distances from the coordinates you give. Check against your survey and project standards before setting out.</span>
   </footer>
 </div>
@@ -731,6 +863,27 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
   </form>
 </dialog>
 
+<dialog class="dlg" id="bldDlg">
+  <form method="dialog" class="dlg-in">
+    <div class="card-h"><div><h2>Import footprint from DXF</h2><p class="sub" id="bdSub"></p></div><button class="btn sm" value="cancel">Close</button></div>
+    <div class="dlg-b">
+      <div class="bd-grid">
+        <div>
+          <div class="fgrid"><span class="lbl">Drawing units</span><select class="sel" id="bdUnits"><option value="same">Same as the project coordinates</option><option value="mm">Millimetres</option><option value="cm">Centimetres</option><option value="m">Metres</option><option value="in">Inches</option><option value="ft">Feet</option></select></div>
+          <label class="bdl" style="margin-top:12px"><input type="checkbox" id="bdClosed"><span>Closed shapes only</span></label>
+          <label class="bdl"><input type="checkbox" id="bdMove"><span>Move to the site centre</span></label>
+          <div class="row" style="margin-top:12px"><span class="lbl grow">Layers</span><button class="btn sm" type="button" id="bdAll">All</button><button class="btn sm" type="button" id="bdNone">None</button></div>
+          <div class="bd-layers" id="bdLayers"></div>
+        </div>
+        <div>
+          <canvas id="bdCv" class="bd-cv"></canvas>
+          <div id="bdMsgs" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dlg-f"><span class="grow" id="bdInfo" style="font:500 12.5px var(--mono);color:var(--muted)"></span><button class="btn" value="cancel">Cancel</button><button class="btn primary" type="button" id="bdGo">Import</button></div>
+  </form>
+</dialog>
 <dialog class="dlg" id="crsDlg">
   <form method="dialog" class="dlg-in">
     <div class="card-h"><div><h2>Coordinate system</h2><p class="sub">The system your Easting / Northing values are in. It adds latitude / longitude, the true scale factor and KML export.</p></div><button class="btn sm" value="cancel">Close</button></div>
@@ -778,9 +931,9 @@ const CU={m:{f:1,l:'m'},mm:{f:.001,l:'mm'},ft:{f:.3048,l:'ft'},usft:{f:1200/3937
 const DEF={pts:[],closed:true,cu:'m',du:'m',dec:3,brg:'wcb',csf:1,theme:'auto',tab:'coords',
   lab:{id:true,dist:true,brg:false,xy:false,area:true,grid:true},mlab:true,meas:[],mseq:1,
   snap:{end:true,mid:true,edge:true,perp:true,meas:true,ortho:false},tool:'dist',
-  crs:null,crsCustom:[],showLL:false,surr:{rad:1000,off:[],base:'osm'},
+  crs:null,crsCustom:[],showLL:false,bld:{list:[],seq:1,mode:'select',lab:{name:true,dims:false,hatch:true}},si:{pts:[],type:'bh10',mode:'place',size:'m',lab:{id:true,xy:false,legend:true,corners:false,dims:false}},surr:{rad:1000,off:[],base:'streets'},
   lay:{paper:'A3',orient:'L',scale:'auto',scaleC:'',grid:'cross',notes:'',
-    show:{dist:true,brg:true,ids:true,xy:false,table:true,edges:true,area:true,meas:false,surr:false,key:false},
+    show:{dist:true,brg:true,ids:true,xy:false,table:true,edges:true,area:true,meas:false,surr:false,key:false,si:false,bld:true},
     revs:'',tb:{code:'',project:'',client:'',location:'',title:'SITE BOUNDARY PLAN',subtitle:'',drawn:'',drawnNo:'',designed:'',designedNo:'',checked:'',checkedNo:'',approved:'',approvedNo:'',date:'',qaqc:'',stage:'',rev:'0',dwg:''}}};
 let S=JSON.parse(JSON.stringify(DEF));
 try{
@@ -794,6 +947,11 @@ try{
     S.pts=(Array.isArray(S.pts)?S.pts:[]).filter(p=>p&&isFinite(p.e)&&isFinite(p.n)).map(p=>({id:String(p.id??''),e:+p.e,n:+p.n,z:p.z==null||p.z===''?null:+p.z}));
     S.meas=Array.isArray(S.meas)?S.meas.filter(m=>m&&Array.isArray(m.pts)&&TNAME_OK(m.type)):[];
     if(!CU[S.cu])S.cu='m';
+    const jb=j.bld&&typeof j.bld==='object'?j.bld:{};S.bld={...DEF.bld,...jb,mode:'select',lab:{...DEF.bld.lab,...(jb.lab||{})}};
+    S.bld.list=(Array.isArray(jb.list)?jb.list:[]).map(b=>({id:+b.id||0,name:String(b.name??''),pts:(Array.isArray(b.pts)?b.pts:[]).filter(q=>q&&isFinite(q.e)&&isFinite(q.n)).map(q=>({e:+q.e,n:+q.n}))})).filter(b=>b.pts.length>2);
+    const js=j.si&&typeof j.si==='object'?j.si:{};S.si={...DEF.si,...js,lab:{...DEF.si.lab,...(js.lab||{})}};
+    S.si.pts=(Array.isArray(js.pts)?js.pts:[]).filter(q=>q&&isFinite(q.e)&&isFinite(q.n)).map(q=>({id:String(q.id??''),t:['bh10','bh20','cbr','pt'].includes(q.t)?q.t:'bh10',e:+q.e,n:+q.n,z:q.z==null||q.z===''?null:+q.z}));
+    if(!['bh10','bh20','cbr','pt'].includes(S.si.type))S.si.type='bh10';
   }
 }catch(e){}
 function TNAME_OK(t){return ['dist','path','area','angle','offset'].includes(t)}
@@ -964,6 +1122,7 @@ class Viewer{
     const [x,y]=this.xy(e);this.ptrs.set(e.pointerId,{x,y});
     if(this.ptrs.size===2){const [p,q]=[...this.ptrs.values()];const mx=(p.x+q.x)/2,my=(p.y+q.y)/2;this.pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:this.z,w:this.s2w(mx,my)};this.pan=null;return}
     this.pan={x,y,cx:this.cx,cy:this.cy,moved:false,btn:e.button,touch:e.pointerType!=='mouse'};
+    if(e.button===0&&this.h.grab){const g=this.h.grab(x,y,e);if(g)this.pan.grab=g}
   }
   move(e){
     const [x,y]=this.xy(e);
@@ -972,6 +1131,7 @@ class Viewer{
       this.z=Math.min(Math.max(this.pinch.z*d/this.pinch.d,1e-7),1e7);this.cx=this.pinch.w[0]-(mx-this.W/2)/this.z;this.cy=this.pinch.w[1]+(my-this.H/2)/this.z;this.request();return}
     if(this.pan){const dx=x-this.pan.x,dy=y-this.pan.y;
       if(!this.pan.moved&&Math.hypot(dx,dy)>(this.pan.touch?8:4))this.pan.moved=true;
+      if(this.pan.moved&&this.pan.grab){this.h.drag&&this.h.drag(x,y,e,this.pan.grab);this.c.style.cursor='grabbing';this.request();return}
       if(this.pan.moved){this.cx=this.pan.cx-dx/this.z;this.cy=this.pan.cy+dy/this.z;this.c.style.cursor='grabbing';this.request();return}}
     this.h.move&&this.h.move(x,y,e);this.request();
   }
@@ -979,6 +1139,7 @@ class Viewer{
     this.ptrs.delete(e.pointerId);
     if(this.pinch){if(this.ptrs.size<2)this.pinch=null;this.pan=null;return}
     const p=this.pan;this.pan=null;this.c.style.cursor='';
+    if(p&&p.grab&&p.moved){this.h.drop&&this.h.drop(p.grab,cancel);this.request();return}
     if(!p||cancel||p.moved)return;
     const [x,y]=this.xy(e);
     if(p.btn===0)this.h.click&&this.h.click(x,y,e);else if(p.btn===2)this.h.rclick&&this.h.rclick(x,y,e);
@@ -1059,7 +1220,7 @@ function drawBoundary(ctx,v,o){
       pill(ctx,x+dx*r,y+dy*r,lines,{font,lh:o.xy?13:14,fg:C.title,fg2:C.muted,bg:C.card,bd:hl?C.accent:C.ls});
     }
   });
-  if(o.area&&closed&&c){const ar=fmtArea(A*fac()*fac());pill(ctx,cxs,cys,[ar[0],ar[1]],{font:`700 13px ${MONO}`,lh:16,pad:7,fg:C.title,fg2:C.muted,bg:C.card,alpha:.85})}
+  if(o.area&&closed&&c){const ar=fmtArea(A*fac()*fac());pill(ctx,cxs,cys,[ar[0]],{font:`700 13px ${MONO}`,lh:16,pad:7,fg:C.title,fg2:C.muted,bg:C.card,alpha:.85})}
 }
 function emptyMsg(ctx,v,t1,t2){ctx.save();ctx.fillStyle=C.muted;ctx.textAlign='center';ctx.font=`700 20px ${DISP}`;ctx.fillText(t1,v.W/2,v.H/2-6);ctx.font=`500 12px ${MONO}`;ctx.fillStyle=C.faint;ctx.fillText(t2,v.W/2,v.H/2+16);ctx.restore()}
 function distPtSeg(x,y,[x1,y1],[x2,y2]){const dx=x2-x1,dy=y2-y1,L2=dx*dx+dy*dy;let t=L2?((x-x1)*dx+(y-y1)*dy)/L2:0;t=Math.max(0,Math.min(1,t));return Math.hypot(x-(x1+t*dx),y-(y1+t*dy))}
@@ -1071,6 +1232,7 @@ const BV=new Viewer($('#bWrap'),{
   draw(ctx,v){
     if(S.lab.grid)drawGrid(ctx,v);
     if(!S.pts.length){emptyMsg(ctx,v,'No boundary yet','Import or type coordinates in the Coordinates tab');return}
+    drawBld(ctx,v,{label:S.bld.lab.name,dims:S.bld.lab.dims});
     drawBoundary(ctx,v,{dist:S.lab.dist,brg:S.lab.brg,ids:S.lab.id,xy:S.lab.xy,area:S.lab.area,hlEdge:bHover.edge,hlPt:bHover.pt});
     drawNorth(ctx,v);drawScale(ctx,v);
   },
@@ -1100,6 +1262,7 @@ const MV=new Viewer($('#mWrap'),{
     drawUnderlay(ctx,v);
     if(!UL||!UL.show)drawGrid(ctx,v);
     if(S.pts.length)drawBoundary(ctx,v,{dist:S.mlab,brg:false,ids:true,xy:false,area:false,fillA:UL&&UL.show?.22:.45,small:true});
+    drawBld(ctx,v,{label:S.bld.lab.name});
     S.meas.forEach(m=>drawMeas(ctx,v,m,m.id===M.sel?'sel':'done'));
     if(M.cur)drawMeas(ctx,v,M.cur,'live',M.hover);
     else if(S.tool==='offset'&&M.hover&&!M.cal&&S.pts.length>1)drawOffsetPreview(ctx,v,M.hover);
@@ -1137,7 +1300,7 @@ function snapAt(x,y){
   const v=MV,tol=12,P=S.pts;let best=null;
   const test=(e,n,type,label,z,pen=0)=>{const [sx,sy]=v.w2s(e,n),d=Math.hypot(sx-x,sy-y);if(d>tol)return;const sc=d+pen;if(!best||sc<best.sc)best={e,n,z:z??null,type,label,sc}};
   const sg=segList();
-  if(S.snap.end)P.forEach(p=>test(p.e,p.n,'end',p.id,p.z));
+  if(S.snap.end){P.forEach(p=>test(p.e,p.n,'end',p.id,p.z));S.bld.list.forEach(b=>b.pts.forEach((p,k)=>test(p.e,p.n,'end',`${b.name} ${k+1}`,null,.5)))}
   if(S.snap.mid)sg.forEach(([i,j])=>{const a=P[i],b=P[j];test((a.e+b.e)/2,(a.n+b.n)/2,'mid',`${a.id}–${b.id}`,a.z!=null&&b.z!=null?(a.z+b.z)/2:null,1)});
   if(S.snap.meas){S.meas.forEach(m=>m.pts.forEach(p=>test(p.e,p.n,'meas','M'+m.id,p.z,2)));if(M.cur)M.cur.pts.forEach(p=>test(p.e,p.n,'meas','',p.z,2))}
   const last=M.cur&&M.cur.pts[M.cur.pts.length-1];
@@ -1168,7 +1331,7 @@ function mVals(m,extra){
     if(a.z!=null&&b.z!=null){const dz=(b.z-a.z)*f;out.sub.push(`ΔZ ${fmtLen(dz)}`,`Slope dist ${fmtLen(Math.hypot(L,dz))}`,`Grade ${L?(dz/L*100).toFixed(2):'—'} %`)}}
   else if(m.type==='path'&&P.length>=2){let L=0;for(let i=1;i<P.length;i++)L+=segLen(P[i-1],P[i]);L*=f;out.main=fmtLen(L);const last=P[P.length-1],pre=P[P.length-2];
     out.sub=[`${P.length-1} segment${P.length>2?'s':''}`,`Last ${fmtLen(segLen(pre,last)*f)}`,`Start→end ${fmtLen(segLen(P[0],last)*f)}`]}
-  else if(m.type==='area'&&P.length>=3){const A=polyArea(P)*f*f;let per=0;P.forEach((p,i)=>per+=segLen(p,P[(i+1)%P.length]));const ar=fmtArea(A);out.main=ar[0];out.sub=[ar[1],`Perimeter ${fmtLen(per*f)}`,`${P.length} corners`]}
+  else if(m.type==='area'&&P.length>=3){const A=polyArea(P)*f*f;let per=0;P.forEach((p,i)=>per+=segLen(p,P[(i+1)%P.length]));const ar=fmtArea(A);out.main=ar[0];out.sub=[`Perimeter ${fmtLen(per*f)}`,`${P.length} corners`]}
   else if(m.type==='area'&&P.length===2){out.main=fmtLen(segLen(P[0],P[1])*f);out.sub=['Add a third corner']}
   else if(m.type==='angle'&&P.length>=3){const [a,o,b]=P,z1=azimuth(a.e-o.e,a.n-o.n),z2=azimuth(b.e-o.e,b.n-o.n);let d=Math.abs(z2-z1);if(d>180)d=360-d;out.main=dms(d,0,0);out.sub=[`Reflex ${dms(360-d,0,0)}`,`Arms ${fmtLen(segLen(o,a)*f)} / ${fmtLen(segLen(o,b)*f)}`]}
   else if(m.type==='angle'&&P.length===2){out.main=fmtLen(segLen(P[0],P[1])*f);out.sub=['First arm']}
@@ -1739,7 +1902,7 @@ function statTiles(){
   const st=boundaryStats(),f=fac(),P=S.pts;if(!P.length)return '';
   const ar=st.closed?fmtArea(st.A*f*f):null;const sg=st.sg;
   const t=[];
-  if(ar)t.push(`<div class="stat hero"><span class="lbl">Area</span><b>${ar[0]}</b><span>${ar[1]}</span></div>`);
+  if(ar)t.push(`<div class="stat hero"><span class="lbl">Area</span><b>${ar[0]}</b><span>closed boundary</span></div>`);
   t.push(`<div class="stat${ar?'':' hero'}"><span class="lbl">${st.closed?'Perimeter':'Length'}</span><b>${fmtLen(st.per*f)}</b><span>${sg.length} edge${sg.length===1?'':'s'} · ${P.length} point${P.length===1?'':'s'}</span></div>`);
   if(st.mx){const [i,j]=sg[st.mx.k],[a,b]=sg[st.mn.k];t.push(`<div class="stat"><span class="lbl">Longest edge</span><b>${fmtLen(st.mx.L*f)}</b><span>${esc(P[i].id)}–${esc(P[j].id)}</span></div>`,`<div class="stat"><span class="lbl">Shortest edge</span><b>${fmtLen(st.mn.L*f)}</b><span>${esc(P[a].id)}–${esc(P[b].id)}</span></div>`)}
   if(st.bb)t.push(`<div class="stat"><span class="lbl">Extents E × N</span><b>${fmtLen((st.bb.maxE-st.bb.minE)*f,false)} × ${fmtLen((st.bb.maxN-st.bb.minN)*f)}</b><span>bounding box</span></div>`);
@@ -1762,7 +1925,7 @@ function renderDist(){
     const st=boundaryStats(),f=fac();
     $('#distTable').innerHTML=`<thead><tr><th>#</th><th>From → To</th><th class="r">ΔE (${u})</th><th class="r">ΔN (${u})</th><th class="r">Distance (${u})</th>${showG?`<th class="r">Ground (${u})</th>`:''}<th>Bearing</th>${anyZ?`<th class="r">ΔZ</th><th class="r">Slope dist</th><th class="r">Grade</th>`:''}</tr></thead>
     <tbody>${R2.map(r=>`<tr><td class="m">${r.k}</td><td><b style="font:700 15px var(--display)">${esc(r.a)} → ${esc(r.b)}</b></td><td class="m r">${fmtLen(r.dE,false)}</td><td class="m r">${fmtLen(r.dN,false)}</td><td class="b r">${fmtLen(r.L,false)}</td>${showG?`<td class="m r">${fmtLen(r.G,false)}</td>`:''}<td class="m">${r.brg}</td>${anyZ?`<td class="m r">${r.dz!=null?fmtLen(r.dz,false):'—'}</td><td class="m r">${r.sl!=null?fmtLen(r.sl,false):'—'}</td><td class="m r">${r.gr!=null?r.gr.toFixed(2)+' %':'—'}</td>`:''}</tr>`).join('')}</tbody>
-    <tfoot><tr><td></td><td>${st.closed?'Perimeter':'Total length'}</td><td></td><td></td><td class="r">${fmtLen(st.per*f,false)}</td>${showG?`<td class="r">${fmtLen(st.per*f/(S.csf||1),false)}</td>`:''}<td>${st.closed?'Area '+fmtArea(st.A*f*f).join(' · '):''}</td>${anyZ?'<td></td><td></td><td></td>':''}</tr></tfoot>`;
+    <tfoot><tr><td></td><td>${st.closed?'Perimeter':'Total length'}</td><td></td><td></td><td class="r">${fmtLen(st.per*f,false)}</td>${showG?`<td class="r">${fmtLen(st.per*f/(S.csf||1),false)}</td>`:''}<td>${st.closed?'Area '+fmtArea(st.A*f*f)[0]:''}</td>${anyZ?'<td></td><td></td><td></td>':''}</tr></tfoot>`;
   }
   const opts=S.pts.map((p,i)=>`<option value="${i}">${esc(p.id||'#'+(i+1))}</option>`).join('');
   const a=$('#ppA'),b=$('#ppB'),va=a.value,vb=b.value;a.innerHTML=opts;b.innerHTML=opts;
@@ -1812,8 +1975,9 @@ $('#dxfBtn').addEventListener('click',()=>{
     const mx=(a.e+b.e)/2+sgn*dN/Lr*h*1.2,my=(a.n+b.n)/2-sgn*dE/Lr*h*1.2;
     add(0,'TEXT',8,'DIMENSIONS',10,n6(mx),20,n6(my),30,0,40,n6(h),1,txt(fmtLen(Lr*fac())+'  '+fmtBrg(dE,dN)),50,ang.toFixed(4),72,1,11,n6(mx),21,n6(my),31,0,73,2)});
   P.forEach(p=>{add(0,'POINT',8,'POINTS',10,n6(p.e),20,n6(p.n),30,n6(p.z??0));add(0,'TEXT',8,'POINT_IDS',10,n6(p.e+h*.6),20,n6(p.n+h*.6),30,0,40,n6(h*1.1),1,txt(p.id))});
-  if(S.closed&&P.length>2){const c=polyCentroid(P);add(0,'TEXT',8,'AREA',10,n6(c.e),20,n6(c.n),30,0,40,n6(h*1.3),1,txt('AREA '+fmtArea(A*fac()*fac()).join(' / ')),72,1,11,n6(c.e),21,n6(c.n),31,0,73,2)}
+  if(S.closed&&P.length>2){const c=polyCentroid(P);add(0,'TEXT',8,'AREA',10,n6(c.e),20,n6(c.n),30,0,40,n6(h*1.3),1,txt('AREA '+fmtArea(A*fac()*fac())[0]),72,1,11,n6(c.e),21,n6(c.n),31,0,73,2)}
   S.meas.forEach(m=>{const Q=m.type==='area'&&m.pts.length>2?[...m.pts,m.pts[0]]:m.pts;for(let i=1;i<Q.length;i++){const a=Q[i-1],b=Q[i];add(0,'LINE',8,'MEASURE',62,3,10,n6(a.e),20,n6(a.n),30,0,11,n6(b.e),21,n6(b.n),31,0)}});
+  S.bld.list.forEach(b=>b.pts.forEach((p,k)=>{const q=b.pts[(k+1)%b.pts.length];add(0,'LINE',8,'BUILDING',62,5,10,n6(p.e),20,n6(p.n),30,0,11,n6(q.e),21,n6(q.n),31,0)}));
   add(0,'ENDSEC',0,'EOF');download('boundary.dxf',L.join('\r\n'),'application/dxf');toast('DXF saved with layers BOUNDARY, DIMENSIONS, POINTS, POINT_IDS, AREA, MEASURE',3600);
 });
 $('#bPng').addEventListener('click',()=>{const c=BV.c,o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d');x.fillStyle=C.s2||'#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0);o.toBlob(b=>download('boundary-plan.png',b,'image/png'))});
@@ -1966,7 +2130,7 @@ $('#kmlBtn').addEventListener('click',()=>{
   const P=S.pts,LL=P.map(p=>toLL(p.e,p.n));if(LL.some(x=>!x)){toast('Some points could not be converted to lat / long');return}
   const st=boundaryStats(),f=fac(),x=s=>esc(s),cs=a=>a.map(l=>`${l[0].toFixed(9)},${l[1].toFixed(9)},0`).join(' ');
   const geom=st.closed?`<Polygon><outerBoundaryIs><LinearRing><coordinates>${cs([...LL,LL[0]])}</coordinates></LinearRing></outerBoundaryIs></Polygon>`:`<LineString><coordinates>${cs(LL)}</coordinates></LineString>`;
-  const desc=`${st.closed?'Area '+fmtArea(st.A*f*f).join(' / ')+', perimeter ':'Length '}${fmtLen(st.per*f)}. ${S.crs.name}.`;
+  const desc=`${st.closed?'Area '+fmtArea(st.A*f*f)[0]+', perimeter ':'Length '}${fmtLen(st.per*f)}. ${S.crs.name}.`;
   const kml=`<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Boundary</name>
 <Style id="bnd"><LineStyle><color>ff6045ec</color><width>3</width></LineStyle><PolyStyle><color>406045ec</color></PolyStyle></Style>
 <Style id="pt"><IconStyle><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>
@@ -1993,6 +2157,7 @@ function LB(){const it=[];return {it,
   tx(L,p,s,h,ha=0,va=0,r=0,b=false){if(s===''||s==null)return;it.push({t:'tx',L,p,s:String(s),h,ha,va,r,b})},
   ci(L,p,r,lw=.25){it.push({t:'ci',L,p,r,lw})},
   so(L,p){it.push({t:'so',L,p})},
+  di(L,p,r){it.push({t:'di',L,p,r})},
   pt(L,p,w){it.push({t:'pt',L,p,w})},
   img(L,p,w,h){it.push({t:'img',L,p,w,h})}}}
 function layoutScale(){const ly=S.lay;if(ly.scale==='custom'){const v=parseNumStrict(String(ly.scaleC).replace(/^1\s*:\s*/,''));return v>0?v:null}if(ly.scale==='auto')return null;return +ly.scale||null}
@@ -2019,6 +2184,7 @@ function buildLayout(){
   if(P.length)notes.push(anyZ?`LEVELS ARE IN ${UC}.${P.some(p=>p.z==null)?' N/A DENOTES LEVEL NOT PROVIDED.':''}`:'LEVELS ARE NOT PROVIDED (N/A).');
   if(fx&&fx.ll)notes.push(`SITE CENTRE (WGS 84): ${fmtLLs(fx.ll).replace(/\s+/g,' ')}. POINT SCALE FACTOR ${fx.k.toFixed(6)}. GRID CONVERGENCE: TRUE NORTH IS ${convText(fx.gamma)} OF GRID NORTH.`);
   if(SDv)notes.push('SURROUNDING FEATURES ARE FROM OPENSTREETMAP (© OPENSTREETMAP CONTRIBUTORS, ODbL). FOR INFORMATION ONLY; NOT SURVEYED.');
+  if(sh.si&&S.si.pts.length)notes.push('INVESTIGATION POINT POSITIONS ARE INDICATIVE AND SHALL BE CONFIRMED ON SITE, CLEAR OF EXISTING SERVICES, BEFORE WORK STARTS.');
   notes.push('DO NOT SCALE FROM THIS DRAWING. USE THE SCHEDULED COORDINATES AND FIGURED DIMENSIONS ONLY.','ANY DISCREPANCY SHALL BE REPORTED TO THE ENGINEER BEFORE WORK PROCEEDS.');
   String(ly.notes||'').split('\n').map(s=>s.trim()).filter(Boolean).forEach(s=>notes.push(s));
   notes.forEach((s,i)=>notes[i]=s.toUpperCase());
@@ -2027,14 +2193,17 @@ function buildLayout(){
   const colsC=[{h:'POINT'},{h:`EASTING (${uC})`},{h:`NORTHING (${uC})`},{h:'LEVEL'}],rowsC=P.map((p,i)=>[p.id||'#'+(i+1),fcd(p.e),fcd(p.n),p.z!=null?fcd(p.z):'N/A']);
   const colsE=[{h:'LINE'},{h:`DISTANCE (${uD})`},{h:'BEARING'}],rowsE=segList().map(([i,j])=>{const a=P[i],b=P[j];return [`${a.id}-${b.id}`,fmtLen(segLen(a,b)*f,false),fmtBrg(b.e-a.e,b.n-a.n)]});
   // natural column widths: widest header or value plus padding (the table spreads any spare width in proportion)
+  const SIP=sh.si?S.si.pts:[],useS=SIP.length>0,siZ=SIP.some(p=>p.z!=null),SITu=SIT.filter(t=>SIP.some(p=>p.t===t.k));
+  const colsS=[{h:'POINT'},{h:'TYPE'},{h:`EASTING (${uC})`},{h:`NORTHING (${uC})`},...(siZ?[{h:'LEVEL'}]:[])],rowsS=SIP.map(p=>[p.id,SITK[p.t].tab,fcd(p.e),fcd(p.n),...(siZ?[p.z!=null?fcd(p.z):'N/A']:[])]);
   const natW=(cols,rows,title)=>{cols.forEach((c,ci)=>c.w=Math.max(tw(c.h,th*.72),...rows.map(r=>tw(r[ci],th*.9)))+3*g);return Math.max(cols.reduce((t,c)=>t+c.w,0),tw(title,th*1.02)+3.2*g)};
   const wantC=natW(colsC,rowsC,'COORDINATE SCHEDULE'),wantE=natW(colsE,rowsE,'BOUNDARY SCHEDULE');
-  const wantA=AH?(()=>{const ar=fmtArea(st.A*f*f);return Math.max(tw(`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75),tw(ar[0],th*1.6)+tw(ar[1],th*.9))+5*g})():0;
-  const needC=useC?(P.length+2.3)*rh:0,needE=useE?(segList().length+2.3)*rh:0;
+  const wantA=AH?(()=>{const ar=fmtArea(st.A*f*f);return Math.max(tw(`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75),tw(ar[0],th*1.6))+5*g})():0;
+  const needC=useC?(P.length+2.3)*rh:0,needE=useE?(segList().length+2.3)*rh:0,needS=useS?(SIP.length+2.3)*rh:0;
+  const wantS=useS?natW(colsS,rowsS,'INVESTIGATION POINTS SCHEDULE'):0,LH=useS?(SITu.length+1.3)*rh*1.2:0,wantL=useS?Math.max(...SITu.map(t=>tw(t.n,th*.8)))+10*sz+3*g:0;
   let vp,panel=null;
-  if(useC||useE||AH){
-    if(land){const PW=Math.min(.38*area.w,Math.max(40*sz,(useC?wantC:0),(useE?wantE:0),wantA)+2*gap);panel={x:area.x+area.w-PW,y:area.y,w:PW,h:area.h};vp={x:area.x,y:area.y,w:area.w-PW,h:area.h};B.l('SHEET',[panel.x,area.y],[panel.x,area.y+area.h],.35)}
-    else{const PH=Math.max(.2*area.h,Math.min(.42*area.h,Math.max(needC,needE,AH)+6*sz));panel={x:area.x,y:area.y,w:area.w,h:PH};vp={x:area.x,y:area.y+PH,w:area.w,h:area.h-PH};B.l('SHEET',[area.x,area.y+PH],[area.x+area.w,area.y+PH],.35)}
+  if(useC||useE||AH||useS){
+    if(land){const PW=Math.min(.38*area.w,Math.max(40*sz,(useC?wantC:0),(useE?wantE:0),wantA,wantS,wantL)+2*gap);panel={x:area.x+area.w-PW,y:area.y,w:PW,h:area.h};vp={x:area.x,y:area.y,w:area.w-PW,h:area.h};B.l('SHEET',[panel.x,area.y],[panel.x,area.y+area.h],.35)}
+    else{const PH=Math.max(.2*area.h,Math.min(.42*area.h,Math.max(needC,needE,needS,AH+(LH?LH+gap:0))+6*sz));panel={x:area.x,y:area.y,w:area.w,h:PH};vp={x:area.x,y:area.y+PH,w:area.w,h:area.h-PH};B.l('SHEET',[area.x,area.y+PH],[area.x+area.w,area.y+PH],.35)}
   }else vp={...area};
   // scale & mapping
   const bb=bboxOf(P),gm=ly.grid!=='off'?9*sz:3*sz,aw=vp.w-2*gm,ah=vp.h-2*gm;
@@ -2094,8 +2263,18 @@ function buildLayout(){
       const L=[];if(sh.ids)L.push({s:p.id||'#'+(i+1),h:th*1.1,ly:'POINT_IDS'});if(sh.xy){L.push({s:'E '+fcd(p.e),h:th*.78,ly:'CORNER_COORDS'},{s:'N '+fcd(p.n),h:th*.78,ly:'CORNER_COORDS'})}
       const bw=Math.max(...L.map(l=>tw(l.s,l.h))),bh=L.reduce((s,l)=>s+l.h*1.45,0),r=2.2*sz+Math.abs(dx)*bw/2+Math.abs(dy)*bh/2,bx=x+dx*r,by=y+dy*r;
       let yy=by+bh/2;L.forEach(l=>{yy-=l.h*1.45;B.tx(l.ly,[bx,yy+l.h*.2],l.s,l.h,1,0)})});
-    if(sh.area&&closed){const ar=fmtArea(A*f*f);B.tx('AREA',[cp[0],cp[1]+th*.35],'AREA '+ar[0],th*1.25,1,0);B.tx('AREA',[cp[0],cp[1]-th*1.25],ar[1],th*.9,1,0)}
+    if(sh.area&&closed){const ar=fmtArea(A*f*f);B.tx('AREA',[cp[0],cp[1]],'AREA '+ar[0],th*1.25,1,2)}
   }else B.tx('TITLE',[vcx,vcy],'No boundary yet. Import coordinates first.',th*1.6,1,2);
+  // proposed building footprints: outline, optional hatch and name
+  if(sh.bld&&S.bld.list.length){const wrB={x0:cx+(vp.x-vcx)*k,x1:cx+(vp.x+vp.w-vcx)*k,y0:cy+(vp.y-vcy)*k,y1:cy+(vp.y+vp.h-vcy)*k},c0=P.length?mp(polyCentroid(P).e,polyCentroid(P).n):null;
+    S.bld.list.forEach(b=>{const en=b.pts.map(q=>[q.e,q.n]),pp=en.map(q=>mp(q[0],q[1]));
+      if(pp.every(q=>inVp(q[0],q[1]))){B.pl('BUILDING',pp,true,.5,en);if(S.bld.lab.hatch)hatchLines(pp,2.4*sz,45).forEach(([a,c])=>B.l('BUILDING_HATCH',a,c,.13));
+        if(S.bld.lab.name&&b.name){const c=polyCentroid(b.pts);let [x,y]=mp(c.e,c.n);if(c0&&sh.area&&closed&&Math.abs(y-c0[1])<th*2.4&&Math.abs(x-c0[0])<40*sz)y=c0[1]-th*2.8;B.tx('BUILDING_TEXT',[x,y],b.name.toUpperCase(),th*1.05,1,2,0,true)}}
+      else clipPL([...en,en[0]],wrB).forEach(pc=>B.pl('BUILDING',pc.map(q=>mp(q[0],q[1])),false,.5,pc))})}
+  // investigation points (boreholes, CBR, permeability): symbol and boxed label
+  if(useS){const r=1.6*sz,hl=th*.8;SIP.forEach(p=>{const [x,y]=mp(p.e,p.n);if(!inVp(x,y,r))return;const t=SITK[p.t],FL='SI_'+t.k.toUpperCase(),EL=t.edge==='#ff0000'?'SI_OUTLINE_RED':'SI_OUTLINE';
+      if(t.sh==='c'){B.di(FL,[x,y],r);B.ci(EL,[x,y],r,.2)}else{const q=siPoly(t,x,y,r,1);B.so(FL,q);B.pl(EL,q,true,.2)}
+      const w=tw(p.id,hl)+1.6*g,bx=x+r*1.15,by=y-r*1.1-hl*1.9;B.rect('SI_LABELS',bx,by,w,hl*1.9,.18);B.tx('SI_LABELS',[bx+w/2,by+hl*.95],p.id,hl,1,2,0,true)})}
   if(sh.meas)S.meas.forEach(mm=>{const Q=mm.pts.map(p=>mp(p.e,p.n));if(Q.length<2&&mm.type!=='offset')return;B.pl('MEASURE',Q,mm.type==='area'&&Q.length>2,.3);
     const v=mVals(mm),c=mm.type==='area'?mp(polyCentroid(mm.pts).e,polyCentroid(mm.pts).n):[(Q[0][0]+Q[Q.length-1][0])/2,(Q[0][1]+Q[Q.length-1][1])/2];B.tx('MEASURE',[c[0]+g,c[1]+g],`M${mm.id} ${v.main}`,th*.85,0,0)});
   // north arrow (grid north)
@@ -2118,22 +2297,26 @@ function buildLayout(){
     if(more)warn.push(['warn',`${title.charAt(0)+title.slice(1).toLowerCase()} is cut short by ${more} row${more>1?'s':''}. Use a bigger sheet, or the CSV.`]);return used};
   const coordT=box=>table(box,'COORDINATE SCHEDULE',colsC,rowsC);
   const edgeT=box=>table(box,'BOUNDARY SCHEDULE',colsE,rowsE);
-  const areaB=(x,y,w)=>{const ar=fmtArea(st.A*f*f);B.rect('TABLES',x,y,w,AH,.35);B.tx('TABLES',[x+g*1.6,y+AH-g*1.4],'SITE AREA',th*.72,0,3,0,true);const t=fitT(ar[0],th*1.9,w-4*g);B.tx('AREA',[x+g*1.6,y+AH*.36],t.s,t.h,0,0,0,true);B.tx('TABLES',[x+w-g*1.6,y+AH*.36],`${ar[1]}`,th*.9,2,0);B.tx('TABLES',[x+g*1.6,y+g*1.2],`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75,0,0)};
+  const siT=box=>table(box,'INVESTIGATION POINTS SCHEDULE',colsS,rowsS);
+  const legendB=(x,y,w)=>{const r=1.5*sz,rl=rh*1.2;B.rect('TABLES',x,y,w,LH,.35);B.tx('TABLES',[x+g*1.6,y+LH-rl*.65],'LEGEND',th*1.02,0,2,0,true);
+    SITu.forEach((t,i)=>{const yc=y+LH-rl*(i+1.75),xc=x+g*1.6+r*1.3,FL='SI_'+t.k.toUpperCase(),EL=t.edge==='#ff0000'?'SI_OUTLINE_RED':'SI_OUTLINE';
+      if(t.sh==='c'){B.di(FL,[xc,yc],r);B.ci(EL,[xc,yc],r,.2)}else{const q=siPoly(t,xc,yc,r,1);B.so(FL,q);B.pl(EL,q,true,.2)}
+      const s=fitT(t.n,th*.8,w-g*3.2-r*4);B.tx('TABLES',[xc+r*2.4,yc],s.s,s.h,0,2)})};
+  const areaB=(x,y,w)=>{const ar=fmtArea(st.A*f*f);B.rect('TABLES',x,y,w,AH,.35);B.tx('TABLES',[x+g*1.6,y+AH-g*1.4],'SITE AREA',th*.72,0,3,0,true);const t=fitT(ar[0],th*1.9,w-4*g);B.tx('AREA',[x+g*1.6,y+AH*.36],t.s,t.h,0,0,0,true);B.tx('TABLES',[x+g*1.6,y+g*1.2],`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75,0,0)};
   if(panel&&land){
-    const x=panel.x+gap,w=panel.w-2*gap;let yb=panel.y+gap;if(AH){areaB(x,yb,w);yb+=AH+gap}
-    const top=panel.y+panel.h-gap,avail=top-yb;
-    if(avail>rh*4&&(needC||needE)){let hc=needC,he=needE;if(needC+needE+gap>avail){const s2=(avail-(needC&&needE?gap:0))/(needC+needE);hc=needC*s2;he=needE*s2}
-      let yt=top;if(needC){coordT({x,y:yt-hc,w,h:hc});yt-=hc+gap}if(needE)edgeT({x,y:yt-he,w,h:he})}
-    else if(needC||needE)warn.push(['warn','No room left for the schedules on this sheet. Use a bigger sheet.']);
+    const x=panel.x+gap,w=panel.w-2*gap;let yb=panel.y+gap;if(AH){areaB(x,yb,w);yb+=AH+gap}if(LH){legendB(x,yb,w);yb+=LH+gap}
+    const top=panel.y+panel.h-gap,avail=top-yb,T=[[needC,coordT],[needE,edgeT],[needS,siT]].filter(t=>t[0]);
+    if(avail>rh*4&&T.length){const tot=T.reduce((a,t)=>a+t[0],0),gaps=gap*(T.length-1),k2=tot+gaps>avail?(avail-gaps)/tot:1;let yt=top;T.forEach(([need,fn])=>{const hh=need*k2;fn({x,y:yt-hh,w,h:hh});yt-=hh+gap})}
+    else if(T.length)warn.push(['warn','No room left for the schedules on this sheet. Use a bigger sheet.']);
   }else if(panel){
-    const aw2=AH?Math.min(70*sz,.3*panel.w):0,tw2=panel.w-aw2-gap*(AH?3:2),ty=panel.y+gap,thh=panel.h-2*gap;
-    if(useC&&useE){coordT({x:panel.x+gap,y:ty,w:tw2*.55-gap/2,h:thh});edgeT({x:panel.x+gap+tw2*.55+gap/2,y:ty,w:tw2*.45-gap/2,h:thh})}
-    else if(useC)coordT({x:panel.x+gap,y:ty,w:tw2,h:thh});else if(useE)edgeT({x:panel.x+gap,y:ty,w:tw2,h:thh});
-    if(AH)areaB(panel.x+panel.w-gap-aw2,panel.y+panel.h-gap-AH,aw2);
+    const side=AH||LH,aw2=side?Math.min(Math.max(70*sz,wantL+2*gap),.34*panel.w):0,tw2=panel.w-aw2-gap*(side?3:2),ty=panel.y+gap,thh=panel.h-2*gap;
+    const T=[[useC,wantC,coordT],[useE,wantE,edgeT],[useS,wantS,siT]].filter(t=>t[0]),tot=T.reduce((a,t)=>a+t[1],0),free=tw2-gap*(T.length-1);let xx=panel.x+gap;
+    T.forEach(([,want,fn])=>{const ww=free*want/tot;fn({x:xx,y:ty,w:ww,h:thh});xx+=ww+gap});
+    let ya=panel.y+panel.h-gap;if(AH){areaB(panel.x+panel.w-gap-aw2,ya-AH,aw2);ya-=AH+gap}if(LH)legendB(panel.x+panel.w-gap-aw2,ya-LH,aw2);
   }
   // ---------- title strip ----------
   titleStrip(B,{sx,m,F,sc,N,notes,today,paper:ly.paper,warn,keyPlan});
-  B.tx('SHEET',[m,m*.42],`Boundary Distance Solver · ${S.crs?S.crs.name+' · ':''}produced ${today}`,Math.min(1.7*sz,m*.32),0,0);
+  B.tx('SHEET',[m,m*.42],`Site Plan Solver · ${S.crs?S.crs.name+' · ':''}produced ${today}`,Math.min(1.7*sz,m*.32),0,0);
   return {W,H,N,k,cx,cy,vcx,vcy,vp,auto,items:B.it,warn,sz};
 }
 /* MSCEB A1 title strip. Template units are mm on the A1 sheet (strip 78 mm wide, 564 mm tall), scaled by sc for other sizes. */
@@ -2231,6 +2414,7 @@ function drawLayout(ctx,v,L){
     else if(it.t==='pl'){ctx.strokeStyle=col;ctx.lineWidth=Math.max(.5,it.lw*z);ctx.beginPath();it.p.forEach((p,i)=>i?ctx.lineTo(...v.w2s(...p)):ctx.moveTo(...v.w2s(...p)));if(it.c)ctx.closePath();ctx.stroke()}
     else if(it.t==='ci'){ctx.strokeStyle=col;ctx.lineWidth=Math.max(.5,it.lw*z);ctx.beginPath();ctx.arc(...v.w2s(...it.p),it.r*z,0,Math.PI*2);ctx.stroke()}
     else if(it.t==='so'){ctx.fillStyle=col;ctx.beginPath();it.p.forEach((p,i)=>i?ctx.lineTo(...v.w2s(...p)):ctx.moveTo(...v.w2s(...p)));ctx.closePath();ctx.fill()}
+    else if(it.t==='di'){ctx.fillStyle=col;ctx.beginPath();ctx.arc(...v.w2s(...it.p),it.r*z,0,Math.PI*2);ctx.fill()}
     else if(it.t==='img'){const [ix,iy]=v.w2s(it.p[0],it.p[1]+it.h);if(LOGO.ok){ctx.imageSmoothingQuality='high';ctx.drawImage(LOGO,ix,iy,it.w*z,it.h*z)}else{ctx.fillStyle='#1d3f7a';ctx.font=`700 ${it.h*z*.45}px Arial`;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('MSCEB',ix,iy+it.h*z/2)}}
     else if(it.t==='tx'){const px=it.h*z/.716;if(px<1.6)continue;const [sx,sy]=v.w2s(...it.p);ctx.save();ctx.translate(sx,sy);ctx.rotate(-it.r*Math.PI/180);ctx.fillStyle=col;ctx.font=`${it.b?'700 ':''}${px}px Arial, Helvetica, sans-serif`;ctx.textAlign=['left','center','right'][it.ha];ctx.textBaseline='alphabetic';ctx.fillText(it.s,0,{0:0,2:it.h/2,3:it.h}[it.va]*z);ctx.restore()}
   }
@@ -2281,6 +2465,7 @@ function layoutDXF(L){
     else if(it.t==='pl'){const pts=it.w||it.p.map(W);add(0,'POLYLINE',8,it.L,66,1,10,0,20,0,30,0,70,it.c?1:0);pts.forEach(p=>add(0,'VERTEX',8,it.L,10,n6(p[0]),20,n6(p[1]),30,0));add(0,'SEQEND',8,it.L)}
     else if(it.t==='ci'){const c=W(it.p);add(0,'CIRCLE',8,it.L,10,n6(c[0]),20,n6(c[1]),30,0,40,n6(it.r*k))}
     else if(it.t==='so'){const q=it.p.map(W),o=q.length===3?[q[0],q[1],q[2],q[2]]:[q[0],q[1],q[3],q[2]];add(0,'SOLID',8,it.L);o.forEach((p,i)=>add(10+i,n6(p[0]),20+i,n6(p[1]),30+i,0))}
+    else if(it.t==='di'){const c=W(it.p),r=it.r*k;add(0,'POLYLINE',8,it.L,66,1,10,0,20,0,30,0,40,n6(r),41,n6(r),70,1);[[c[0]-r/2,c[1]],[c[0]+r/2,c[1]]].forEach(q=>add(0,'VERTEX',8,it.L,10,n6(q[0]),20,n6(q[1]),30,0,40,n6(r),41,n6(r),42,1));add(0,'SEQEND',8,it.L)}
     else if(it.t==='img'&&logoVector()){const V=logoVector(),[x0,y0]=it.p,sx=it.w/V.RW,sy=it.h/V.RH;
       for(const r of V.rects){const q=[[x0+r.x0*sx,y0+it.h-r.y1*sy],[x0+r.x1*sx,y0+it.h-r.y1*sy],[x0+r.x0*sx,y0+it.h-r.y0*sy],[x0+r.x1*sx,y0+it.h-r.y0*sy]].map(W);
         add(0,'SOLID',8,'LOGO',62,V.aci[r.q]);q.forEach((p,i)=>add(10+i,n6(p[0]),20+i,n6(p[1]),30+i,0))}}
@@ -2300,6 +2485,7 @@ function layoutSVG(L){
     else if(it.t==='pl')o.push(`<${it.c?'polygon':'polyline'} points="${it.p.map(p=>X(p)+','+Y(p)).join(' ')}" stroke="${c}" stroke-width="${it.lw}"/>`);
     else if(it.t==='ci')o.push(`<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${f3(it.r)}" stroke="${c}" stroke-width="${it.lw}"/>`);
     else if(it.t==='so')o.push(`<polygon points="${it.p.map(p=>X(p)+','+Y(p)).join(' ')}" fill="${c}" stroke="none"/>`);
+    else if(it.t==='di')o.push(`<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${f3(it.r)}" fill="${c}" stroke="none"/>`);
     else if(it.t==='img'&&LOGO.data)o.push(`<image x="${f3(it.p[0])}" y="${f3(H-it.p[1]-it.h)}" width="${f3(it.w)}" height="${f3(it.h)}" preserveAspectRatio="none" href="${LOGO.data}"/>`);
     else if(it.t==='tx')o.push(`<text transform="translate(${X(it.p)} ${Y(it.p)}) rotate(${f3(-it.r)})" y="${f3({0:0,2:it.h/2,3:it.h}[it.va])}" font-family="Arial, Helvetica, sans-serif" font-size="${f3(it.h/.716)}"${it.b?' font-weight="700"':''} text-anchor="${['start','middle','end'][it.ha]}" fill="${c}" stroke="none">${esc(it.s)}</text>`);
   }
@@ -2366,7 +2552,8 @@ function surrDerived(){
   const roads=SURR.roads.map(r=>{const xy=r.g.map(g=>lp(g[0],g[1]));let d=Math.min(...xy.map(p=>dB(p[0],p[1])));for(const s of site)for(let i=1;i<xy.length;i++)d=Math.min(d,segD(s[0],s[1],xy[i-1],xy[i]));
     return {...r,xy,en:r.g.map(g=>fromLL(g[0],g[1])),d}}).sort((a,b)=>a.d-b.d);
   const bldg=(SURR.bldg||[]).map(b=>({...b,xy:b.g.map(g=>lp(g[0],g[1])),en:b.g.map(g=>fromLL(g[0],g[1]))}));
-  SD={lp,site,closed,cc,pois,roads,bldg};SDkey=key;return SD;
+  const areas=(SURR.areas||[]).filter(a=>AREA_ST[a.a]).map(a=>({...a,en:a.g.map(g=>fromLL(g[0],g[1]))}));
+  SD={lp,site,closed,cc,pois,roads,bldg,areas};SDkey=key;return SD;
 }
 const surrOn=k=>!(S.surr.off||[]).includes(k);
 function surrVisible(useQ=true){const D=surrDerived();if(!D)return [];const q=useQ?($('#sQ')?.value||'').trim().toLowerCase():'';
@@ -2379,32 +2566,35 @@ async function findNearby(){
   await proj();const st=boundaryStats(),cl=st.c&&toLL(st.c.e,st.c.n);if(!cl){toast('The site could not be converted to latitude / longitude. Check the coordinate system.',4500);return}
   const R=+S.surr.rad||1000,LL=S.pts.map(p=>toLL(p.e,p.n)).filter(Boolean);
   const f=cl[1]*Math.PI/180,siteR=Math.max(0,...LL.map(l=>Math.hypot((l[0]-cl[0])*111320*Math.cos(f),(l[1]-cl[1])*110574)));
-  const A=(r)=>`(around:${Math.round(r)},${cl[1].toFixed(7)},${cl[0].toFixed(7)})`,Rq=R+siteR;
+  // bounding boxes are much quicker for the Overpass servers than radius searches; the circle is applied afterwards
+  const A=(r)=>{const dy=r/110574,dx=r/(111320*Math.cos(f));return `(${(cl[1]-dy).toFixed(6)},${(cl[0]-dx).toFixed(6)},${(cl[1]+dy).toFixed(6)},${(cl[0]+dx).toFixed(6)})`},Rq=R+siteR;
   const sel=SCATS.flatMap(c=>c.r.map(([k,v])=>`nwr["${k}"${v?`~"^(${v})$"`:''}]${A(Rq)};`)).join('');
-  const q=`[out:json][timeout:120];(${sel});out center tags;way["highway"~"^(${ROADS})$"]${A(Math.min(Rq,2500))};out geom tags;way["building"]${A(Math.min(Rq,600))};out geom 4000;`;
+  const q=`[out:json][timeout:60];(${sel});out center tags;way["highway"~"^(${ROADS})$"]${A(Math.min(Rq,2500))};out geom tags;way["building"]${A(Math.min(Rq,600))};out geom 4000;(way["landuse"~"^(residential|commercial|retail|industrial|construction|grass|cemetery)$"]${A(Math.min(Rq,1500))};way["leisure"~"^(park|garden|pitch|playground)$"]${A(Math.min(Rq,1500))};way["natural"~"^(water|wetland|beach|sand|scrub)$"]${A(Math.min(Rq,1500))};);out geom 3000;`;
   const btn=$('#sGo');btn.disabled=true;let data=null,err='';
   try{
     for(const [i,url] of OVERPASS.entries()){
       prog(true,`Asking OpenStreetMap for facilities within ${fmtM(R)}${i?` (server ${i+1})`:''}…`,15+i*25);
-      try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),130000);const r=await fetch(url,{method:'POST',body:new URLSearchParams({data:q}),signal:ac.signal});clearTimeout(tm);
+      try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),65000);const r=await fetch(url,{method:'POST',body:new URLSearchParams({data:q}),signal:ac.signal});clearTimeout(tm);
         if(!r.ok)throw new Error('server said '+r.status);data=await r.json();break}catch(e){err=e.name==='AbortError'?'timed out':e.message}}
     if(!data)throw new Error(err||'no answer');
     prog(true,'Sorting the results…',90);
-    const pois=[],roads=[],bldg=[],seen=new Map(),r7=v=>+v.toFixed(7);
+    const pois=[],roads=[],bldg=[],areas=[],seen=new Map(),r7=v=>+v.toFixed(7);
     for(const el of data.elements||[]){const t=el.tags||{};
       if(el.geometry){const g=el.geometry.filter(p=>p&&isFinite(p.lat)).map(p=>[r7(p.lon),r7(p.lat)]);if(g.length<2)continue;
         if(t.highway&&new RegExp('^('+ROADS+')$').test(t.highway))roads.push({id:'w'+el.id,name:t['name:en']||t.name||t.ref||'',ar:t['name:ar']||'',c:t.highway,g});
-        else if(t.building)bldg.push({g,lv:t['building:levels']||''});continue}
+        else if(t.building)bldg.push({g,lv:t['building:levels']||''});
+        else{const a=areaClass(t);if(a&&g.length>3)areas.push({a,g,name:t.name||''})}continue}
       const lat=el.lat??el.center?.lat,lon=el.lon??el.center?.lon;if(!isFinite(lat)||!isFinite(lon))continue;
+      if(Math.hypot((lon-cl[0])*111320*Math.cos(f),(lat-cl[1])*110574)>Rq)continue;
       const k=catOf(t);if(!k)continue;const kind=kindOf(t),name=t['name:en']||t.name||t['name:ar']||'',id=el.type[0]+el.id;
       const dk=k+'|'+(name||kind).toLowerCase(),prev=seen.get(dk);
       if(prev&&Math.hypot((prev.lon-lon)*111320*Math.cos(f),(prev.lat-lat)*110574)<(name?60:15))continue;
       const o={id,k,kind,name:name||kind,ar:t['name:ar']&&t['name:ar']!==name?t['name:ar']:'',lat:r7(lat),lon:r7(lon),
         ph:t.phone||t['contact:phone']||'',web:t.website||t['contact:website']||'',hrs:t.opening_hours||'',addr:[t['addr:housenumber'],t['addr:street'],t['addr:city']].filter(Boolean).join(', ')};
       pois.push(o);seen.set(dk,o)}
-    SURR={at:Date.now(),ctr:[cl[0],cl[1]],rad:R,pois,roads,bldg,src:'OpenStreetMap'};saveSurr();SD=null;
+    SURR={at:Date.now(),ctr:[cl[0],cl[1]],rad:R,pois,roads,bldg,areas,src:'OpenStreetMap'};saveSurr();SD=null;
     renderSurr(true);layDirty=true;
-    toast(`Found ${pois.length} facilities, ${roads.length} road sections and ${bldg.length} buildings`,4000);
+    toast(`Found ${pois.length} facilities, ${roads.length} road sections, ${bldg.length} buildings and ${areas.length} land-use areas`,4000);
   }catch(e){$('#sMsgs').innerHTML=msgsHtml([['err',`Could not get the surroundings: ${esc(e.message)}. Check the internet connection and try again, or pick a smaller radius.`]])}
   finally{btn.disabled=false;prog(false)}
 }
@@ -2416,13 +2606,17 @@ const SM={map:null,base:{},cur:null,g:{},mk:new Map()};
 async function ensureMap(){
   if(SM.map)return SM.map;const Lf=await leafletLib();
   const m=Lf.map('sMap',{preferCanvas:true,zoomControl:true});
-  SM.base={osm:Lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}),
-    sat:Lf.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'}),
-    light:Lf.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'})};
-  ['bldg','roads','rad','site','poi'].forEach(k=>SM.g[k]=Lf.layerGroup().addTo(m));
-  SM.map=m;setBase(S.surr.base);m.setView([26.07,50.55],10);return m;
+  // keyless base maps. Esri's label layers sit in their own pane above the coloured overlay, like Google's labels.
+  const lp=m.createPane('labels');lp.style.zIndex=450;lp.style.pointerEvents='none';
+  const esri=(path,o={})=>Lf.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/${path}/MapServer/tile/{z}/{y}/{x}`,{maxZoom:20,...o}),EA='Map tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors';
+  SM.base={streets:{t:esri('World_Street_Map',{maxNativeZoom:19,attribution:EA})},
+    osm:{t:Lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,maxNativeZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'})},
+    light:{t:esri('Canvas/World_Light_Gray_Base',{maxNativeZoom:16,attribution:EA}),l:esri('Canvas/World_Light_Gray_Reference',{maxNativeZoom:16,pane:'labels'})},
+    sat:{t:esri('World_Imagery',{maxNativeZoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'}),l:esri('Reference/World_Transportation',{maxNativeZoom:19,pane:'labels'})}};
+  ['area','bldg','roads','rad','site','poi'].forEach(k=>SM.g[k]=Lf.layerGroup().addTo(m));
+  SM.map=m;setBase(S.surr.base);m.setView([26.07,50.55],10);let zl=m.getZoom();m.on('zoomend',()=>{if(Math.abs(m.getZoom()-zl)>=1){zl=m.getZoom();drawSurrMap(false)}});return m;
 }
-function setBase(b){if(!SM.base[b])b='osm';S.surr.base=b;if(SM.cur)SM.map.removeLayer(SM.cur);SM.cur=SM.base[b].addTo(SM.map);SM.cur.bringToBack();$$('#sBase button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.b===b)));save()}
+function setBase(b){if(!SM.base[b])b='streets';S.surr.base=b;if(SM.cur){SM.map.removeLayer(SM.cur.t);if(SM.cur.l)SM.map.removeLayer(SM.cur.l)}SM.cur=SM.base[b];SM.cur.t.addTo(SM.map).bringToBack();if(SM.cur.l)SM.cur.l.addTo(SM.map);if(SM.fitted)drawSurrMap(false);$$('#sBase button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.b===b)));save()}
 function poiPopup(p){const c=SCAT[p.k],D=SD;const cl=SURR.ctr;
   return `<div class="spop"><b>${esc(p.name)}</b>${p.ar?`<div dir="rtl">${esc(p.ar)}</div>`:''}<div class="spop-k"><i style="background:${c.c}"></i>${esc(p.kind)} · ${esc(c.n)}</div>
   <div>${fmtM(p.d)} from the boundary · ${dirTxt(p.brg)}</div>${p.e!=null?`<div class="spop-m">E ${fcd(p.e)} &nbsp;N ${fcd(p.n)}</div>`:''}
@@ -2434,12 +2628,16 @@ function drawSurrMap(fit){
   const D=surrDerived();
   if(D){
     Lf.circle([SURR.ctr[1],SURR.ctr[0]],{radius:SURR.rad,color:'#64748b',weight:1.2,dashArray:'6 6',fill:false,interactive:false}).addTo(SM.g.rad);
-    D.bldg.forEach(b=>Lf.polygon(b.g.map(g=>[g[1],g[0]]),{color:'#8b95a1',weight:.6,fillColor:'#b8c0ca',fillOpacity:.35,interactive:false}).addTo(SM.g.bldg));
-    D.roads.forEach(r=>{const rk=ROAD_RANK[r.c]||1;const pl=Lf.polyline(r.g.map(g=>[g[1],g[0]]),{color:rk>=4?'#e8a33c':rk>=2?'#d4b64a':'#9aa3ad',weight:rk>=4?5:rk>=2?4:2.5,opacity:.9});if(r.name)pl.bindTooltip(`${esc(r.name)} · ${human(r.c)} · ${fmtM(r.d)}`,{sticky:true});pl.addTo(SM.g.roads)});
+    D.areas.forEach(a=>{const c=AREA_ST[a.a][0];Lf.polygon(a.g.map(g=>[g[1],g[0]]),{color:shade(c,-.3),weight:.6,fillColor:c,fillOpacity:.45,interactive:!!a.name}).bindTooltip(esc(a.name||AREA_ST[a.a][1]),{sticky:true}).addTo(SM.g.area)});
+    D.bldg.forEach(b=>Lf.polygon(b.g.map(g=>[g[1],g[0]]),{color:shade(BLDG_C,-.3),weight:.6,fillColor:BLDG_C,fillOpacity:.5,interactive:false}).addTo(SM.g.bldg));
+    const rs=[...D.roads].sort((a,b)=>(ROAD_RANK[a.c]||1)-(ROAD_RANK[b.c]||1)),zw=Math.max(.45,Math.min(1.3,(m.getZoom()-11)/5));
+    const showR=S.surr.base==='sat';if(showR)rs.forEach(r=>Lf.polyline(r.g.map(g=>[g[1],g[0]]),{color:'#8d96a0',weight:(roadSt(r.c)[1]+2)*zw,opacity:.7,interactive:false}).addTo(SM.g.roads));
+    rs.forEach(r=>{const [c,w]=roadSt(r.c);const pl=Lf.polyline(r.g.map(g=>[g[1],g[0]]),{color:c,weight:Math.max(w*zw,showR?0:6),opacity:showR?.75:0});if(r.name)pl.bindTooltip(`${esc(r.name)} · ${human(r.c)} · ${fmtM(r.d)}`,{sticky:true});pl.addTo(SM.g.roads)});
     surrVisible().forEach(p=>{const mk=Lf.circleMarker([p.lat,p.lon],{radius:6.5,color:'#fff',weight:1.6,fillColor:SCAT[p.k].c,fillOpacity:.95}).bindTooltip(esc(p.name)).bindPopup(()=>poiPopup(p),{maxWidth:300});mk.addTo(SM.g.poi);SM.mk.set(p.id,mk)});
   }
+  S.bld.list.forEach(b=>{const g=b.pts.map(q=>toLL(q.e,q.n));if(g.every(Boolean))Lf.polygon(g.map(l=>[l[1],l[0]]),{color:FP_C,weight:2,fillColor:FP_C,fillOpacity:.3}).bindTooltip(esc(b.name)).addTo(SM.g.site)});
   if(sll.length){(S.closed&&sll.length>2?Lf.polygon(sll,{color:'#d0213a',weight:3,fillColor:'#d0213a',fillOpacity:.15}):Lf.polyline(sll,{color:'#d0213a',weight:3})).bindTooltip('Site boundary').addTo(SM.g.site);
-    S.pts.forEach((p,i)=>Lf.circleMarker(sll[i],{radius:4,color:'#d0213a',weight:2,fillColor:'#fff',fillOpacity:1}).bindTooltip(esc(p.id||'#'+(i+1))).addTo(SM.g.site))}
+    S.pts.forEach((p,i)=>Lf.circleMarker(sll[i],{radius:4,color:'#d0213a',weight:2,fillColor:'#fff',fillOpacity:1}).bindTooltip(esc(p.id||'#'+(i+1)),{permanent:true,direction:'top',offset:[0,-5],className:'scorner'}).addTo(SM.g.site))}
   if(fit){if(D)m.fitBounds(Lf.latLng(SURR.ctr[1],SURR.ctr[0]).toBounds(SURR.rad*2.1));else if(sll.length)m.fitBounds(Lf.latLngBounds(sll).pad(sll.length>1?.6:0),{maxZoom:18});}
 }
 function focusPoi(id){const mk=SM.mk.get(id);if(!mk||!SM.map)return;SM.map.setView(mk.getLatLng(),Math.max(SM.map.getZoom(),17));mk.openPopup();$('#sMap').scrollIntoView({behavior:'smooth',block:'center'})}
@@ -2479,40 +2677,168 @@ $('#sCats').addEventListener('click',e=>{const b=e.target.closest('[data-sc]');i
 ['#sTb','#sNear'].forEach(s=>$(s).addEventListener('click',e=>{if(e.target.closest('a'))return;const tr=e.target.closest('tr[data-id]');if(tr)focusPoi(tr.dataset.id)}));
 $('#sGmap').addEventListener('click',()=>{const c=boundaryStats().c,ll=c&&P4&&S.crs?toLL(c.e,c.n):null;if(!ll){toast('Needs points and a coordinate system');return}window.open(gmLink(ll[1],ll[0]),'_blank','noopener')});
 
+/* Map-style colours shared by the on-screen map, the colour map export and the DXF layers */
+const AREA_ST={residential:['#e9dcc0','Residential'],commercial:['#f4bfcb','Commercial'],retail:['#f4bfcb','Commercial'],industrial:['#dccbe9','Industrial'],construction:['#e2d7ad','Construction'],
+  grass:['#a8dca3','Parks & green'],park:['#a8dca3','Parks & green'],garden:['#a8dca3','Parks & green'],playground:['#a8dca3','Parks & green'],pitch:['#8fd49d','Sports pitches'],cemetery:['#bfd8b5','Cemetery'],
+  water:['#8cc4ee','Water'],wetland:['#a7d6dc','Water'],beach:['#f3e6ae','Beach & sand'],sand:['#f3e6ae','Beach & sand'],scrub:['#cfdda9','Scrub']};
+function areaClass(t){for(const k of ['natural','leisure','landuse'])if(t[k]&&AREA_ST[t[k]])return t[k];return null}
+const BLDG_C='#c49a7a',SITE_C='#d0213a';
+function roadSt(c){const r=String(c).replace('_link','');return ({motorway:['#e8743c',8,'Motorway / trunk'],trunk:['#ef8f4d',7.5,'Motorway / trunk'],primary:['#f3ad46',6.5,'Primary road'],secondary:['#f5d45e',5.5,'Secondary road'],tertiary:['#fff2a8',5,'Local road'],
+  unclassified:['#ffffff',4,'Local road'],residential:['#ffffff',4,'Local road'],living_street:['#ffffff',3.5,'Local road'],service:['#ffffff',2.6,'Service road'],pedestrian:['#eef0f3',2.6,'Service road']})[r]||['#ffffff',3,'Local road']}
+const hexRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const shade=(h,k)=>'#'+hexRgb(h).map(v=>Math.max(0,Math.min(255,Math.round(k<0?v*(1+k):v+(255-v)*k))).toString(16).padStart(2,'0')).join('');
+
+/* Colour map export: what the map shows, drawn as a map with see-through colours.
+   PNG keeps the base map (street / satellite / light) underneath; SVG is the vector overlay alone. */
+const CM_FONT="'Segoe UI', Arial, sans-serif";
+const cmCtx=document.createElement('canvas').getContext('2d');
+const cmW=(s,px,b)=>{cmCtx.font=`${b?700:500} ${px}px ${CM_FONT}`;return cmCtx.measureText(String(s)).width};
+function loadTile(url){return new Promise(res=>{const i=new Image();i.crossOrigin='anonymous';const t=setTimeout(()=>res(null),9000);i.onload=()=>{clearTimeout(t);res(i)};i.onerror=()=>{clearTimeout(t);res(null)};i.src=url})}
+async function colourMap(fmt){
+  const D=surrNeed();if(!D)return;await ensureMap();const Lf=window.L,m=SM.map;
+  const sz=m.getSize(),sc=fmt==='png'?2:1,W=Math.round(sz.x*sc),H=Math.round(sz.y*sc),z=m.getZoom(),org=m.getPixelBounds().min;
+  const P=(lat,lon)=>{const p=m.project([lat,lon],z);return [(p.x-org.x)*sc,(p.y-org.y)*sc]};
+  const G=[],boxes=[],zf=Math.max(.5,Math.min(1.5,(z-11)/5))*sc;
+  const free=(x,y,w,h)=>{const b=[x-2,y-2,x+w+2,y+h+2];if(b[0]<0||b[1]<0||b[2]>W||b[3]>H)return false;if(boxes.some(o=>b[0]<o[2]&&b[2]>o[0]&&b[1]<o[3]&&b[3]>o[1]))return false;boxes.push(b);return true};
+  // base map tiles (PNG only), and its label layer to go on top of the colours
+  const tiles=async lay=>{const out=[],mx=lay.options.maxNativeZoom??lay.options.maxZoom??19,Z=Math.min(mx,z+1),f=2**(Z-z),ts=256*sc/f,o=[org.x*f,org.y*f],sub=lay.options.subdomains||'abc';
+    const x0=Math.floor(o[0]/256),x1=Math.floor((o[0]+sz.x*f)/256),y0=Math.floor(o[1]/256),y1=Math.floor((o[1]+sz.y*f)/256),jobs=[];
+    for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){const n=2**Z;if(y<0||y>=n)continue;const xx=((x%n)+n)%n;
+      const url=Lf.Util.template(lay._url,{s:sub[Math.abs(x+y)%sub.length],x:xx,y,z:Z,r:''});jobs.push(loadTile(url).then(img=>img&&out.push({t:'img',img,x:(x*256-o[0])/f*sc,y:(y*256-o[1])/f*sc,w:ts,h:ts})))}
+    await Promise.all(jobs);return out};
+  const onTiles=fmt==='png'&&SM.cur,baseRoads=onTiles&&S.surr.base!=='sat';let lbl=[];
+  if(onTiles){prog(true,'Fetching map tiles…',10);G.push(...await tiles(SM.cur.t));if(SM.cur.l)lbl=await tiles(SM.cur.l)}
+  prog(true,'Drawing the colour map…',70);
+  const ll=g=>P(g[1],g[0]);
+  D.areas.forEach(a=>{const c=AREA_ST[a.a][0];G.push({t:'p',pts:a.g.map(ll),c:1,fill:c,fo:.45,stroke:shade(c,-.3),sw:.7*sc,so:.8})});
+  D.bldg.forEach(b=>G.push({t:'p',pts:b.g.map(ll),c:1,fill:BLDG_C,fo:.5,stroke:shade(BLDG_C,-.3),sw:.5*sc,so:.9}));
+  const rs=[...D.roads].sort((a,b)=>(ROAD_RANK[a.c]||1)-(ROAD_RANK[b.c]||1));
+  if(!baseRoads){rs.forEach(r=>{const [,w]=roadSt(r.c);G.push({t:'p',pts:r.g.map(ll),stroke:'#8d96a0',sw:(w+2)*zf,so:onTiles?.6:.85})});
+    rs.forEach(r=>{const [c,w]=roadSt(r.c);G.push({t:'p',pts:r.g.map(ll),stroke:c,sw:w*zf,so:onTiles?.7:.92})})}
+  {const [cx,cy]=P(SURR.ctr[1],SURR.ctr[0]),[ex]=P(SURR.ctr[1],SURR.ctr[0]+SURR.rad/(111320*Math.cos(SURR.ctr[1]*Math.PI/180)));G.push({t:'c',x:cx,y:cy,r:Math.abs(ex-cx),stroke:'#475569',sw:1.4*sc,so:.8,dash:[7*sc,6*sc]})}
+  // site boundary and plot corners
+  const LL=S.pts.map(p=>toLL(p.e,p.n));const sp=LL.every(Boolean)?LL.map(l=>P(l[1],l[0])):[];
+  if(sp.length){G.push({t:'p',pts:sp,c:S.closed&&sp.length>2?1:0,fill:S.closed&&sp.length>2?SITE_C:null,fo:.22,stroke:SITE_C,sw:2.6*sc});
+    const cx=sp.reduce((t,q)=>t+q[0],0)/sp.length,cy=sp.reduce((t,q)=>t+q[1],0)/sp.length,fs=12*sc;
+    sp.forEach((q,i)=>{G.push({t:'c',x:q[0],y:q[1],r:3.6*sc,fill:'#fff',fo:1,stroke:SITE_C,sw:2*sc});boxes.push([q[0]-4*sc,q[1]-4*sc,q[0]+4*sc,q[1]+4*sc])});
+    sp.forEach((q,i)=>{const id=S.pts[i].id||'#'+(i+1);let dx=q[0]-cx,dy=q[1]-cy;const dl=Math.hypot(dx,dy)||1;dx/=dl;dy/=dl;const w=cmW(id,fs,1),x=q[0]+dx*(8*sc)+(dx<-.3?-w:dx>.3?0:-w/2),y=q[1]+dy*(8*sc)-fs/2+(dy>.3?fs*.4:dy<-.3?-fs*.4:0);
+      boxes.push([x,y,x+w,y+fs]);G.push({t:'x',x,y:y+fs/2,s:id,px:fs,b:1,col:SITE_C,halo:3.2*sc})})}
+  S.bld.list.forEach(b=>{const g=b.pts.map(q=>toLL(q.e,q.n));if(g.every(Boolean))G.push({t:'p',pts:g.map(l=>P(l[1],l[0])),c:1,fill:FP_C,fo:.35,stroke:FP_C,sw:1.8*sc})});
+  // facilities
+  const vis=surrVisible();vis.forEach(p=>{const [x,y]=P(p.lat,p.lon);if(x<0||y<0||x>W||y>H)return;G.push({t:'c',x,y,r:5.5*sc,fill:SCAT[p.k].c,fo:.95,stroke:'#fff',sw:1.6*sc});boxes.push([x-6*sc,y-6*sc,x+6*sc,y+6*sc])});
+  const fs2=11*sc;vis.forEach(p=>{const [x,y]=P(p.lat,p.lon);if(x<0||y<0||x>W||y>H)return;const s=p.name.length>34?p.name.slice(0,33)+'…':p.name,w=cmW(s,fs2,0);
+    for(const [ox,al] of [[8*sc,0],[-8*sc-w,0]])if(free(x+ox,y-fs2/2,w,fs2)){G.push({t:'x',x:x+ox,y,s,px:fs2,col:'#1f2933',halo:3*sc});break}});
+  // road names along the road
+  // street names along the roads, English and Arabic (as on Google-style maps); long roads get the name twice
+  const named=new Map();D.roads.forEach(r=>{if(!r.name&&!r.ar)return;const k=r.name||r.ar,pp=r.g.map(ll);let o=named.get(k);if(!o){o={en:r.name,ar:r.ar,rk:ROAD_RANK[r.c]||1,segs:[]};named.set(k,o)}if(!o.ar&&r.ar)o.ar=r.ar;
+    for(let i=1;i<pp.length;i++)o.segs.push({a:pp[i-1],b:pp[i],L:Math.hypot(pp[i][0]-pp[i-1][0],pp[i][1]-pp[i-1][1])})});
+  const placeRoad=(s,seg,fs,col)=>{const w=cmW(s,fs,1);if(seg.L<w+10*sc)return false;const mx=(seg.a[0]+seg.b[0])/2,my=(seg.a[1]+seg.b[1])/2;if(mx<0||my<0||mx>W||my>H)return false;
+    let r=Math.atan2(seg.b[1]-seg.a[1],seg.b[0]-seg.a[0])*180/Math.PI;if(r>90)r-=180;if(r<-90)r+=180;const ex=Math.max(Math.abs(Math.cos(r*Math.PI/180))*w,fs),ey=Math.max(Math.abs(Math.sin(r*Math.PI/180))*w,fs);
+    if(!free(mx-ex/2,my-ey/2,ex,ey))return false;G.push({t:'x',x:mx,y:my,s,px:fs,b:1,col,halo:3*sc,a:'center',r});seg.used=[mx,my];return true};
+  [...named.values()].sort((a,b)=>b.rk-a.rk||Math.max(...b.segs.map(q=>q.L))-Math.max(...a.segs.map(q=>q.L))).forEach(o=>{const fs=(o.rk>=3?11:10)*sc,segs=[...o.segs].sort((a,b)=>b.L-a.L),done=[];
+    const far=sg=>done.every(d=>Math.hypot((sg.a[0]+sg.b[0])/2-d[0],(sg.a[1]+sg.b[1])/2-d[1])>260*sc);
+    if(onTiles)return;   // the base map labels its own streets
+    for(const [txt,max] of [[o.en,2],[o.ar,1]]){if(!txt)continue;let n=0;for(const sg of segs){if(n>=max)break;if(sg.used||!far(sg))continue;if(placeRoad(txt,sg,fs,'#4b5563')){done.push(sg.used);n++}}}});
+  G.push(...lbl);
+  // frame: title, legend, north arrow, scale bar, attribution
+  const pad=12*sc,tb=S.lay.tb||{},t1='SITE SURROUNDINGS',t2=tb.project||'',t3=`${S.crs?S.crs.name+' · ':''}within ${fmtM(SURR.rad)} · ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}`;
+  {const lines=[[t1,15*sc,1,'#111827'],...(t2?[[t2,12*sc,1,'#374151']]:[]),[t3,10.5*sc,0,'#4b5563']],w=Math.max(...lines.map(l=>cmW(l[0],l[1],l[2])))+2*pad,h=lines.reduce((t,l)=>t+l[1]*1.35,0)+pad*1.2;
+    G.push({t:'r',x:pad,y:pad,w,h,fill:'#ffffff',fo:.9,stroke:'#cbd2d9',sw:1*sc,rx:6*sc});let y=pad+pad*.6;lines.forEach(([s,px,b,col])=>{y+=px*.68;G.push({t:'x',x:pad*2,y,s,px,b,col});y+=px*.67})}
+  {const nx=W-pad-18*sc,ny=pad+30*sc,s=sc;G.push({t:'c',x:nx,y:ny,r:17*s,fill:'#ffffff',fo:.9,stroke:'#cbd2d9',sw:1*s});G.push({t:'p',pts:[[nx,ny-12*s],[nx+7*s,ny+9*s],[nx,ny+4*s]],c:1,fill:'#111827',fo:1});G.push({t:'p',pts:[[nx,ny-12*s],[nx-7*s,ny+9*s],[nx,ny+4*s]],c:1,fill:'#ffffff',fo:1,stroke:'#111827',sw:1*s});G.push({t:'x',x:nx,y:ny-22*s,s:'N',px:12*s,b:1,col:'#111827',a:'center',halo:3*s})}
+  const items=[['line',SITE_C,'Site boundary'],['corner',SITE_C,'Plot corners'],
+    ...SCATS.filter(c=>vis.some(p=>p.k===c.k)).map(c=>['dot',c.c,`${c.n} (${vis.filter(p=>p.k===c.k).length})`]),
+    ...[...new Set(D.areas.map(a=>AREA_ST[a.a][1]))].map(n=>['area',Object.values(AREA_ST).find(v=>v[1]===n)[0],n]),
+    ...(S.bld.list.length?[['area',FP_C,'Proposed building']]:[]),...(D.bldg.length?[['area',BLDG_C,'Buildings']]:[]),...(baseRoads?[]:[...new Set(D.roads.map(r=>roadSt(r.c)[2]))]).map(n=>['road',roadSt(({'Motorway / trunk':'motorway','Primary road':'primary','Secondary road':'secondary','Local road':'residential','Service road':'service'})[n])[0],n])];
+  {const fs=10.5*sc,rh=fs*1.6,w=Math.max(...items.map(i=>cmW(i[2],fs,0)))+40*sc,h=items.length*rh+pad*1.6+fs*1.4,x=pad,y=H-pad-h;
+    G.push({t:'r',x,y,w,h,fill:'#ffffff',fo:.9,stroke:'#cbd2d9',sw:1*sc,rx:6*sc});G.push({t:'x',x:x+pad,y:y+pad*.8+fs*.5,s:'LEGEND',px:fs,b:1,col:'#111827'});
+    items.forEach(([k,c,s],i)=>{const yy=y+pad*.8+fs*1.6+i*rh+rh/2,sx=x+pad,sx2=sx+18*sc;
+      if(k==='line')G.push({t:'p',pts:[[sx,yy-5*sc],[sx2,yy-5*sc],[sx2,yy+5*sc],[sx,yy+5*sc]],c:1,fill:c,fo:.22,stroke:c,sw:2*sc});
+      else if(k==='corner')G.push({t:'c',x:(sx+sx2)/2,y:yy,r:3.6*sc,fill:'#fff',fo:1,stroke:c,sw:2*sc});
+      else if(k==='dot')G.push({t:'c',x:(sx+sx2)/2,y:yy,r:5*sc,fill:c,fo:.95,stroke:'#fff',sw:1.4*sc});
+      else if(k==='area')G.push({t:'p',pts:[[sx,yy-5*sc],[sx2,yy-5*sc],[sx2,yy+5*sc],[sx,yy+5*sc]],c:1,fill:c,fo:.5,stroke:shade(c,-.3),sw:.8*sc});
+      else{G.push({t:'p',pts:[[sx,yy],[sx2,yy]],stroke:'#8d96a0',sw:6*sc});G.push({t:'p',pts:[[sx,yy],[sx2,yy]],stroke:c,sw:4*sc})}
+      G.push({t:'x',x:sx2+8*sc,y:yy,s,px:fs,col:'#1f2933'})})}
+  {const lat=m.getCenter().lat,mpp=40075016.686*Math.cos(lat*Math.PI/180)/(256*2**z)/sc,len=niceStep(110*sc*mpp),px=len/mpp,x1=W-pad-8*sc,x0=x1-px,y=H-pad-22*sc,hb=5*sc;
+    G.push({t:'r',x:x0-10*sc,y:y-18*sc,w:px+20*sc,h:40*sc,fill:'#ffffff',fo:.9,stroke:'#cbd2d9',sw:1*sc,rx:6*sc});
+    for(let i=0;i<4;i++)G.push({t:'r',x:x0+i*px/4,y,w:px/4,h:hb,fill:i%2?'#ffffff':'#111827',fo:1,stroke:'#111827',sw:1*sc});
+    G.push({t:'x',x:x0,y:y-8*sc,s:'0',px:10*sc,col:'#111827',a:'center'});G.push({t:'x',x:x1,y:y-8*sc,s:len>=1000?`${len/1000} km`:`${len} m`,px:10*sc,col:'#111827',a:'center'});}
+  {const at=['Map data © OpenStreetMap contributors (ODbL)',fmt==='png'&&S.surr.base==='sat'?'Imagery © Esri, Maxar, Earthstar Geographics':'',fmt==='png'&&['light','streets'].includes(S.surr.base)?'Map tiles © Esri':''].filter(Boolean).join(' · ');
+    G.push({t:'x',x:W-pad,y:H-pad*.45,s:at,px:9*sc,col:'#374151',a:'right',halo:2.5*sc})}
+  // render
+  if(fmt==='svg'){download('surroundings-map.svg',cmSVG(G,W,H),'image/svg+xml');prog(false);toast('Colour map SVG saved. It scales without losing detail.');return}
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#f2efe9';x.fillRect(0,0,W,H);cmDraw(x,G);
+  try{const blob=await new Promise((res,rej)=>{try{c.toBlob(b=>b?res(b):rej(new Error('empty')),'image/png')}catch(e){rej(e)}});download('surroundings-map.png',blob);toast('Colour map PNG saved')}
+  catch(e){const c2=document.createElement('canvas');c2.width=W;c2.height=H;const x2=c2.getContext('2d');x2.fillStyle='#f2efe9';x2.fillRect(0,0,W,H);cmDraw(x2,G.filter(g=>g.t!=='img'));
+    c2.toBlob(b=>download('surroundings-map.png',b),'image/png');toast('The base map tiles could not be copied, so the PNG has the colour overlay only.',5000)}
+  prog(false);
+}
+function cmDraw(x,G){for(const g of G){x.save();
+  if(g.t==='img')x.drawImage(g.img,g.x,g.y,g.w,g.h);
+  else if(g.t==='p'||g.t==='c'||g.t==='r'){x.beginPath();if(g.t==='p'){g.pts.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));if(g.c)x.closePath()}else if(g.t==='c')x.arc(g.x,g.y,g.r,0,Math.PI*2);else{if(x.roundRect)x.roundRect(g.x,g.y,g.w,g.h,g.rx||0);else x.rect(g.x,g.y,g.w,g.h)}
+    if(g.fill){x.globalAlpha=g.fo??1;x.fillStyle=g.fill;x.fill()}if(g.stroke){x.globalAlpha=g.so??1;x.strokeStyle=g.stroke;x.lineWidth=g.sw;x.lineJoin='round';x.lineCap='round';if(g.dash)x.setLineDash(g.dash);x.stroke()}}
+  else if(g.t==='x'){x.font=`${g.b?700:500} ${g.px}px ${CM_FONT}`;x.textAlign=g.a||'left';x.textBaseline='middle';x.translate(g.x,g.y);if(g.r)x.rotate(g.r*Math.PI/180);
+    if(g.halo){x.lineWidth=g.halo;x.strokeStyle='rgba(255,255,255,.92)';x.lineJoin='round';x.strokeText(g.s,0,0)}x.fillStyle=g.col;x.fillText(g.s,0,0)}
+  x.restore()}}
+function cmSVG(G,W,H){const f=v=>(+v).toFixed(1),o=[`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Segoe UI, Arial, sans-serif"><rect width="${W}" height="${H}" fill="#f2efe9"/>`];
+  const paint=g=>`fill="${g.fill||'none'}"${g.fill?` fill-opacity="${g.fo??1}"`:''}${g.stroke?` stroke="${g.stroke}" stroke-width="${f(g.sw)}" stroke-opacity="${g.so??1}" stroke-linejoin="round" stroke-linecap="round"${g.dash?` stroke-dasharray="${g.dash.map(f).join(' ')}"`:''}`:''}`;
+  for(const g of G){
+    if(g.t==='p')o.push(`<path d="M${g.pts.map(q=>f(q[0])+' '+f(q[1])).join('L')}${g.c?'Z':''}" ${paint(g)}/>`);
+    else if(g.t==='c')o.push(`<circle cx="${f(g.x)}" cy="${f(g.y)}" r="${f(g.r)}" ${paint(g)}/>`);
+    else if(g.t==='r')o.push(`<rect x="${f(g.x)}" y="${f(g.y)}" width="${f(g.w)}" height="${f(g.h)}" rx="${f(g.rx||0)}" ${paint(g)}/>`);
+    else if(g.t==='x'){const at=`x="${f(g.x)}" y="${f(g.y)}" font-size="${f(g.px)}" font-weight="${g.b?700:500}" text-anchor="${{center:'middle',right:'end'}[g.a]||'start'}" dominant-baseline="central"${g.r?` transform="rotate(${f(g.r)} ${f(g.x)} ${f(g.y)})"`:''}`;
+      // white halo as its own text behind the label (works in every SVG reader, unlike paint-order)
+      if(g.halo)o.push(`<text ${at} fill="#ffffff" fill-opacity=".92" stroke="#ffffff" stroke-opacity=".92" stroke-width="${f(g.halo)}" stroke-linejoin="round">${esc(g.s)}</text>`);
+      o.push(`<text ${at} fill="${g.col}">${esc(g.s)}</text>`)}}
+  o.push('</svg>');return o.join('\n')}
+
 /* Exports */
 function surrNeed(){if(!surrDerived()){toast('Load the surroundings first');return null}return SD}
 const csvQ=v=>{const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
 $('#sCsv').addEventListener('click',()=>{const D=surrNeed();if(!D)return;const v=surrVisible();
   const rows=[['Category','Name','Name (Arabic)','Type','Distance to boundary (m)','Distance from site centre (m)','Bearing from centre (true, deg)','Direction','Easting','Northing','Latitude','Longitude','Address','Phone','Google Maps','OSM id'],
+    ...S.pts.map((p,i)=>{const l=toLL(p.e,p.n);return ['Plot corner',p.id||'#'+(i+1),'','Boundary corner','0','','','',fc(p.e),fc(p.n),l?l[1].toFixed(8):'',l?l[0].toFixed(8):'','','',l?gmLink(l[1],l[0]):'','']}),
     ...v.map(p=>[SCAT[p.k].n,p.name,p.ar,p.kind,p.d.toFixed(1),p.dc.toFixed(1),p.brg.toFixed(1),COMPASS[Math.round(p.brg/22.5)%16],p.e!=null?fc(p.e):'',p.n!=null?fc(p.n):'',p.lat,p.lon,p.addr,p.ph,gmLink(p.lat,p.lon),p.id])];
   download('surroundings.csv','﻿'+rows.map(r=>r.map(csvQ).join(',')).join('\r\n'),'text/csv');toast('CSV saved')});
 $('#sGeo').addEventListener('click',()=>{const D=surrNeed();if(!D)return;const F=[];
   const LL=S.pts.map(p=>toLL(p.e,p.n));if(LL.length&&LL.every(Boolean))F.push({type:'Feature',properties:{layer:'site',name:'Site boundary'},geometry:S.closed&&LL.length>2?{type:'Polygon',coordinates:[[...LL,LL[0]]]}:{type:'LineString',coordinates:LL}});
+  S.pts.forEach((p,i)=>{if(LL[i])F.push({type:'Feature',properties:{layer:'corner',id:p.id||'#'+(i+1),easting:p.e,northing:p.n,level:p.z},geometry:{type:'Point',coordinates:LL[i]}})});
+  D.areas.forEach(a=>F.push({type:'Feature',properties:{layer:'area',class:a.a,type:AREA_ST[a.a][1],name:a.name||null,fill:AREA_ST[a.a][0]},geometry:{type:'Polygon',coordinates:[a.g]}}));
   surrVisible().forEach(p=>F.push({type:'Feature',properties:{layer:'facility',category:SCAT[p.k].n,name:p.name,name_ar:p.ar,type:p.kind,distance_m:+p.d.toFixed(1),bearing_deg:+p.brg.toFixed(1),easting:p.e,northing:p.n,osm_id:p.id},geometry:{type:'Point',coordinates:[p.lon,p.lat]}}));
   D.roads.forEach(r=>F.push({type:'Feature',properties:{layer:'road',name:r.name,name_ar:r.ar,class:r.c,distance_m:+r.d.toFixed(1)},geometry:{type:'LineString',coordinates:r.g}}));
   D.bldg.forEach(b=>F.push({type:'Feature',properties:{layer:'building',levels:b.lv||null},geometry:{type:'Polygon',coordinates:[b.g]}}));
+  S.bld.list.forEach(b=>{const g=b.pts.map(q=>toLL(q.e,q.n));if(g.every(Boolean))F.push({type:'Feature',properties:{layer:'proposed_building',name:b.name},geometry:{type:'Polygon',coordinates:[[...g,g[0]]]}})});
   download('surroundings.geojson',JSON.stringify({type:'FeatureCollection',name:'Surroundings',attribution:'© OpenStreetMap contributors, ODbL',features:F}),'application/geo+json');toast('GeoJSON saved')});
 $('#sKml').addEventListener('click',()=>{const D=surrNeed();if(!D)return;const x=s=>esc(s),kc=h=>'ff'+h.slice(5,7)+h.slice(3,5)+h.slice(1,3),c3=g=>g.map(p=>`${p[0]},${p[1]},0`).join(' ');
   const LL=S.pts.map(p=>toLL(p.e,p.n)),v=surrVisible();
   const site=LL.length&&LL.every(Boolean)?`<Placemark><name>Site boundary</name><styleUrl>#site</styleUrl>${S.closed&&LL.length>2?`<Polygon><outerBoundaryIs><LinearRing><coordinates>${c3([...LL,LL[0]])}</coordinates></LinearRing></outerBoundaryIs></Polygon>`:`<LineString><coordinates>${c3(LL)}</coordinates></LineString>`}</Placemark>`:'';
   const kml=`<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Site surroundings</name><description>Facilities, roads and buildings within ${fmtM(SURR.rad)}. Data © OpenStreetMap contributors (ODbL).</description>
-<Style id="site"><LineStyle><color>ff3a21d0</color><width>3</width></LineStyle><PolyStyle><color>403a21d0</color></PolyStyle></Style><Style id="road"><LineStyle><color>ff3ca3e8</color><width>2</width></LineStyle></Style>
+<Style id="site"><LineStyle><color>ff3a21d0</color><width>3</width></LineStyle><PolyStyle><color>403a21d0</color></PolyStyle></Style><Style id="corner"><IconStyle><color>ff3a21d0</color><scale>0.7</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_square.png</href></Icon></IconStyle><LabelStyle><color>ff3a21d0</color><scale>0.9</scale></LabelStyle></Style><Style id="road"><LineStyle><color>ff3ca3e8</color><width>2</width></LineStyle></Style>
 ${SCATS.map(c=>`<Style id="c_${c.k}"><IconStyle><color>${kc(c.c)}</color><scale>0.9</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>`).join('')}
-${site}${SCATS.filter(c=>v.some(p=>p.k===c.k)).map(c=>`<Folder><name>${x(c.n)}</name>${v.filter(p=>p.k===c.k).map(p=>`<Placemark><name>${x(p.name)}</name><description>${x(`${p.kind}${p.ar?' · '+p.ar:''} · ${fmtM(p.d)} from boundary, ${dirTxt(p.brg)}${p.e!=null?` · E ${fcd(p.e)} N ${fcd(p.n)}`:''}`)}</description><styleUrl>#c_${c.k}</styleUrl><Point><coordinates>${p.lon},${p.lat},0</coordinates></Point></Placemark>`).join('')}</Folder>`).join('')}
+${site}<Folder><name>Plot corners</name>${S.pts.map((p,i)=>LL[i]?`<Placemark><name>${x(p.id||'#'+(i+1))}</name><description>${x(`E ${fcd(p.e)} N ${fcd(p.n)}${p.z!=null?' Z '+fcd(p.z):''}`)}</description><styleUrl>#corner</styleUrl><Point><coordinates>${LL[i][0].toFixed(9)},${LL[i][1].toFixed(9)},0</coordinates></Point></Placemark>`:'').join('')}</Folder>${SCATS.filter(c=>v.some(p=>p.k===c.k)).map(c=>`<Folder><name>${x(c.n)}</name>${v.filter(p=>p.k===c.k).map(p=>`<Placemark><name>${x(p.name)}</name><description>${x(`${p.kind}${p.ar?' · '+p.ar:''} · ${fmtM(p.d)} from boundary, ${dirTxt(p.brg)}${p.e!=null?` · E ${fcd(p.e)} N ${fcd(p.n)}`:''}`)}</description><styleUrl>#c_${c.k}</styleUrl><Point><coordinates>${p.lon},${p.lat},0</coordinates></Point></Placemark>`).join('')}</Folder>`).join('')}
 <Folder><name>Roads</name>${D.roads.filter(r=>r.name).map(r=>`<Placemark><name>${x(r.name)}</name><description>${x(human(r.c))}</description><styleUrl>#road</styleUrl><LineString><coordinates>${c3(r.g)}</coordinates></LineString></Placemark>`).join('')}</Folder>
 </Document></kml>`;
   download('surroundings.kml',kml,'application/vnd.google-earth.kml+xml');toast('KML saved. Open it in Google Earth, or import it into Google My Maps.',4500)});
 $('#sDxf').addEventListener('click',()=>{const D=surrNeed();if(!D)return;if(crsMeta(S.crs.def).geo){toast('DXF needs a projected coordinate system (Easting / Northing), not latitude / longitude',4500);return}
   const n6=v=>(+v).toFixed(6),out=[],add=(...a)=>out.push(...a.map(String)),uw=1/CU[S.cu].f,h=Math.max(.8,SURR.rad/450)*uw;
-  const lay={SITE_BOUNDARY:1,SURR_RADIUS:8,SURR_ROADS:8,SURR_ROAD_NAMES:8,SURR_BUILDINGS:9};SCATS.forEach(c=>lay['SURR_'+c.k.toUpperCase()]=ACI([1,3,5].map(i=>parseInt(c.c.slice(i,i+2),16))));
+  const RC=c=>ACI(hexRgb(c)),lay={SITE_BOUNDARY:1,SITE_HATCH:1,SITE_LABEL:1,SITE_POINTS:1,SITE_POINT_IDS:1,SITE_COORDS:4,SURR_RADIUS:8,SURR_ROADS_MAJOR:RC('#e8743c'),SURR_ROADS_MAIN:RC('#e6b800'),SURR_ROADS_LOCAL:8,SURR_ROAD_NAMES:8,SURR_BUILDINGS:RC('#b07a50')};
+  const aLay=a=>'SURR_AREA_'+AREA_ST[a][1].toUpperCase().replace(/[^A-Z]+/g,'_').replace(/_+$/,'');D.areas.forEach(a=>{lay[aLay(a.a)]=RC(shade(AREA_ST[a.a][0],-.25))});
+  const rLay=c=>{const rk=ROAD_RANK[c]||1;return rk>=4?'SURR_ROADS_MAJOR':rk>=2?'SURR_ROADS_MAIN':'SURR_ROADS_LOCAL'};SCATS.forEach(c=>lay['SURR_'+c.k.toUpperCase()]=ACI([1,3,5].map(i=>parseInt(c.c.slice(i,i+2),16))));
   const poly=(L,pts,closed)=>{const p=pts.filter(Boolean);if(p.length<2)return;add(0,'POLYLINE',8,L,66,1,10,0,20,0,30,0,70,closed?1:0);p.forEach(q=>add(0,'VERTEX',8,L,10,n6(q[0]),20,n6(q[1]),30,0));add(0,'SEQEND',8,L)};
   const text=(L,p,s,hh,r=0,ha=0,va=0)=>{add(0,'TEXT',8,L,10,n6(p[0]),20,n6(p[1]),30,0,40,n6(hh),1,dxfStr(s),50,(+r).toFixed(4),7,'BDS');if(ha||va)add(72,ha,11,n6(p[0]),21,n6(p[1]),31,0,73,va)};
   // site
   if(S.pts.length>1)poly('SITE_BOUNDARY',S.pts.map(p=>[p.e,p.n]),S.closed&&S.pts.length>2);
+  if(S.closed&&S.pts.length>2){const A=Math.abs(polyArea(S.pts)),sp=Math.max(Math.sqrt(A)/24,1e-6),c=polyCentroid(S.pts);   // 45° line hatch: R12 DXF has no HATCH entity, lines work in every CAD
+    hatchLines(S.pts.map(p=>[p.e,p.n]),sp,45).forEach(([a,b])=>add(0,'LINE',8,'SITE_HATCH',10,n6(a[0]),20,n6(a[1]),30,0,11,n6(b[0]),21,n6(b[1]),31,0));
+    text('SITE_LABEL',[c.e,c.n],'PROPOSED SITE',Math.max(h,Math.sqrt(A)/14),0,1,2)}
+  {const st=boundaryStats(),c=st.c||{e:S.pts[0].e,n:S.pts[0].n},hc=Math.max(h*.6,Math.min(h,Math.sqrt(Math.abs(st.A||0))/12||h));
+    S.pts.forEach((p,i)=>{let dx=p.e-c.e,dy=p.n-c.n;const dl=Math.hypot(dx,dy)||1;dx/=dl;dy/=dl;add(0,'POINT',8,'SITE_POINTS',10,n6(p.e),20,n6(p.n),30,n6(p.z??0));add(0,'CIRCLE',8,'SITE_POINTS',10,n6(p.e),20,n6(p.n),30,0,40,n6(hc*.3));
+      const lx=p.e+dx*hc*1.1,ly=p.n+dy*hc*1.1,ha=dx>.35?0:dx<-.35?2:1;text('SITE_POINT_IDS',[lx,ly],p.id||'#'+(i+1),hc,0,ha,2);text('SITE_COORDS',[lx,ly-hc*1.15*(dy<-.35?-1:1)*(dy>.35?-1:1)],`E ${fcd(p.e)} N ${fcd(p.n)}`,hc*.45,0,ha,2)})}
+  D.areas.forEach(a=>poly(aLay(a.a),a.en,true));
   const ce=fromLL(SURR.ctr[0],SURR.ctr[1]);if(ce)add(0,'CIRCLE',8,'SURR_RADIUS',10,n6(ce[0]),20,n6(ce[1]),30,0,40,n6(SURR.rad*uw));
   D.bldg.forEach(b=>poly('SURR_BUILDINGS',b.en,true));
+  if(S.bld.list.length){lay.BUILDING_FOOTPRINT=150;S.bld.list.forEach(b=>{poly('BUILDING_FOOTPRINT',b.pts.map(q=>[q.e,q.n]),true);if(b.name){const c=polyCentroid(b.pts);text('BUILDING_FOOTPRINT',[c.e,c.n],b.name.toUpperCase(),h*.9,0,1,2)}})}
   const named=new Map();
-  D.roads.forEach(r=>{poly('SURR_ROADS',r.en,false);if(!r.name)return;let best=null;for(let i=1;i<r.en.length;i++){const a=r.en[i-1],b=r.en[i];if(!a||!b)continue;const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(!best||L>best.L)best={a,b,L}}
+  D.roads.forEach(r=>{poly(rLay(r.c),r.en,false);if(!r.name)return;let best=null;for(let i=1;i<r.en.length;i++){const a=r.en[i-1],b=r.en[i];if(!a||!b)continue;const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(!best||L>best.L)best={a,b,L}}
     if(best&&best.L>h*8){const o=named.get(r.name);if(!o||best.L>o.L)named.set(r.name,best)}});
   named.forEach((s,name)=>{let ang=Math.atan2(s.b[1]-s.a[1],s.b[0]-s.a[0])*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;text('SURR_ROAD_NAMES',[(s.a[0]+s.b[0])/2,(s.a[1]+s.b[1])/2],name,h*.9,ang,1,2)});
   surrVisible().forEach(p=>{if(p.e==null)return;const L='SURR_'+p.k.toUpperCase();add(0,'POINT',8,L,10,n6(p.e),20,n6(p.n),30,0);add(0,'CIRCLE',8,L,10,n6(p.e),20,n6(p.n),30,0,40,n6(h*.45));text(L,[p.e+h*.8,p.n],p.name,h,0,0,2);text(L,[p.e+h*.8,p.n-h*1.25],`${p.kind} · ${fmtM(p.d)}`,h*.65,0,0,2)});
@@ -2521,22 +2847,378 @@ $('#sDxf').addEventListener('click',()=>{const D=surrNeed();if(!D)return;if(crsM
   H(0,'TABLE',2,'LAYER',70,used.length+1,0,'LAYER',2,'0',70,0,62,7,6,'CONTINUOUS');used.forEach(l=>H(0,'LAYER',2,l,70,0,62,lay[l],6,'CONTINUOUS'));H(0,'ENDTAB');
   H(0,'TABLE',2,'STYLE',70,2,0,'STYLE',2,'STANDARD',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'txt',4,'',0,'STYLE',2,'BDS',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'arial.ttf',4,'',0,'ENDTAB',0,'ENDSEC',0,'SECTION',2,'ENTITIES');
   download('surroundings.dxf',[...hdr,...out,0,'ENDSEC',0,'EOF'].join('\r\n'),'application/dxf');toast(`DXF saved in ${S.crs.name}. Data © OpenStreetMap contributors.`,4500)});
+$('#sPng').addEventListener('click',()=>colourMap('png').catch(e=>{prog(false);toast('Could not make the map image: '+e.message,4500)}));
+$('#sSvg').addEventListener('click',()=>colourMap('svg').catch(e=>{prog(false);toast('Could not make the map: '+e.message,4500)}));
 $('#sToLay').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;const k=b.dataset.ls;S.lay.show[k]=!S.lay.show[k];syncShowChips();layDirty=true;save();toast(S.lay.show[k]?`${b.textContent} added to the layout sheet (B-05)`:`${b.textContent} removed from the layout sheet`)});
 function syncShowChips(){$$('[data-ls]').forEach(b=>b.setAttribute('aria-pressed',String(!!S.lay.show[b.dataset.ls])))}
 
 /* Layout sheet: surroundings in the drawing, and the key plan */
+// parallel hatch lines across a polygon (even-odd), at ang degrees from the x axis
+function hatchLines(poly,sp,ang=45){const a=ang*Math.PI/180,c=Math.cos(a),s=Math.sin(a),R=poly.map(([x,y])=>[x*c+y*s,-x*s+y*c]),ys=R.map(p=>p[1]),y0=Math.min(...ys),y1=Math.max(...ys),out=[];
+  if(!(sp>0)||(y1-y0)/sp>4000)return out;
+  for(let y=(Math.floor(y0/sp)+1)*sp;y<y1;y+=sp){const xs=[];for(let i=0;i<R.length;i++){const p=R[i],q=R[(i+1)%R.length];if((p[1]<=y)!==(q[1]<=y))xs.push(p[0]+(y-p[1])*(q[0]-p[0])/(q[1]-p[1]))}
+    xs.sort((m,n)=>m-n);for(let i=0;i+1<xs.length;i+=2)out.push([[xs[i]*c-y*s,xs[i]*s+y*c],[xs[i+1]*c-y*s,xs[i+1]*s+y*c]])}
+  return out}
 function clipPL(pts,r){const out=[];let cur=null;
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(!a||!b){cur=null;continue}const dx=b[0]-a[0],dy=b[1]-a[1],p=[-dx,dx,-dy,dy],q=[a[0]-r.x0,r.x1-a[0],a[1]-r.y0,r.y1-a[1]];let t0=0,t1=1,ok=true;
     for(let k=0;k<4;k++){if(p[k]===0){if(q[k]<0){ok=false;break}}else{const t=q[k]/p[k];if(p[k]<0){if(t>t1){ok=false;break}if(t>t0)t0=t}else{if(t<t0){ok=false;break}if(t<t1)t1=t}}}
     if(!ok){cur=null;continue}const A=[a[0]+t0*dx,a[1]+t0*dy],Bp=[a[0]+t1*dx,a[1]+t1*dy];if(cur&&t0===0)cur.push(Bp);else{cur=[A,Bp];out.push(cur)}if(t1<1)cur=null}
   return out}
 
+/* ================= Investigation points: boreholes, CBR and permeability tests ================= */
+const SIT=[
+  {k:'bh10',pre:'BH',n:'BORE HOLES 10m (BH)',tab:'BH 10m',sh:'c',fill:'#ff0000',edge:'#1b1b1b'},
+  {k:'bh20',pre:'BH',n:'BORE HOLES 20m (BH)',tab:'BH 20m',sh:'c',fill:'#5b5ea6',edge:'#ff0000'},
+  {k:'cbr',pre:'CBR',n:'CALIFORNIA BEARING RATIO (CBR)',tab:'CBR',sh:'s',fill:'#5cff5c',edge:'#1b1b1b'},
+  {k:'pt',pre:'PT',n:'PERMEABILITY TEST (PT)',tab:'PT',sh:'t',fill:'#ff8c5a',edge:'#1b1b1b'}];
+const SITK=Object.fromEntries(SIT.map(t=>[t.k,t]));
+Object.assign(LAYERS,{SI_BH10:1,SI_BH20:ACI(hexRgb('#5b5ea6')),SI_CBR:3,SI_PT:30,SI_OUTLINE:7,SI_OUTLINE_RED:1,SI_LABELS:7});
+Object.assign(LHEX,{SI_BH10:'#ff0000',SI_BH20:'#5b5ea6',SI_CBR:'#5cff5c',SI_PT:'#ff8c5a',SI_OUTLINE:'#1b1b1b',SI_OUTLINE_RED:'#ff0000'});
+const siRnd=v=>+(+v).toFixed(3);
+// polygon for the square and triangle symbols. ys = -1 on screen (y down), +1 on paper / in CAD (y up)
+function siPoly(t,x,y,r,ys){if(t.sh==='s'){const h=r*.9;return [[x-h,y-h],[x+h,y-h],[x+h,y+h],[x-h,y+h]]}const R=r*1.25;return [[x,y+ys*R],[x+R*.866,y-ys*R*.5],[x-R*.866,y-ys*R*.5]]}
+function siSvg(t,s=22){const a=`fill="${t.fill}" stroke="${t.edge}" stroke-width="1.4" stroke-linejoin="round"`;
+  return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true">${t.sh==='c'?`<circle cx="12" cy="12" r="8.5" ${a}/>`:`<polygon points="${siPoly(t,12,t.sh==='t'?13.5:12,8.5,-1).map(p=>p.join(',')).join(' ')}" ${a}/>`}</svg>`}
+function siSym(ctx,t,x,y,r){ctx.beginPath();if(t.sh==='c')ctx.arc(x,y,r,0,Math.PI*2);else{siPoly(t,x,y,r,-1).forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath()}
+  ctx.fillStyle=t.fill;ctx.fill();ctx.lineWidth=1.3;ctx.lineJoin='round';ctx.strokeStyle=t.edge;ctx.stroke()}
+function nextSiId(type){const pre=SITK[type].pre,re=new RegExp('^'+pre+'[-\\s]?(\\d+)$','i');let mx=0;S.si.pts.forEach(p=>{const m=re.exec(p.id);if(m)mx=Math.max(mx,+m[1])});return `${pre}-${mx+1}`}
+const SIH={hover:null,sel:null,mouse:null};
+function siHit(x,y){let best=null,bd=13;S.si.pts.forEach((p,i)=>{const [sx,sy]=SV.w2s(p.e,p.n),d=Math.hypot(sx-x,sy-y);if(d<bd){bd=d;best=i}});return best}
+function siLabel(ctx,x,y,lines,hl){ctx.font='700 11.5px Arial, Helvetica, sans-serif';const w=Math.max(...lines.map(s=>ctx.measureText(s).width))+8,h=lines.length*13+3;
+  ctx.fillStyle='#ffffff';ctx.fillRect(x,y,w,h);ctx.lineWidth=hl?2:1;ctx.strokeStyle=hl?C.accent:'#111111';ctx.strokeRect(x+.5,y+.5,w,h);
+  ctx.fillStyle='#111111';ctx.textAlign='left';ctx.textBaseline='middle';lines.forEach((s,i)=>{if(i===1)ctx.font='500 10.5px Arial, Helvetica, sans-serif';ctx.fillText(s,x+4,y+2+13*(i+.5))})}
+function drawSI(ctx,v){const lab=S.si.lab,R=8.5;
+  S.si.pts.forEach((p,i)=>{const t=SITK[p.t],[x,y]=v.w2s(p.e,p.n),hl=i===SIH.sel||i===SIH.hover;
+    if(i===SIH.sel){ctx.beginPath();ctx.arc(x,y,R+6,0,Math.PI*2);ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([])}
+    siSym(ctx,t,x,y,R);
+    if(lab.id||lab.xy){const lines=[];if(lab.id)lines.push(p.id);if(lab.xy)lines.push('E '+fcd(p.e),'N '+fcd(p.n));siLabel(ctx,x+R+3,y+R-5,lines,hl)}});
+  if(lab.legend){const x0=12,y0=12,rh=24;ctx.font='700 11px Arial, Helvetica, sans-serif';const w=Math.max(...SIT.map(t=>ctx.measureText(t.n).width))+62,h=SIT.length*rh+30;
+    ctx.save();ctx.globalAlpha=.94;ctx.fillStyle='#ffffff';ctx.fillRect(x0,y0,w,h);ctx.globalAlpha=1;ctx.strokeStyle='#111111';ctx.lineWidth=1;ctx.strokeRect(x0+.5,y0+.5,w,h);
+    ctx.fillStyle='#111111';ctx.textAlign='left';ctx.textBaseline='middle';ctx.font='700 12.5px Arial, Helvetica, sans-serif';ctx.fillText('LEGENDS',x0+10,y0+14);
+    SIT.forEach((t,i)=>{const yy=y0+26+rh*(i+.5);siSym(ctx,t,x0+20,yy,7.5);ctx.fillStyle='#111111';ctx.font='700 11px Arial, Helvetica, sans-serif';ctx.fillText('-',x0+37,yy);ctx.fillText(t.n,x0+50,yy)});ctx.restore()}
+}
+const SV=new Viewer($('#iWrap'),{
+  bounds(){let b=bboxOf(S.pts);if(UL&&UL.show)b=unionB(b,bboxOf(ulCorners()));return unionB(b,bboxOf(S.si.pts))},
+  draw(ctx,v){
+    drawUnderlay(ctx,v);if(!UL||!UL.show)drawGrid(ctx,v);
+    if(S.pts.length)drawBoundary(ctx,v,{dist:S.si.lab.dims,brg:false,ids:S.si.lab.corners,xy:false,area:false,fillA:UL&&UL.show?.12:.3,small:true,lw:1.7});
+    drawBld(ctx,v,{label:S.bld.lab.name});
+    drawSI(ctx,v);
+    if(S.si.mode==='place'&&SIH.mouse&&SIH.hover==null&&!v.pan){const [x,y]=SIH.mouse;ctx.save();ctx.globalAlpha=.55;siSym(ctx,SITK[S.si.type],x,y,8.5);ctx.globalAlpha=.9;siLabel(ctx,x+11.5,y+3.5,[nextSiId(S.si.type)],false);ctx.restore()}
+    if(!S.pts.length&&!S.si.pts.length&&!(UL&&UL.show))emptyMsg(ctx,v,'No site yet','Import the boundary first, or load a drawing in the Measure tab, then click to place points');
+    drawNorth(ctx,v);drawScale(ctx,v);
+  },
+  move(x,y){SIH.mouse=[x,y];SIH.hover=siHit(x,y);SV.c.style.cursor=SIH.hover!=null?'move':S.si.mode==='place'?'crosshair':'';
+    const [e,n]=SV.s2w(x,y),h=SIH.hover!=null?S.si.pts[SIH.hover]:null,ll=S.crs&&P4?toLL(h?h.e:e,h?h.n:n):null;
+    $('#iCoord').textContent=`${h?h.id+'   ':''}E ${fcd(h?h.e:e)}   N ${fcd(h?h.n:n)}  ${CU[S.cu].l}${ll?'   ·   '+fmtLLs(ll):''}`},
+  leave(){SIH.mouse=null;SIH.hover=null;$('#iCoord').textContent=''},
+  click(x,y){const h=siHit(x,y);if(h!=null){siSelect(h);return}
+    if(S.si.mode==='place'){const [e,n]=SV.s2w(x,y);addSI(S.si.type,e,n)}else siSelect(null)},
+  rclick(){siSelect(null)},
+  grab(x,y){const h=siHit(x,y);return h!=null?{i:h}:null},
+  drag(x,y,e,g){const [we,wn]=SV.s2w(x,y),p=S.si.pts[g.i];if(!p)return;p.e=siRnd(we);p.n=siRnd(wn);SIH.sel=g.i;SIH.mouse=null;$('#iCoord').textContent=`${p.id}   E ${fcd(p.e)}   N ${fcd(p.n)}  ${CU[S.cu].l}`},
+  drop(){siChanged()}
+});
+function siSelect(i){SIH.sel=i;$$('#iTb tr').forEach(tr=>tr.classList.toggle('sel',+tr.dataset.i===i));if(i!=null){const tr=$(`#iTb tr[data-i="${i}"]`);if(tr)tr.scrollIntoView({block:'nearest'})}SV.request()}
+function siChanged(){renderSI();SV.request();layDirty=true;save()}
+function addSI(type,e,n,z=null,id=''){if(!isFinite(e)||!isFinite(n))return false;S.si.pts.push({id:id||nextSiId(type),t:type,e:siRnd(e),n:siRnd(n),z:z==null||!isFinite(z)?null:+z});SIH.sel=S.si.pts.length-1;siChanged();return true}
+function renderSI(){
+  const P=S.si.pts,si=S.si;$('#cntSI').textContent=P.length;
+  $('#iTypes').innerHTML=SIT.map(t=>`<button type="button" data-st="${t.k}" aria-pressed="${si.type===t.k}">${siSvg(t)}<span>${esc(t.n)}</span><span class="scnt">${P.filter(p=>p.t===t.k).length}</span></button>`).join('');
+  $$('#iMode button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===si.mode)));
+  $$('#iShow [data-il]').forEach(b=>b.setAttribute('aria-pressed',String(!!si.lab[b.dataset.il])));
+  $('#iSize').value=si.size;$('#iId').placeholder=nextSiId(si.type);syncShowChips();
+  $('#iSub').textContent=si.mode==='place'?'Click to place the selected type. Drag a point to move it.':'Click a point to select it, drag to move it, Delete removes it.';
+  $('#iListSub').textContent=P.length?`${P.length} point${P.length>1?'s':''}: ${SIT.map(t=>[t,P.filter(p=>p.t===t.k).length]).filter(a=>a[1]).map(([t,c])=>`${c} ${t.tab}`).join(' · ')}. Coordinates in ${CU[S.cu].l}${S.crs?', '+S.crs.name:''}.`:'No points yet.';
+  const ll=S.crs&&P4;
+  $('#iHead').innerHTML=`<tr><th></th><th>ID</th><th>Type</th><th class="r">Easting</th><th class="r">Northing</th><th class="r">Level</th>${ll?'<th>Latitude</th><th>Longitude</th>':''}<th></th></tr>`;
+  $('#iTb').innerHTML=P.length?P.map((p,i)=>{const l=ll?toLL(p.e,p.n):null;return `<tr data-i="${i}"${i===SIH.sel?' class="sel"':''}><td>${siSvg(SITK[p.t],18)}</td><td><input class="fin" data-f="id" value="${esc(p.id)}" style="text-align:left;width:86px" aria-label="ID"></td>
+    <td><select class="sel" data-f="t" aria-label="Type" style="padding:5px 26px 5px 8px;font-size:12px">${SIT.map(t=>`<option value="${t.k}"${t.k===p.t?' selected':''}>${t.tab}</option>`).join('')}</select></td>
+    <td class="r"><input class="fin" data-f="e" value="${fcd(p.e)}" inputmode="decimal" aria-label="Easting"></td><td class="r"><input class="fin" data-f="n" value="${fcd(p.n)}" inputmode="decimal" aria-label="Northing"></td>
+    <td class="r"><input class="fin" data-f="z" value="${p.z!=null?fcd(p.z):''}" placeholder="N/A" inputmode="decimal" style="width:76px" aria-label="Level"></td>${ll?`<td class="m">${l?llDMS(l[1],'N','S'):'—'}</td><td class="m">${l?llDMS(l[0],'E','W'):'—'}</td>`:''}
+    <td><button class="btn sm" type="button" data-del title="Delete this point">✕</button></td></tr>`}).join(''):`<tr><td colspan="${ll?9:7}" class="empty">Pick a type on the left, then click on the plan or type the coordinates.</td></tr>`;
+  $$('#iExp button,#iClear').forEach(b=>b.disabled=!P.length);
+}
+$('#iTypes').addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(!b)return;S.si.type=b.dataset.st;S.si.mode='place';renderSI();SV.request();save()});
+$('#iMode').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;S.si.mode=b.dataset.m;renderSI();SV.request();save()});
+$('#iShow').addEventListener('click',e=>{const b=e.target.closest('[data-il]');if(!b)return;S.si.lab[b.dataset.il]=!S.si.lab[b.dataset.il];renderSI();SV.request();save()});
+$('#iSize').addEventListener('change',e=>{S.si.size=e.target.value;layDirty=true;save()});
+$('#iFit').addEventListener('click',()=>SV.fitAll());
+function siAddTyped(){const e=parseNum($('#iE').value),n=parseNum($('#iN').value),zt=$('#iZ').value.trim(),z=zt?parseNum(zt):null;
+  $('#iE').classList.toggle('bad',!isFinite(e));$('#iN').classList.toggle('bad',!isFinite(n));$('#iZ').classList.toggle('bad',zt!==''&&!isFinite(z));
+  if(!isFinite(e)||!isFinite(n)||(zt&&!isFinite(z))){toast('Type a valid Easting and Northing');return}
+  const id=$('#iId').value.trim();if(id&&S.si.pts.some(p=>p.id.toLowerCase()===id.toLowerCase())){toast(`${id} is already used. Pick another ID.`,3500);return}
+  addSI(S.si.type,e,n,z,id);['#iId','#iE','#iN','#iZ'].forEach(s=>$(s).value='');const [x,y]=SV.w2s(e,n);if(x<20||y<20||x>SV.W-20||y>SV.H-20)SV.fitAll();$('#iE').focus();toast(`${S.si.pts[S.si.pts.length-1].id} added`)}
+$('#iAdd').addEventListener('click',siAddTyped);
+['#iId','#iE','#iN','#iZ'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();siAddTyped()}}));
+$('#iPasteGo').addEventListener('click',()=>{const rows=textToRows($('#iPaste').value);let k=0;
+  rows.forEach(r=>{let lab=String(r[0]||'').trim(),nums=r.slice(1).map(parseNum);if(!lab&&nums.length>=3&&Number.isInteger(nums[0])&&Math.abs(nums[0])<1e5){lab=String(nums[0]);nums=nums.slice(1)}
+    if(nums.length<2||!isFinite(nums[0])||!isFinite(nums[1]))return;const cur=S.si.type;
+    const t=/^cbr/i.test(lab)?'cbr':/^pt/i.test(lab)?'pt':/^bh/i.test(lab)?(SITK[cur].pre==='BH'?cur:'bh10'):cur;
+    const id=lab&&!S.si.pts.some(p=>p.id.toLowerCase()===lab.toLowerCase())?(/^\d+$/.test(lab)?`${SITK[t].pre}-${lab}`:lab):'';
+    S.si.pts.push({id:id||nextSiId(t),t,e:siRnd(nums[0]),n:siRnd(nums[1]),z:isFinite(nums[2])?nums[2]:null});k++});
+  if(!k){toast('No rows with an Easting and a Northing were found',3500);return}$('#iPaste').value='';SIH.sel=null;siChanged();SV.fitAll();toast(`${k} point${k>1?'s':''} added`)});
+$('#iTb').addEventListener('change',e=>{const el=e.target.closest('[data-f]'),tr=e.target.closest('tr[data-i]');if(!el||!tr)return;const p=S.si.pts[+tr.dataset.i],f=el.dataset.f;if(!p)return;
+  if(f==='id'){const v=el.value.trim();if(!v||S.si.pts.some(q=>q!==p&&q.id.toLowerCase()===v.toLowerCase())){toast(v?`${v} is already used`:'An ID is needed');el.value=p.id;return}p.id=v}
+  else if(f==='t')p.t=el.value;
+  else if(f==='z'){const s=el.value.trim();if(!s)p.z=null;else{const v=parseNum(s);if(!isFinite(v)){el.classList.add('bad');return}p.z=v}}
+  else{const v=parseNum(el.value);if(!isFinite(v)){el.classList.add('bad');return}p[f]=siRnd(v)}
+  siChanged()});
+$('#iTb').addEventListener('click',e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;const i=+tr.dataset.i;
+  if(e.target.closest('[data-del]')){S.si.pts.splice(i,1);SIH.sel=null;SIH.hover=null;siChanged();return}
+  if(SIH.sel!==i){SIH.sel=i;$$('#iTb tr').forEach(r=>r.classList.toggle('sel',r===tr));SV.request()}});
+$('#iClear').addEventListener('click',()=>{if(!S.si.pts.length||!confirm(`Remove all ${S.si.pts.length} investigation points?`))return;S.si.pts=[];SIH.sel=null;siChanged()});
+document.addEventListener('keydown',e=>{if(S.tab!=='si'||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  if((e.key==='Delete'||e.key==='Backspace')&&SIH.sel!=null&&S.si.pts[SIH.sel]){e.preventDefault();S.si.pts.splice(SIH.sel,1);SIH.sel=null;SIH.hover=null;siChanged()}
+  else if(e.key==='Escape'){siSelect(null)}});
+$('#iToLay').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;const k=b.dataset.ls;S.lay.show[k]=!S.lay.show[k];syncShowChips();layDirty=true;save();toast(S.lay.show[k]?'Investigation points, legend and schedule added to the layout sheet (B-05)':'Investigation points removed from the layout sheet',4000)});
+
+/* Exports */
+$('#iCsv').addEventListener('click',()=>{const P=S.si.pts;if(!P.length)return;const ll=S.crs&&P4;
+  const rows=[['ID','Type','Easting','Northing','Level',...(ll?['Latitude','Longitude']:[])],...P.map(p=>{const l=ll?toLL(p.e,p.n):null;return [p.id,SITK[p.t].n,fc(p.e),fc(p.n),p.z!=null?fc(p.z):'N/A',...(ll?[l?l[1].toFixed(8):'',l?l[0].toFixed(8):'']:[])]})];
+  download('investigation-points.csv','﻿'+rows.map(r=>r.map(csvQ).join(',')).join('\r\n'),'text/csv');toast('CSV saved')});
+$('#iPng').addEventListener('click',()=>{SIH.mouse=null;SIH.hover=null;const s=SIH.sel;SIH.sel=null;SV.render();
+  const c=document.createElement('canvas');c.width=SV.c.width;c.height=SV.c.height;const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,c.width,c.height);x.drawImage(SV.c,0,0);SIH.sel=s;SV.request();
+  c.toBlob(b=>{download('investigation-plan.png',b);toast('PNG of the plan saved')},'image/png')});
+// Symbols, labels, legend and schedule at true coordinates. Filled circles are wide-polyline "donuts", which every CAD reads.
+function siDXF(){
+  const P=S.si.pts,n6=v=>(+v).toFixed(6),out=[],add=(...a)=>out.push(...a.map(String)),lay={};
+  const bb=bboxOf([...S.pts,...P]),ext=Math.max(bb.maxE-bb.minE,bb.maxN-bb.minN)||50,r=ext/95*({s:.7,m:1,l:1.45}[S.si.size]||1),h=r*.95,g=h*.55;
+  const LY=(n,c)=>{lay[n]=c;return n},aci=c=>c==='#1b1b1b'?7:c==='#ff0000'?1:ACI(hexRgb(c));
+  const poly=(L,pts,closed,col)=>{add(0,'POLYLINE',8,L);if(col)add(62,col);add(66,1,10,0,20,0,30,0,70,closed?1:0);pts.forEach(q=>add(0,'VERTEX',8,L,10,n6(q[0]),20,n6(q[1]),30,0));add(0,'SEQEND',8,L)};
+  const line=(L,a,b)=>add(0,'LINE',8,L,10,n6(a[0]),20,n6(a[1]),30,0,11,n6(b[0]),21,n6(b[1]),31,0);
+  const rect=(L,x,y,w,hh)=>poly(L,[[x,y],[x+w,y],[x+w,y+hh],[x,y+hh]],true);
+  const text=(L,p,s,hh,ha=0,va=0,b=false)=>{add(0,'TEXT',8,L,10,n6(p[0]),20,n6(p[1]),30,0,40,n6(hh),1,dxfStr(s),50,'0.0000',7,b?'BDSB':'BDS');if(ha||va)add(72,ha,11,n6(p[0]),21,n6(p[1]),31,0,73,va)};
+  const sym=(t,x,y,rr)=>{const L=LY('SI_'+t.k.toUpperCase(),aci(t.fill)),ec=aci(t.edge);
+    if(t.sh==='c'){add(0,'POLYLINE',8,L,66,1,10,0,20,0,30,0,40,n6(rr),41,n6(rr),70,1);[[x-rr/2,y],[x+rr/2,y]].forEach(q=>add(0,'VERTEX',8,L,10,n6(q[0]),20,n6(q[1]),30,0,40,n6(rr),41,n6(rr),42,1));add(0,'SEQEND',8,L);
+      add(0,'CIRCLE',8,LY('SI_OUTLINE',7),62,ec,10,n6(x),20,n6(y),30,0,40,n6(rr))}
+    else{const q=siPoly(t,x,y,rr,1),o=q.length===3?[q[0],q[1],q[2],q[2]]:[q[0],q[1],q[3],q[2]];add(0,'SOLID',8,L);o.forEach((p,i)=>add(10+i,n6(p[0]),20+i,n6(p[1]),30+i,0));poly(LY('SI_OUTLINE',7),q,true,ec)}};
+  S.bld.list.forEach(b=>{poly(LY('BUILDING',150),b.pts.map(q=>[q.e,q.n]),true);if(b.name){const c=polyCentroid(b.pts);text(LY('BUILDING_TEXT',150),[c.e,c.n],b.name.toUpperCase(),h*.9,1,2,true)}});
+  if(S.pts.length>1){poly(LY('SITE_BOUNDARY',1),S.pts.map(p=>[p.e,p.n]),S.closed&&S.pts.length>2);
+    const c=polyCentroid(S.pts);S.pts.forEach((p,i)=>{let dx=p.e-c.e,dy=p.n-c.n;const dl=Math.hypot(dx,dy)||1;text(LY('SITE_POINT_IDS',1),[p.e+dx/dl*h*1.2,p.n+dy/dl*h*1.2],p.id||'#'+(i+1),h*.8,1,2)})}
+  P.forEach(p=>{const t=SITK[p.t];sym(t,p.e,p.n,r);add(0,'POINT',8,LY('SI_POINTS',8),10,n6(p.e),20,n6(p.n),30,n6(p.z??0));
+    const w=tw(p.id,h)+2*g,bx=p.e+r*1.15,by=p.n-r*1.1-h*1.9;rect(LY('SI_LABEL_BOX',7),bx,by,w,h*1.9);text(LY('SI_LABELS',7),[bx+w/2,by+h*.95],p.id,h,1,2,true);
+    if(S.si.lab.xy){text(LY('SI_COORDS',4),[bx,by-h*.9],`E ${fcd(p.e)}`,h*.6,0,2);text('SI_COORDS',[bx,by-h*1.9],`N ${fcd(p.n)}`,h*.6,0,2)}});
+  // legend and schedule, to the right of the plan
+  const X0=bb.maxE+ext*.08;let top=bb.maxN;const LG=LY('SI_LEGEND',7),rowL=r*3.4,wL=r*6.5+Math.max(...SIT.map(t=>tw(t.n,h)))+g*2;
+  text(LG,[X0,top-h*1.3],'LEGENDS',h*1.3,0,0,true);top-=h*1.3+g*1.6;rect(LG,X0,top-rowL*SIT.length-g,wL,rowL*SIT.length+g);
+  SIT.forEach((t,i)=>{const yc=top-g*.5-rowL*(i+.5);sym(t,X0+r*2.2,yc,r);text(LG,[X0+r*4.4,yc],'-',h,0,2,true);text(LG,[X0+r*6,yc],t.n,h,0,2,true)});top-=rowL*SIT.length+g+h*2.5;
+  const TB=LY('SI_TABLE',7),anyZ=P.some(p=>p.z!=null),cols=['POINT','TYPE',`EASTING (${CU[S.cu].l})`,`NORTHING (${CU[S.cu].l})`,...(anyZ?['LEVEL']:[])],rows=P.map(p=>[p.id,SITK[p.t].tab,fcd(p.e),fcd(p.n),...(anyZ?[p.z!=null?fcd(p.z):'N/A']:[])]);
+  const cw=cols.map((c,ci)=>Math.max(tw(c,h*.8),...rows.map(q=>tw(q[ci],h)))+2.4*g),tW=cw.reduce((a,b)=>a+b,0),rh=h*2.1,xs=[X0];cw.forEach(w=>xs.push(xs[xs.length-1]+w));
+  text(TB,[X0,top],'INVESTIGATION POINTS SCHEDULE',h*1.3,0,0,true);top-=g*1.6;rect(TB,X0,top-rh*(rows.length+1),tW,rh*(rows.length+1));
+  for(let c=1;c<cols.length;c++)line(TB,[xs[c],top],[xs[c],top-rh*(rows.length+1)]);
+  cols.forEach((c,ci)=>text(TB,[xs[ci]+g*1.2,top-rh/2],c,h*.8,0,2,true));
+  rows.forEach((q,ri)=>{const y=top-rh*(ri+1);line(TB,[X0,y],[X0+tW,y]);q.forEach((v,ci)=>text(TB,[xs[ci]+g*1.2,y-rh/2],v,h,0,2))});
+  const used=Object.keys(lay),hd=[],H=(...a)=>hd.push(...a.map(String));
+  H(0,'SECTION',2,'HEADER',9,'$ACADVER',1,'AC1009',9,'$INSUNITS',70,{m:6,mm:4,ft:2,usft:2}[S.cu],9,'$PDMODE',70,0,0,'ENDSEC',0,'SECTION',2,'TABLES',0,'TABLE',2,'LTYPE',70,1,0,'LTYPE',2,'CONTINUOUS',70,0,3,'Solid line',72,65,73,0,40,'0.0',0,'ENDTAB');
+  H(0,'TABLE',2,'LAYER',70,used.length+1,0,'LAYER',2,'0',70,0,62,7,6,'CONTINUOUS');used.forEach(l=>H(0,'LAYER',2,l,70,0,62,lay[l],6,'CONTINUOUS'));H(0,'ENDTAB');
+  H(0,'TABLE',2,'STYLE',70,3,0,'STYLE',2,'STANDARD',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'txt',4,'',0,'STYLE',2,'BDS',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'arial.ttf',4,'',0,'STYLE',2,'BDSB',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'arialbd.ttf',4,'',0,'ENDTAB',0,'ENDSEC',0,'SECTION',2,'ENTITIES');
+  return [...hd,...out,0,'ENDSEC',0,'EOF'].join('\r\n');
+}
+$('#iDxf').addEventListener('click',()=>{if(!S.si.pts.length)return;download('investigation-points.dxf',siDXF(),'application/dxf');toast('DXF saved at true coordinates, with the legend and schedule beside the plan',4200)});
+
+/* ================= Building footprints ================= */
+const FP_C='#1d6fd8';
+Object.assign(LAYERS,{BUILDING:150,BUILDING_HATCH:151,BUILDING_TEXT:150});Object.assign(LHEX,{BUILDING:'#1d6fd8',BUILDING_HATCH:'#8fb6ea',BUILDING_TEXT:'#1d6fd8'});
+const FH={sel:null,mouse:null,trace:null,vtx:null,snap:null};
+function bldStats(b){const f=fac();let per=0;b.pts.forEach((p,i)=>per+=segLen(p,b.pts[(i+1)%b.pts.length]));return {A:Math.abs(polyArea(b.pts))*f*f,per:per*f}}
+function ptInPoly(pts,e,n){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const a=pts[i],b=pts[j];if((a.n>n)!==(b.n>n)&&e<(b.e-a.e)*(n-a.n)/(b.n-a.n)+a.e)c=!c}return c}
+// footprints on any plan view
+function drawBld(ctx,v,o={}){
+  S.bld.list.forEach((b,i)=>{const n=b.pts.length;if(n<2)return;const sp=b.pts.map(p=>v.w2s(p.e,p.n)),sel=o.sel===i;
+    ctx.save();ctx.beginPath();sp.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.globalAlpha=sel?.32:.18;ctx.fillStyle=FP_C;ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=sel?2.8:1.8;ctx.lineJoin='round';ctx.strokeStyle=FP_C;ctx.stroke();
+    if(o.dims){const font=`600 10.5px ${MONO}`;b.pts.forEach((p,k)=>{const q=b.pts[(k+1)%n],[x1,y1]=sp[k],[x2,y2]=sp[(k+1)%n],sl=Math.hypot(x2-x1,y2-y1),t=fmtLen(segLen(p,q)*fac(),false),s=pillSize(ctx,[t],font,4,13);if(sl<s.w+12)return;
+      pill(ctx,(x1+x2)/2,(y1+y2)/2,[t],{rot:upright(Math.atan2(y2-y1,x2-x1)),font,lh:13,pad:4,fg:FP_C,bd:FP_C})})}
+    if(o.label!==false&&b.name&&n>2){const c=polyCentroid(b.pts),[cx,cy]=v.w2s(c.e,c.n);ctx.font=`700 12.5px ${DISP}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.85)';ctx.strokeText(b.name,cx,cy);ctx.fillStyle=FP_C;ctx.fillText(b.name,cx,cy)}
+    if(sel&&o.handles)sp.forEach(([x,y],k)=>{ctx.fillStyle=k===FH.vtx?C.accent:'#ffffff';ctx.strokeStyle=FP_C;ctx.lineWidth=1.6;ctx.fillRect(x-4,y-4,8,8);ctx.strokeRect(x-4,y-4,8,8)});
+    ctx.restore()})}
+function fSnap(x,y,skip){let best=null,bd=10;const test=(e,n,label)=>{const [sx,sy]=FV.w2s(e,n),d=Math.hypot(sx-x,sy-y);if(d<bd){bd=d;best={e,n,label}}};
+  S.pts.forEach(p=>test(p.e,p.n,p.id));S.bld.list.forEach((b,i)=>b.pts.forEach((p,k)=>{if(skip&&skip.i===i&&skip.vtx===k)return;test(p.e,p.n,b.name)}));
+  if(FH.trace&&FH.trace.length>2)test(FH.trace[0].e,FH.trace[0].n,'close');return best}
+function fPoint(x,y,shift){const sn=fSnap(x,y);if(sn)return {e:sn.e,n:sn.n,label:sn.label};let [e,n]=FV.s2w(x,y);const T=FH.trace,last=T&&T[T.length-1];if(last&&shift){if(Math.abs(e-last.e)>=Math.abs(n-last.n))n=last.n;else e=last.e}return {e:siRnd(e),n:siRnd(n)}}
+function fHit(x,y){const [e,n]=FV.s2w(x,y),L=S.bld.list;for(let i=L.length-1;i>=0;i--){const b=L[i];if(b.pts.length>2&&ptInPoly(b.pts,e,n))return i;
+    for(let k=0;k<b.pts.length;k++){const p=b.pts[k],q=b.pts[(k+1)%b.pts.length];if(distPtSeg(x,y,FV.w2s(p.e,p.n),FV.w2s(q.e,q.n))<6)return i}}return null}
+const FV=new Viewer($('#fWrap'),{
+  bounds(){let b=bboxOf(S.pts);if(UL&&UL.show)b=unionB(b,bboxOf(ulCorners()));S.bld.list.forEach(x=>b=unionB(b,bboxOf(x.pts)));return b},
+  draw(ctx,v){
+    drawUnderlay(ctx,v);if(!UL||!UL.show)drawGrid(ctx,v);
+    if(S.pts.length)drawBoundary(ctx,v,{dist:false,brg:false,ids:true,xy:false,area:false,fillA:UL&&UL.show?.1:.28,small:true,lw:1.7});
+    drawBld(ctx,v,{sel:FH.sel,label:S.bld.lab.name,dims:S.bld.lab.dims,handles:S.bld.mode==='select'});
+    const T=FH.trace;if(T&&T.length){const m=FH.mouse&&!v.pan?fPoint(FH.mouse[0],FH.mouse[1],FH.shift):null,Q=m?[...T,m]:T,sp=Q.map(p=>v.w2s(p.e,p.n));
+      ctx.save();ctx.beginPath();sp.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));if(Q.length>2){ctx.globalAlpha=.14;ctx.fillStyle=FP_C;ctx.fill();ctx.globalAlpha=1}ctx.setLineDash([6,4]);ctx.lineWidth=2;ctx.strokeStyle=FP_C;ctx.stroke();ctx.setLineDash([]);
+      sp.slice(0,T.length).forEach(([x,y],k)=>{ctx.beginPath();ctx.arc(x,y,k?3.5:6,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=FP_C;ctx.stroke()});
+      if(m&&T.length){const a=T[T.length-1],[x1,y1]=v.w2s(a.e,a.n),[x2,y2]=v.w2s(m.e,m.n);pill(ctx,(x1+x2)/2,(y1+y2)/2-12,[fmtLen(segLen(a,m)*fac())],{font:`600 11px ${MONO}`,fg:FP_C,bd:FP_C})}ctx.restore()}
+    if(FH.snap&&(S.bld.mode==='trace'||FH.vtx!=null)){const [x,y]=v.w2s(FH.snap.e,FH.snap.n);ctx.save();ctx.strokeStyle=C.target;ctx.lineWidth=2;ctx.strokeRect(x-6,y-6,12,12);ctx.restore()}
+    if(!S.pts.length&&!S.bld.list.length&&!T&&!(UL&&UL.show))emptyMsg(ctx,v,'No footprint yet','Load a DXF, trace over a drawing, or paste the corner coordinates');
+    drawNorth(ctx,v);drawScale(ctx,v);
+  },
+  move(x,y,e){FH.mouse=[x,y];FH.shift=e.shiftKey;FH.snap=fSnap(x,y);const tr=S.bld.mode==='trace',h=tr?null:fHit(x,y);FV.c.style.cursor=tr?'crosshair':h!=null?'move':'';
+    const p=tr?fPoint(x,y,e.shiftKey):null,[we,wn]=p?[p.e,p.n]:FV.s2w(x,y);$('#fCoord').textContent=`E ${fcd(we)}   N ${fcd(wn)}  ${CU[S.cu].l}${tr&&FH.snap?'  · snap '+(FH.snap.label||''):''}`},
+  leave(){FH.mouse=null;FH.snap=null;$('#fCoord').textContent=''},
+  click(x,y,e){
+    if(S.bld.mode==='trace'){const T=FH.trace||(FH.trace=[]);if(T.length>2){const [fx,fy]=FV.w2s(T[0].e,T[0].n);if(Math.hypot(fx-x,fy-y)<10){finishTrace();return}}T.push(fPoint(x,y,e.shiftKey));renderBldHint()}
+    else fSelect(fHit(x,y))},
+  dbl(){if(FH.trace){const T=FH.trace;while(T.length>1&&segLen(T[T.length-1],T[T.length-2])<1e-9)T.pop();finishTrace()}else FV.fitAll()},
+  rclick(){if(FH.trace){FH.trace.pop();if(!FH.trace.length)FH.trace=null;renderBldHint()}else fSelect(null)},
+  grab(x,y){if(S.bld.mode!=='select')return null;const b=S.bld.list[FH.sel];
+    if(b){const k=b.pts.findIndex(p=>{const [sx,sy]=FV.w2s(p.e,p.n);return Math.hypot(sx-x,sy-y)<9});if(k>=0)return {i:FH.sel,vtx:k}}
+    const h=fHit(x,y);if(h==null)return null;const [e,n]=FV.s2w(x,y);return {i:h,e,n,orig:S.bld.list[h].pts.map(p=>({...p}))}},
+  drag(x,y,ev,g){const b=S.bld.list[g.i];if(!b)return;
+    if(g.vtx!=null){const sn=fSnap(x,y,g);FH.snap=sn;const [e,n]=sn?[sn.e,sn.n]:FV.s2w(x,y);b.pts[g.vtx]={e:siRnd(e),n:siRnd(n)};FH.vtx=g.vtx;$('#fCoord').textContent=`Corner ${g.vtx+1}   E ${fcd(b.pts[g.vtx].e)}   N ${fcd(b.pts[g.vtx].n)}${sn?'  · snap '+(sn.label||''):''}`}
+    else{const [e,n]=FV.s2w(x,y),dx=e-g.e,dy=n-g.n;b.pts=g.orig.map(p=>({e:siRnd(p.e+dx),n:siRnd(p.n+dy)}));FH.sel=g.i;$('#fCoord').textContent=`Moved  ΔE ${fcd(dx)}   ΔN ${fcd(dy)}`}},
+  drop(){FH.vtx=null;FH.snap=null;bldChanged()}
+});
+function fSelect(i){FH.sel=i;renderBld();FV.request()}
+function bldChanged(){renderBld();FV.request();BV.request();MV.request();layDirty=true;save()}
+function addBld(pts,name){const P=pts.map(p=>({e:siRnd(p.e),n:siRnd(p.n)})).filter((p,i,a)=>!i||segLen(p,a[i-1])>1e-9);if(P.length>3&&segLen(P[0],P[P.length-1])<1e-9)P.pop();if(P.length<3)return null;
+  const b={id:S.bld.seq++,name:name||`BUILDING ${S.bld.list.length+1}`,pts:P};S.bld.list.push(b);return b}
+function finishTrace(){const T=FH.trace;if(!T||T.length<3){toast('A footprint needs at least three corners');return}FH.trace=null;const b=addBld(T);if(!b){toast('Those corners do not make a shape');return}S.bld.mode='select';FH.sel=S.bld.list.length-1;bldChanged();toast(`${b.name} added: ${fmtArea(bldStats(b).A)[0]}`)}
+function renderBldHint(){const T=FH.trace;$('#fSub').textContent=S.bld.mode==='trace'?(T&&T.length?`${T.length} corner${T.length>1?'s':''}. Click the next corner. Double-click, Enter or click the first corner to finish. Right-click undoes.`:'Click each corner in turn. Snaps to plot and building corners. Hold Shift for square lines.'):'Click a footprint to select it. Drag it to move, or drag a corner to adjust.'}
+function renderBld(){
+  const L=S.bld.list,bo=S.bld;if(FH.sel!=null&&!L[FH.sel])FH.sel=null;$('#cntBld').textContent=L.length;
+  $$('#fMode button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===bo.mode)));$$('#fShow [data-fl]').forEach(b=>b.setAttribute('aria-pressed',String(!!bo.lab[b.dataset.fl])));syncShowChips();renderBldHint();
+  $('#fList').innerHTML=L.length?L.map((b,i)=>{const st=bldStats(b);return `<div class="frow${i===FH.sel?' sel':''}" data-i="${i}"><input class="fin" data-f="name" value="${esc(b.name)}" aria-label="Name"><span class="fmeta">${b.pts.length} corners · ${fmtArea(st.A)[0]} · ${fmtLen(st.per)}</span><button class="btn sm" type="button" data-del title="Delete this footprint">✕</button></div>`}).join(''):'<div class="empty">No footprints yet.</div>';
+  const b=L[FH.sel];$('#fSelBox').hidden=!b;$('#fCsv').disabled=!L.length;$('#fClear').disabled=!L.length;
+  $('#fTbSub').textContent=b?`${b.name}: ${b.pts.length} corners, area ${fmtArea(bldStats(b).A)[0]}, perimeter ${fmtLen(bldStats(b).per)}.`:L.length?'Select a footprint to see its corners.':'No footprint yet.';
+  $('#fTb').innerHTML=b?b.pts.map((p,k)=>`<tr data-k="${k}"><td class="ix">${k+1}</td><td class="r"><input class="fin" data-f="e" value="${fcd(p.e)}" inputmode="decimal" aria-label="Easting"></td><td class="r"><input class="fin" data-f="n" value="${fcd(p.n)}" inputmode="decimal" aria-label="Northing"></td><td class="r m">${fmtLen(segLen(p,b.pts[(k+1)%b.pts.length])*fac(),false)}</td><td class="m">${fmtBrg(b.pts[(k+1)%b.pts.length].e-p.e,b.pts[(k+1)%b.pts.length].n-p.n)}</td><td><button class="btn sm" type="button" data-delv title="Remove this corner">✕</button></td></tr>`).join(''):`<tr><td colspan="6" class="empty">${L.length?'Click a footprint on the plan or in the list.':'Load a DXF, trace on the plan, or paste corner coordinates.'}</td></tr>`;
+}
+$('#fMode').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;S.bld.mode=b.dataset.m;FH.trace=null;if(S.bld.mode==='trace')FH.sel=null;renderBld();FV.request();save()});
+$('#fShow').addEventListener('click',e=>{const b=e.target.closest('[data-fl]');if(!b)return;S.bld.lab[b.dataset.fl]=!S.bld.lab[b.dataset.fl];bldChanged()});
+$('#fToLay').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;S.lay.show.bld=!S.lay.show.bld;syncShowChips();layDirty=true;save();toast(S.lay.show.bld?'Building footprints shown on the layout sheet (B-05)':'Building footprints hidden on the layout sheet')});
+$('#fFit').addEventListener('click',()=>FV.fitAll());
+$('#fList').addEventListener('click',e=>{const r=e.target.closest('.frow');if(!r)return;const i=+r.dataset.i;if(e.target.closest('[data-del]')){S.bld.list.splice(i,1);FH.sel=null;bldChanged();return}if(e.target.closest('input'))return;if(FH.sel!==i){S.bld.mode='select';fSelect(i)}});
+$('#fList').addEventListener('change',e=>{const r=e.target.closest('.frow'),b=r&&S.bld.list[+r.dataset.i];if(!b)return;b.name=e.target.value.trim()||b.name;bldChanged()});
+$('#fTb').addEventListener('change',e=>{const tr=e.target.closest('tr[data-k]'),b=S.bld.list[FH.sel];if(!tr||!b)return;const v=parseNum(e.target.value);if(!isFinite(v)){e.target.classList.add('bad');return}b.pts[+tr.dataset.k][e.target.dataset.f]=siRnd(v);bldChanged()});
+$('#fTb').addEventListener('click',e=>{if(!e.target.closest('[data-delv]'))return;const tr=e.target.closest('tr[data-k]'),b=S.bld.list[FH.sel];if(!tr||!b)return;if(b.pts.length<=3){toast('A footprint needs at least three corners');return}b.pts.splice(+tr.dataset.k,1);bldChanged()});
+$('#fClear').addEventListener('click',()=>{if(!S.bld.list.length||!confirm(`Remove all ${S.bld.list.length} footprints?`))return;S.bld.list=[];FH.sel=null;bldChanged()});
+const fSelB=()=>S.bld.list[FH.sel];
+$('#fMove').addEventListener('click',()=>{const b=fSelB();if(!b)return;const dx=parseNum($('#fDE').value||'0'),dy=parseNum($('#fDN').value||'0');if(!isFinite(dx)||!isFinite(dy)){toast('Type the move as numbers');return}b.pts=b.pts.map(p=>({e:siRnd(p.e+dx),n:siRnd(p.n+dy)}));$('#fDE').value=$('#fDN').value='';bldChanged()});
+$('#fRot').addEventListener('click',()=>{const b=fSelB();if(!b)return;const a=parseNum($('#fAng').value);if(!isFinite(a)){toast('Type the angle in degrees');return}const c=polyCentroid(b.pts),r=-a*Math.PI/180,cs=Math.cos(r),sn=Math.sin(r);
+  b.pts=b.pts.map(p=>{const x=p.e-c.e,y=p.n-c.n;return {e:siRnd(c.e+x*cs-y*sn),n:siRnd(c.n+x*sn+y*cs)}});$('#fAng').value='';bldChanged()});
+$('#fCentre').addEventListener('click',()=>{const b=fSelB(),c0=S.pts.length?polyCentroid(S.pts):null;if(!b)return;if(!c0){toast('There is no site boundary to centre on');return}const c=polyCentroid(b.pts),dx=c0.e-c.e,dy=c0.n-c.n;b.pts=b.pts.map(p=>({e:siRnd(p.e+dx),n:siRnd(p.n+dy)}));bldChanged();FV.fitAll()});
+$('#fPasteGo').addEventListener('click',()=>{const pts=[];textToRows($('#fPaste').value).forEach(r=>{let n=r.slice(1).map(parseNum).filter(isFinite);if(n.length>=3&&Number.isInteger(n[0])&&Math.abs(n[0])<1e5&&!r[0])n=n.slice(1);if(n.length>=2)pts.push({e:n[0],n:n[1]})});
+  if(pts.length<3){toast('Paste at least three corners: Easting and Northing on each line',4000);return}const b=addBld(pts,$('#fPasteName').value.trim());if(!b){toast('Those corners do not make a shape');return}
+  $('#fPaste').value='';$('#fPasteName').value='';S.bld.mode='select';FH.sel=S.bld.list.length-1;bldChanged();FV.fitAll();toast(`${b.name} added with ${b.pts.length} corners`)});
+$('#fUl').addEventListener('click',()=>$('#ulFile').click());
+$('#fCsv').addEventListener('click',()=>{const ll=S.crs&&P4,rows=[['Building','Corner','Easting','Northing',...(ll?['Latitude','Longitude']:[]),'Edge length to next','Area','Perimeter']];
+  S.bld.list.forEach(b=>{const st=bldStats(b);b.pts.forEach((p,k)=>{const l=ll?toLL(p.e,p.n):null;rows.push([b.name,k+1,fc(p.e),fc(p.n),...(ll?[l?l[1].toFixed(8):'',l?l[0].toFixed(8):'']:[]),fmtLen(segLen(p,b.pts[(k+1)%b.pts.length])*fac(),false),k?'':fmtArea(st.A)[0],k?'':fmtLen(st.per)])})});
+  download('building-footprints.csv','﻿'+rows.map(r=>r.map(csvQ).join(',')).join('\r\n'),'text/csv');toast('CSV saved')});
+document.addEventListener('keydown',e=>{if(S.tab!=='bld'||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  if(FH.trace){if(e.key==='Enter'){e.preventDefault();finishTrace()}else if(e.key==='Escape'){FH.trace=null;renderBldHint();FV.request()}else if(e.key==='Backspace'){e.preventDefault();FH.trace.pop();if(!FH.trace.length)FH.trace=null;renderBldHint();FV.request()}}
+  else if((e.key==='Delete'||e.key==='Backspace')&&fSelB()){e.preventDefault();S.bld.list.splice(FH.sel,1);FH.sel=null;bldChanged()}else if(e.key==='Escape')fSelect(null)});
+
+/* ---- DXF reader: the exact way to bring a footprint in. Reads lines, polylines (with arcs), circles, arcs, ellipses,
+   splines and block inserts, joins loose lines into closed loops, and lists what it found layer by layer. ---- */
+function parseDXF(text){
+  const ln=text.split(/\r\n|\r|\n/),prs=[];for(let i=0;i+1<ln.length;i+=2){const c=parseInt(ln[i],10);if(!isNaN(c))prs.push([c,ln[i+1].trim()])}
+  let i=0,units=0;const blocks={},top=[];
+  const ent=()=>{const type=prs[i][1];i++;const e={type,layer:'0',pts:[],fit:[],f:0};let last=null,lf=null;
+    while(i<prs.length&&prs[i][0]!==0){const [c,v]=prs[i];i++;const n=+v;
+      if(c===8)e.layer=v;else if(c===2)e.name=v;else if(c===70)e.f=parseInt(v,10)||0;
+      else if(c===10){last={x:n,y:0,b:0};e.pts.push(last)}else if(c===20){if(last)last.y=n}
+      else if(c===11){lf={x:n,y:0};e.fit.push(lf)}else if(c===21){if(lf)lf.y=n}
+      else if(c===42){if(type==='LWPOLYLINE'||type==='VERTEX'){if(last)last.b=n}else e.c42=n}
+      else if(c===67)e.ps=n;else if(c===40)e.c40=n;else if(c===41)e.c41=n;else if(c===50)e.c50=n;else if(c===51)e.c51=n}
+    return e};
+  const body=(stop,into)=>{while(i<prs.length){if(prs[i][0]!==0){i++;continue}const t=prs[i][1];if(stop.includes(t))return;
+      if(t==='POLYLINE'){const p=ent();p.pts=[];while(i<prs.length&&prs[i][0]===0&&prs[i][1]==='VERTEX'){const vx=ent();if(!(vx.f&16)&&vx.pts[0])p.pts.push(vx.pts[0])}if(i<prs.length&&prs[i][1]==='SEQEND')ent();if(!(p.f&80))into.push(p)}
+      else into.push(ent())}};
+  while(i<prs.length){const [c,v]=prs[i];
+    if(c===9&&v==='$INSUNITS'){if(prs[i+1]&&prs[i+1][0]===70)units=parseInt(prs[i+1][1],10)||0;i+=2;continue}
+    if(c===0&&v==='SECTION'){const name=prs[i+1]&&prs[i+1][1];i+=2;
+      if(name==='BLOCKS'){while(i<prs.length&&!(prs[i][0]===0&&prs[i][1]==='ENDSEC')){if(prs[i][0]===0&&prs[i][1]==='BLOCK'){const b=ent(),list=[];body(['ENDBLK','ENDSEC'],list);if(b.name)blocks[b.name]={base:b.pts[0]||{x:0,y:0},ents:list}}else i++}}
+      else if(name==='ENTITIES')body(['ENDSEC'],top);
+      continue}
+    i++}
+  // entities -> point paths
+  const paths=[],arc=(cx,cy,r,a0,sw,T,out)=>{const n=Math.max(2,Math.ceil(Math.abs(sw)/(Math.PI/24)));for(let k=0;k<=n;k++){const a=a0+sw*k/n;out.push(T(cx+r*Math.cos(a),cy+r*Math.sin(a)))}};
+  const walk=(list,T,depth,inh)=>{for(const e of list){if(e.ps&&!depth)continue;const layer=e.layer==='0'&&inh?inh:e.layer,P=e.pts;
+    if(e.type==='LINE'&&P[0]&&e.fit[0])paths.push({layer,closed:false,pts:[T(P[0].x,P[0].y),T(e.fit[0].x,e.fit[0].y)]});
+    else if((e.type==='LWPOLYLINE'||e.type==='POLYLINE')&&P.length>1){const closed=!!(e.f&1),out=[],n=P.length;
+      for(let k=0;k<(closed?n:n-1);k++){const a=P[k],b=P[(k+1)%n];if(!k)out.push(T(a.x,a.y));
+        if(Math.abs(a.b)>1e-9){const bb=a.b,cx=(a.x+b.x)/2-(b.y-a.y)*(1-bb*bb)/(4*bb),cy=(a.y+b.y)/2+(b.x-a.x)*(1-bb*bb)/(4*bb),tmp=[];arc(cx,cy,Math.hypot(a.x-cx,a.y-cy),Math.atan2(a.y-cy,a.x-cx),4*Math.atan(bb),T,tmp);out.push(...tmp.slice(1))}else out.push(T(b.x,b.y))}
+      if(closed)out.pop();paths.push({layer,closed,pts:out})}
+    else if(e.type==='CIRCLE'&&P[0]&&e.c40>0){const out=[];arc(P[0].x,P[0].y,e.c40,0,Math.PI*2,T,out);out.pop();paths.push({layer,closed:true,pts:out})}
+    else if(e.type==='ARC'&&P[0]&&e.c40>0){const a0=(e.c50||0)*Math.PI/180;let sw=((e.c51||0)-(e.c50||0))*Math.PI/180;if(sw<=0)sw+=Math.PI*2;const out=[];arc(P[0].x,P[0].y,e.c40,a0,sw,T,out);paths.push({layer,closed:false,pts:out})}
+    else if(e.type==='ELLIPSE'&&P[0]&&e.fit[0]){const mx=e.fit[0].x,my=e.fit[0].y,k=e.c40||1,t0=e.c41||0;let t1=e.c42==null?Math.PI*2:e.c42;if(t1<=t0)t1+=Math.PI*2;const full=Math.abs(t1-t0-Math.PI*2)<1e-6,n=Math.max(8,Math.ceil((t1-t0)/(Math.PI/24))),out=[];
+      for(let q=0;q<=n;q++){const t=t0+(t1-t0)*q/n;out.push(T(P[0].x+mx*Math.cos(t)-my*k*Math.sin(t),P[0].y+my*Math.cos(t)+mx*k*Math.sin(t)))}if(full)out.pop();paths.push({layer,closed:full,pts:out})}
+    else if(e.type==='SPLINE'){const Q=e.fit.length>1?e.fit:P;if(Q.length>1)paths.push({layer,closed:!!(e.f&1),pts:Q.map(q=>T(q.x,q.y))})}
+    else if(e.type==='INSERT'&&depth<6&&blocks[e.name]&&P[0]){const b=blocks[e.name],sx=e.c41==null?1:e.c41,sy=e.c42==null?sx:e.c42,r=(e.c50||0)*Math.PI/180,cs=Math.cos(r),sn=Math.sin(r),ix=P[0].x,iy=P[0].y;
+      walk(b.ents,(x,y)=>{const u=(x-b.base.x)*sx,w=(y-b.base.y)*sy;return T(ix+u*cs-w*sn,iy+u*sn+w*cs)},depth+1,layer)}}};
+  walk(top,(x,y)=>[x,y],0,null);
+  // join loose lines and arcs, end to end, into loops (per layer)
+  let x0=1e300,x1=-1e300,y0=1e300,y1=-1e300;paths.forEach(p=>p.pts.forEach(q=>{if(q[0]<x0)x0=q[0];if(q[0]>x1)x1=q[0];if(q[1]<y0)y0=q[1];if(q[1]>y1)y1=q[1]}));
+  const tol=Math.max((Math.max(x1-x0,y1-y0)||1)*2e-6,1e-7),key=q=>Math.round(q[0]/tol/4)+','+Math.round(q[1]/tol/4),near=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<=tol*4;
+  const shapes=paths.filter(p=>p.closed&&p.pts.length>2),open=paths.filter(p=>!p.closed&&p.pts.length>1),byL={};open.forEach(p=>(byL[p.layer]=byL[p.layer]||[]).push(p));
+  for(const layer in byL){const L=byL[layer];if(L.length>20000){L.forEach(p=>shapes.push(p));continue}const ends=new Map(),put=(k,v)=>{let a=ends.get(k);if(!a)ends.set(k,a=[]);a.push(v)};
+    L.forEach((p,n)=>{put(key(p.pts[0]),n);put(key(p.pts[p.pts.length-1]),n)});const used=new Uint8Array(L.length);
+    const next=q=>{const [kx,ky]=key(q).split(',').map(Number);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){const a=ends.get((kx+dx)+','+(ky+dy));if(a)for(const n of a){if(used[n])continue;const p=L[n];if(near(p.pts[0],q))return [n,false];if(near(p.pts[p.pts.length-1],q))return [n,true]}}return null};
+    L.forEach((p,n)=>{if(used[n])return;used[n]=1;let pts=p.pts.slice(),closed=false;
+      for(let pass=0;pass<2&&!closed;pass++){for(;;){if(pts.length>2&&near(pts[0],pts[pts.length-1])){closed=true;pts.pop();break}const nx=next(pts[pts.length-1]);if(!nx)break;used[nx[0]]=1;const q=L[nx[0]].pts;pts.push(...(nx[1]?q.slice().reverse():q).slice(1))}if(!closed)pts.reverse()}
+      shapes.push({layer,closed,pts})})}
+  const sa=s=>{let a=0;for(let k=0;k<s.pts.length;k++){const p=s.pts[k],q=s.pts[(k+1)%s.pts.length];a+=p[0]*q[1]-q[0]*p[1]}return Math.abs(a)/2};
+  shapes.forEach(s=>{s.pts=s.pts.filter((q,k,a)=>!k||!near(q,a[k-1]));s.area=s.closed?sa(s):0});
+  return {units,shapes:shapes.filter(s=>s.pts.length>(s.closed?2:1)),n:top.length}
+}
+const DXU={0:'same',1:'in',2:'ft',4:'mm',5:'cm',6:'m'},DXF_M={mm:.001,cm:.01,m:1,in:.0254,ft:.3048};
+let BD=null;
+async function loadFootprintFile(f){
+  const name=f.name.toLowerCase();
+  if(name.endsWith('.dwg')){$('#fMsgs').innerHTML=msgsHtml([['warn','A DWG is AutoCAD\'s own closed format and can\'t be read in a browser. Save it as DXF: in AutoCAD type <b>SAVEAS</b> (or <b>DXFOUT</b>) and pick <b>AutoCAD 2000 DXF</b>, then load that file here. Nothing is lost: DXF keeps the exact geometry and coordinates.']]);return}
+  if(/\.(pdf|png|jpe?g|gif|bmp|webp|tiff?)$/.test(name)){$('#fMsgs').innerHTML=msgsHtml([['info','PDFs and images are pictures, so the footprint is traced over them. The drawing is loading as an underlay: calibrate it in the Measure tab (B-04), then come back and use <b>Trace on plan</b>.']]);
+    const dt=new DataTransfer();dt.items.add(f);$('#ulFile').files=dt.files;$('#ulFile').dispatchEvent(new Event('change'));return}
+  prog(true,'Reading the DXF…',30);await new Promise(r=>setTimeout(r,30));
+  try{const text=await f.text();if(/^AutoCAD Binary DXF/.test(text))throw new Error('this is a binary DXF. Save it as an ASCII DXF (AutoCAD 2000 DXF) instead');
+    const d=parseDXF(text);if(!d.shapes.length)throw new Error('no lines or polylines were found in it');BD={...d,file:f.name};
+    const lay={};d.shapes.forEach(s=>{const o=lay[s.layer]||(lay[s.layer]={c:0,o:0,a:0});if(s.closed){o.c++;o.a+=s.area}else o.o++});BD.lay=lay;
+    const names=Object.keys(lay).sort((a,b)=>lay[b].a-lay[a].a),withC=names.filter(n=>lay[n].c),hint=withC.filter(n=>/b(ui)?ld|bldg|foot|plinth|outline|otln/i.test(n));
+    BD.on=new Set(hint.length?hint:withC.length?withC:names);BD.names=names;
+    $('#bdUnits').value=DXU[d.units]&&DXU[d.units]!=='same'?DXU[d.units]:'same';$('#bdClosed').checked=withC.length>0;$('#bdMove').checked=false;
+    renderBD(true);$('#fMsgs').innerHTML='';$('#bldDlg').showModal()}
+  catch(e){$('#fMsgs').innerHTML=msgsHtml([['err','Could not read '+esc(f.name)+': '+esc(e.message)+'.']])}
+  finally{prog(false)}
+}
+function bdScale(){const u=$('#bdUnits').value;return u==='same'?1:DXF_M[u]/fac()}
+function bdPick(){const co=$('#bdClosed').checked;return BD.shapes.filter(s=>BD.on.has(s.layer)&&(!co||s.closed)&&s.pts.length>2)}
+function renderBD(first){
+  const k=bdScale(),pick=bdPick(),lay=BD.lay;
+  $('#bdSub').textContent=`${BD.file} · ${BD.shapes.length} shapes on ${BD.names.length} layer${BD.names.length>1?'s':''}`;
+  $('#bdLayers').innerHTML=BD.names.map(n=>`<label class="bdl"><input type="checkbox" data-l="${esc(n)}"${BD.on.has(n)?' checked':''}><span>${esc(n)}</span><i>${lay[n].c?lay[n].c+' closed':''}${lay[n].c&&lay[n].o?' · ':''}${lay[n].o?lay[n].o+' open':''}</i></label>`).join('');
+  // where does it sit, compared with the site?
+  let bb=null;pick.forEach(s=>s.pts.forEach(q=>{bb=unionB(bb,{minE:q[0]*k,minN:q[1]*k,maxE:q[0]*k,maxN:q[1]*k})}));const sb=bboxOf(S.pts);let far=false;
+  if(bb&&sb){const m=Math.max(sb.maxE-sb.minE,sb.maxN-sb.minN)*3;far=bb.minE>sb.maxE+m||bb.maxE<sb.minE-m||bb.minN>sb.maxN+m||bb.maxN<sb.minN-m}
+  if(first&&far)$('#bdMove').checked=true;const mv=$('#bdMove').checked&&bb&&sb;BD.shift=mv?[(sb.minE+sb.maxE)/2-(bb.minE+bb.maxE)/2,(sb.minN+sb.maxN)/2-(bb.minN+bb.maxN)/2]:[0,0];
+  const verts=pick.reduce((t,s)=>t+s.pts.length,0),msgs=[];
+  if(!pick.length)msgs.push(['warn','Nothing is selected. Tick a layer, or untick "Closed shapes only".']);
+  else if(far&&!mv)msgs.push(['warn','The drawing is far from the site, so it is probably drawn at a local origin. Tick "Move to the site centre", then place it exactly with Move and Rotate.']);
+  else if(mv)msgs.push(['info','The drawing will be centred on the site. Place it exactly afterwards by dragging, or with Move and Rotate.']);
+  else if(sb)msgs.push(['ok','The drawing sits on the site at its true coordinates.']);
+  if(pick.length>60)msgs.push(['warn',`${pick.length} shapes are selected. A footprint is usually one outline: untick the layers you don't need.`]);
+  $('#bdMsgs').innerHTML=msgsHtml(msgs);$('#bdGo').disabled=!pick.length||pick.length>400||verts>40000;
+  $('#bdInfo').textContent=pick.length?`${pick.length} footprint${pick.length>1?'s':''}, ${verts} corners${bb?` · ${fmtLen((bb.maxE-bb.minE)*fac(),false)} × ${fmtLen((bb.maxN-bb.minN)*fac())}`:''}`:'';
+  // preview
+  const c=$('#bdCv'),W=c.clientWidth||600,H=300,d=window.devicePixelRatio||1;c.width=W*d;c.height=H*d;const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,W,H);
+  let vb=bb?{minE:bb.minE+BD.shift[0],maxE:bb.maxE+BD.shift[0],minN:bb.minN+BD.shift[1],maxN:bb.maxN+BD.shift[1]}:null;if(sb&&(!far||mv))vb=unionB(vb,sb);if(!vb)return;
+  const z=Math.min((W-40)/((vb.maxE-vb.minE)||1),(H-40)/((vb.maxN-vb.minN)||1)),ox=(vb.minE+vb.maxE)/2,oy=(vb.minN+vb.maxN)/2,X=e=>W/2+(e-ox)*z,Y=n=>H/2-(n-oy)*z;
+  if(sb&&(!far||mv)&&S.pts.length>1){x.beginPath();S.pts.forEach((p,i)=>i?x.lineTo(X(p.e),Y(p.n)):x.moveTo(X(p.e),Y(p.n)));if(S.closed)x.closePath();x.strokeStyle='#d0213a';x.lineWidth=1.6;x.stroke()}
+  BD.shapes.forEach(s=>{const on=pick.includes(s);if(!on&&!BD.on.has(s.layer))return;x.beginPath();s.pts.forEach((q,i)=>{const px=X(q[0]*k+BD.shift[0]),py=Y(q[1]*k+BD.shift[1]);i?x.lineTo(px,py):x.moveTo(px,py)});if(s.closed)x.closePath();
+    if(on){x.globalAlpha=.2;x.fillStyle=FP_C;x.fill();x.globalAlpha=1;x.strokeStyle=FP_C;x.lineWidth=1.6}else{x.strokeStyle='#9aa3ad';x.lineWidth=1}x.stroke()});
+}
+$('#fDxf').addEventListener('click',()=>$('#fFile').click());
+$('#fFile').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)loadFootprintFile(f)});
+$('#bdLayers').addEventListener('change',e=>{const l=e.target.dataset.l;if(l==null)return;e.target.checked?BD.on.add(l):BD.on.delete(l);renderBD()});
+['#bdUnits','#bdClosed','#bdMove'].forEach(s=>$(s).addEventListener('change',()=>renderBD()));
+$('#bdAll').addEventListener('click',()=>{BD.on=new Set(BD.names);renderBD()});$('#bdNone').addEventListener('click',()=>{BD.on=new Set();renderBD()});
+$('#bdGo').addEventListener('click',()=>{const k=bdScale(),pick=bdPick().sort((a,b)=>b.area-a.area);let n=0;const many=pick.length>1,base=S.bld.list.length;
+  pick.forEach((s,i)=>{if(addBld(s.pts.map(q=>({e:q[0]*k+BD.shift[0],n:q[1]*k+BD.shift[1]})),many?`BUILDING ${base+i+1}`:''))n++});
+  $('#bldDlg').close();BD=null;if(!n){toast('Nothing could be imported');return}S.bld.mode='select';FH.sel=S.bld.list.length-n;bldChanged();FV.fitAll();toast(`${n} footprint${n>1?'s':''} imported from the DXF`,3600)});
+
 /* ================= Tabs & global render ================= */
 function setTab(t){
-  const TABS=['coords','boundary','dist','measure','layout','surr'];if(!TABS.includes(t))t='coords';
+  const TABS=['coords','boundary','dist','measure','layout','surr','si','bld'];if(!TABS.includes(t))t='coords';
   S.tab=t;$$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
   TABS.forEach(k=>$('#tab-'+k).hidden=k!==t);
-  if(t==='boundary')BV.resize();if(t==='measure'){MV.resize();updHud()}if(t==='layout'){layDirty=true;LV.resize();LV.fitAll()}if(t==='surr')(S.crs&&!P4?proj():Promise.resolve()).then(()=>renderSurr()).catch(()=>renderSurr())
+  if(t==='boundary')BV.resize();if(t==='measure'){MV.resize();updHud()}if(t==='layout'){layDirty=true;LV.resize();LV.fitAll()}if(t==='si'){renderSI();SV.resize();if(!SV.fitted)SV.fitAll()}if(t==='bld'){renderBld();FV.resize();if(!FV.fitted)FV.fitAll()}if(t==='surr')(S.crs&&!P4?proj():Promise.resolve()).then(()=>renderSurr()).catch(()=>renderSurr())
   save();
 }
 $$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
@@ -2552,6 +3234,8 @@ function renderDerived(){
   $('#closedChk').checked=S.closed;
   renderDist();renderMeasList();if(UL)renderCal();renderCrsPill();
   layDirty=true;BV.request();MV.request();if(S.tab==='layout')LV.request();if(S.tab==='surr')renderSurr();
+  $('#cntSI').textContent=S.si.pts.length;if(S.tab==='si'){renderSI();SV.request()}
+  $('#cntBld').textContent=S.bld.list.length;if(S.tab==='bld'){renderBld();FV.request()}
 }
 function renderAll(){renderPts();renderDerived()}
 
