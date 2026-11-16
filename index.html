@@ -241,6 +241,40 @@ table.grid tr.bad td{background:color-mix(in srgb,var(--err-soft) 60%,var(--card
 .chk-l{display:flex;gap:8px;align-items:center;font-size:13.5px;margin-top:12px;cursor:pointer}
 .chk-l input{accent-color:var(--accent);width:16px;height:16px}
 
+/* coordinate system */
+.crs-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-strong);background:var(--card);border-radius:12px;padding:5px 6px 5px 11px;cursor:pointer;max-width:340px;min-width:0;color:var(--ink);transition:.15s}
+.crs-pill:hover{border-color:var(--accent)}
+.crs-pill .t{display:flex;flex-direction:column;line-height:1.15;min-width:0;text-align:left}
+.crs-pill .t b{font:700 13.5px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crs-pill .t span{font:500 10.5px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crs-pill i{font-style:normal;font:700 11px var(--mono);border-radius:8px;padding:4px 8px;background:var(--accent-soft);color:var(--title);flex:none}
+.crs-pill.local i{background:var(--warn-soft);color:var(--warn)}
+.crs-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
+.crs-list{border:1px solid var(--line);border-radius:14px;max-height:52vh;overflow:auto;background:var(--surface-2)}
+.crs-list h4{margin:0;padding:9px 12px 5px;font:600 10.5px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--title);position:sticky;top:0;background:var(--surface-2);z-index:1}
+.crs-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);cursor:pointer;background:var(--card)}
+.crs-row:hover{background:color-mix(in srgb,var(--accent-soft) 45%,var(--card))}
+.crs-row.sel{background:color-mix(in srgb,var(--accent-soft) 85%,var(--card));box-shadow:inset 3px 0 0 var(--accent)}
+.crs-row input{accent-color:var(--accent);grid-row:span 2}
+.crs-row b{font:700 14.5px/1.2 var(--display);letter-spacing:.01em}
+.crs-row span{font:500 11px var(--mono);color:var(--muted)}
+.crs-info{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--surface-2)}
+.crs-info h3{margin:0 0 4px;font:700 19px/1.15 var(--display);color:var(--title)}
+.crs-info code{display:block;font:500 11px/1.5 var(--mono);color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:10px 0;overflow-wrap:anywhere}
+.ll{font:500 12px var(--mono);color:var(--muted);white-space:nowrap}
+
+/* layout sheet */
+.lay-grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:start}
+.lay-grid > *{min-width:0}
+.fgrid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;align-items:center}
+.fgrid .fin,.fgrid .sel{width:100%;text-align:left;font-family:var(--sans)}
+.fgrid .fin{font-weight:600}
+.fgrid .seg{justify-self:start}
+.lay-wrap{height:clamp(460px,calc(100vh - 260px),860px)}
+.lay-wrap canvas{cursor:grab}
+#printSheet{display:none}
+@media (max-width:1060px){.lay-grid,.crs-grid{grid-template-columns:minmax(0,1fr)}}
+
 section.block{padding:34px 0 6px}
 .block-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .block-h .lbl{color:var(--title)}
@@ -270,7 +304,10 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
  :root,:root[data-theme]{--bg:#ffffff;--bg-image:none;--card:#ffffff;--surface-2:#f6f6f5;--ink:#1b1b1b;--muted:#555;--faint:#8a8a8a;--line:#dadada;--line-strong:#b8b8b8;--grid:#ececec;--shadow:none;color-scheme:light}
  html,body{background:#fff !important}body{font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .page{max-width:none;padding:0}
- .actions,.toolbar,nav.tabs,.rule-glow,.steps,.status,.brand p,#about,.toast,#tab-coords,#tab-measure,.no-print,.diagram-foot{display:none !important}
+ .actions,.toolbar,nav.tabs,.rule-glow,.steps,.status,.brand p,#about,.toast,#tab-coords,#tab-measure,#tab-layout,.no-print,.diagram-foot{display:none !important}
+ html.print-sheet .page{display:none !important}
+ html.print-sheet #printSheet{display:block !important}
+ html.print-sheet #printSheet svg{display:block}
  #tab-boundary,#tab-dist{display:block !important}
  header.top{grid-template-columns:1fr auto;gap:10px;padding:0 0 3mm;border-bottom:2px solid var(--accent);margin-bottom:4mm}
  .brand h1{font-size:22px}.avatar{--sz:46px}
@@ -298,6 +335,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
       <button class="btn primary" type="button" data-go="coords"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Import coordinates</button>
       <button class="btn" type="button" id="dxfBtn">Export DXF</button>
       <button class="btn" type="button" id="csvBtn">Export CSV</button>
+      <button class="btn" type="button" id="kmlBtn" title="Google Earth file. Needs a coordinate system.">KML</button>
       <button class="btn" type="button" id="printBtn">Print</button>
     </div>
     <a class="prepared" href="#about">
@@ -314,6 +352,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
         <button data-u="m" aria-pressed="true">m</button><button data-u="mm" aria-pressed="false">mm</button><button data-u="ft" aria-pressed="false">ft</button><button data-u="ftin" aria-pressed="false">ft-in</button>
       </div>
     </div>
+    <button class="crs-pill" type="button" id="crsPill" title="Choose the coordinate system your points are in"><span class="t"><b id="crsPillName">Local grid</b><span id="crsPillSub">No coordinate system</span></span><i id="crsPillCode">SET</i></button>
     <div class="pick"><span class="lbl">Coords in</span>
       <select id="cuSel" aria-label="Units of the coordinates"><option value="m">metres</option><option value="mm">millimetres</option><option value="ft">feet (intl)</option><option value="usft">US survey feet</option></select></div>
     <div class="pick"><span class="lbl">Decimals</span>
@@ -338,6 +377,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
     <button role="tab" data-tab="boundary" aria-selected="false">Boundary <span class="num">B-02</span></button>
     <button role="tab" data-tab="dist" aria-selected="false">Distances <span class="num">B-03</span></button>
     <button role="tab" data-tab="measure" aria-selected="false">Measure <span class="num">B-04</span><span class="cnt" id="cntMeas">0</span></button>
+    <button role="tab" data-tab="layout" aria-selected="false">Layout <span class="num">B-05</span></button>
   </nav>
   <div class="rule-glow"></div>
   <div class="steps"><span><b>1</b>Import or type coordinates</span><span><b>2</b>Check the columns it found</span><span><b>3</b>See the boundary drawn</span><span><b>4</b>Read every distance &amp; bearing</span><span><b>5</b>Measure anything on screen</span></div>
@@ -381,13 +421,13 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
       <div class="card">
         <div class="card-h">
           <div><h2>Points</h2><p class="sub">Edit any value. Points are joined in this order.</p></div>
-          <label class="switch"><input type="checkbox" id="closedChk" checked> Closed boundary</label>
+          <div class="opts tight"><label class="switch" id="llSw" title="Show latitude and longitude for each point"><input type="checkbox" id="llChk"> Lat / long</label><label class="switch"><input type="checkbox" id="closedChk" checked> Closed boundary</label></div>
         </div>
         <div class="card-b">
           <div id="coordMsgs"></div>
           <div class="tbl-wrap pts-wrap">
             <table class="grid pts">
-              <thead><tr><th>#</th><th>Point ID</th><th class="r">Easting (E / X)</th><th class="r">Northing (N / Y)</th><th class="r">Level (Z)</th><th></th></tr></thead>
+              <thead id="ptHead"></thead>
               <tbody id="ptBody"></tbody>
             </table>
           </div>
@@ -439,6 +479,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
         <div><h2>Edge distances &amp; bearings</h2><p class="sub">Every boundary edge in order, with coordinate differences, grid distance and bearing.</p></div>
         <div class="opts tight no-print">
           <label class="pick" title="Combined scale factor. Ground distance = grid distance ÷ CSF"><span class="lbl">CSF</span><input class="fin" id="csfIn" style="width:100px" value="1.000000" inputmode="decimal"></label>
+          <button class="btn sm" type="button" id="csfCrs" title="Work out the combined scale factor from the coordinate system and the mean level">From CRS</button>
           <button class="btn sm" type="button" id="distCopy">Copy table</button>
           <button class="btn sm" type="button" id="distCsv">CSV</button>
         </div>
@@ -542,6 +583,47 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
     </div>
   </section>
 
+  <!-- ============ B-05 LAYOUT ============ -->
+  <section class="tabpane" id="tab-layout" role="tabpanel" hidden>
+    <div class="lay-grid">
+      <div class="side-col">
+        <div class="card">
+          <div class="card-h"><div><h2>Sheet</h2><p class="sub">Paper, scale and what goes on the drawing.</p></div><span class="badge">B-05</span></div>
+          <div class="card-b">
+            <div class="fgrid">
+              <span class="lbl">Paper</span><select class="sel" id="lPaper"><option>A4</option><option>A3</option><option>A2</option><option>A1</option><option>A0</option></select>
+              <span class="lbl">Orientation</span><div class="seg" id="lOrient" role="group" aria-label="Orientation"><button type="button" data-o="L">Landscape</button><button type="button" data-o="P">Portrait</button></div>
+              <span class="lbl">Scale</span><div class="row" style="flex-wrap:nowrap"><select class="sel" id="lScale" style="flex:1;min-width:0"></select><input class="fin" id="lScaleC" placeholder="N" inputmode="numeric" style="width:90px" hidden></div>
+              <span class="lbl">Grid</span><select class="sel" id="lGrid"><option value="cross">Crosses + frame ticks</option><option value="lines">Grid lines</option><option value="off">Off</option></select>
+            </div>
+            <div class="opts" id="lShow"><span class="lbl">Show</span>
+              <button class="chip" type="button" data-ls="dist">Distances</button><button class="chip" type="button" data-ls="brg">Bearings</button><button class="chip" type="button" data-ls="ids">Point IDs</button><button class="chip" type="button" data-ls="xy">Corner coords</button><button class="chip" type="button" data-ls="table">Coordinate table</button><button class="chip" type="button" data-ls="edges">Distance table</button><button class="chip" type="button" data-ls="area">Area</button><button class="chip" type="button" data-ls="meas">Measurements</button>
+            </div>
+            <div id="lMsgs" style="margin-top:14px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><div><h2>Title block</h2><p class="sub">MSCEB title sheet, printed down the right side of the sheet.</p></div></div>
+          <div class="card-b">
+            <div class="fgrid" id="lTb"></div>
+            <div style="margin-top:12px"><span class="lbl">Revisions</span><textarea class="ta" id="lRevs" spellcheck="false" style="min-height:60px" placeholder="R0 | 10-03-2026 | First issue&#10;R1 | 24-03-2026 | Corner P4 revised"></textarea></div>
+            <div style="margin-top:12px"><span class="lbl">Notes</span><textarea class="ta" id="lNotes" style="min-height:70px" placeholder="Extra notes, one per line. They go in the NOTES box after the coordinate system notes."></textarea></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h">
+          <div><h2>Layout preview</h2><p class="sub" id="lSub">Scroll to zoom, drag to pan.</p></div>
+          <div class="opts tight"><button class="btn sm" type="button" id="lFit">Fit</button><button class="btn sm primary" type="button" id="lDxf">Export DXF</button><button class="btn sm" type="button" id="lSvg">SVG</button><button class="btn sm" type="button" id="lPdf">Print / PDF</button></div>
+        </div>
+        <div class="card-b">
+          <div class="canvas-wrap lay-wrap" id="lWrap"><canvas></canvas><div class="coordbar" id="lCoord"></div></div>
+          <p class="diagram-foot">The DXF is in model space at <b>true coordinates</b>: the boundary sits at its real Easting and Northing, and the sheet frame, tables and title block are drawn around it at 1:<span id="lScaleTxt">N</span>. It drops straight onto other survey drawings. Plot it at that scale to get the paper sheet. Print / PDF prints the sheet at its paper size.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="about">
     <div class="block-h"><div><span class="lbl">Author</span><h2>About the author</h2></div></div>
     <div class="card about">
@@ -572,6 +654,7 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
           <div id="revSheetRow" class="row" style="margin-top:12px" hidden><span class="lbl">Sheet</span><select class="sel" id="revSheet"></select></div>
           <label class="chk-l" id="revHdrRow"><input type="checkbox" id="revHdr"> <span id="revHdrTxt">Use header row</span></label>
           <label class="chk-l"><input type="checkbox" id="revSwap"> Swap Easting / Northing</label>
+          <div style="margin-top:14px"><span class="lbl">Coordinates are in</span><select class="sel" id="revCrs" style="width:100%;margin-top:6px"></select><p class="small" id="revCrsNote" style="margin:6px 0 0"></p></div>
           <details id="revRawBox" style="margin-top:14px"><summary class="lbl" style="cursor:pointer">Text it read (fix mistakes here)</summary>
             <textarea class="ta" id="revRaw" spellcheck="false" style="min-height:180px"></textarea>
             <div class="opts"><button class="btn sm" type="button" id="revReparse">Read again</button></div>
@@ -591,6 +674,32 @@ footer.foot .fine{font-family:var(--sans);font-size:12px}
   </form>
 </dialog>
 
+<dialog class="dlg" id="crsDlg">
+  <form method="dialog" class="dlg-in">
+    <div class="card-h"><div><h2>Coordinate system</h2><p class="sub">The system your Easting / Northing values are in. It adds latitude / longitude, the true scale factor and KML export.</p></div><button class="btn sm" value="cancel">Close</button></div>
+    <div class="dlg-b">
+      <div class="crs-grid">
+        <div>
+          <input class="fin wide" id="crsQ" placeholder="Search by name or EPSG code" style="width:100%;text-align:left;margin-bottom:10px" autocomplete="off">
+          <div class="crs-list" id="crsList"></div>
+          <details class="cal" style="margin-top:10px"><summary>Any UTM zone (WGS 84)</summary>
+            <div class="row"><span class="lbl">Zone</span><input class="fin" id="utmZone" type="number" min="1" max="60" value="39" style="width:70px"><div class="seg" id="utmHemi" role="group" aria-label="Hemisphere"><button type="button" data-h="N" aria-pressed="true">North</button><button type="button" data-h="S" aria-pressed="false">South</button></div><button class="btn sm" type="button" id="utmGo">Select</button></div>
+          </details>
+          <details class="cal"><summary>Other EPSG code or definition</summary>
+            <div class="row"><input class="fin wide" id="crsCode" placeholder="EPSG code, e.g. 2193" inputmode="numeric"><button class="btn sm" type="button" id="crsLook">Look up</button></div>
+            <p class="small" style="margin:6px 0 0">Looks the definition up on epsg.io. Only the code is sent.</p>
+            <textarea class="ta" id="crsDef" spellcheck="false" placeholder="…or paste a proj4 string or WKT" style="min-height:70px"></textarea>
+            <div class="row"><input class="fin wide" id="crsName" placeholder="Name (optional)" style="text-align:left"><button class="btn sm" type="button" id="crsAdd">Use this definition</button></div>
+          </details>
+        </div>
+        <div><div class="crs-info" id="crsInfo"></div></div>
+      </div>
+    </div>
+    <div class="dlg-f"><span class="small" id="crsFoot"></span><span class="grow"></span><button class="btn" value="cancel">Cancel</button><button class="btn" type="button" id="crsConvert" title="Re-project every point from the current system into the selected one">Convert points to it</button><button class="btn primary" type="button" id="crsSet">Points are in this system</button></div>
+  </form>
+</dialog>
+
+<div id="printSheet"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -600,7 +709,8 @@ const LIB={
   pdf:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   pdfw:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-  tess:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'
+  tess:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+  proj4:'https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.12.1/proj4.js'
 };
 const KEY='bds.v1';
 const MONO="'JetBrains Mono', ui-monospace, Consolas, monospace";
@@ -610,12 +720,20 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const CU={m:{f:1,l:'m'},mm:{f:.001,l:'mm'},ft:{f:.3048,l:'ft'},usft:{f:1200/3937,l:'US ft'}};
 const DEF={pts:[],closed:true,cu:'m',du:'m',dec:3,brg:'wcb',csf:1,theme:'auto',tab:'coords',
   lab:{id:true,dist:true,brg:false,xy:false,area:true,grid:true},mlab:true,meas:[],mseq:1,
-  snap:{end:true,mid:true,edge:true,perp:true,meas:true,ortho:false},tool:'dist'};
+  snap:{end:true,mid:true,edge:true,perp:true,meas:true,ortho:false},tool:'dist',
+  crs:null,crsCustom:[],showLL:false,
+  lay:{paper:'A3',orient:'L',scale:'auto',scaleC:'',grid:'cross',notes:'',
+    show:{dist:true,brg:true,ids:true,xy:false,table:true,edges:true,area:true,meas:false},
+    revs:'',tb:{code:'',project:'',client:'',location:'',title:'SITE BOUNDARY PLAN',subtitle:'',drawn:'',drawnNo:'',designed:'',designedNo:'',checked:'',checkedNo:'',approved:'',approvedNo:'',date:'',qaqc:'',stage:'',rev:'0',dwg:''}}};
 let S=JSON.parse(JSON.stringify(DEF));
 try{
   const j=JSON.parse(localStorage.getItem(KEY)||'null');
   if(j&&typeof j==='object'){
-    S={...S,...j,lab:{...DEF.lab,...(j.lab||{})},snap:{...DEF.snap,...(j.snap||{})}};
+    const jl=j.lay&&typeof j.lay==='object'?j.lay:{};
+    S={...S,...j,lab:{...DEF.lab,...(j.lab||{})},snap:{...DEF.snap,...(j.snap||{})},
+      lay:{...DEF.lay,...jl,show:{...DEF.lay.show,...(jl.show||{})},tb:{...DEF.lay.tb,...(jl.tb||{})}}};
+    if(!S.crs||typeof S.crs!=='object'||!S.crs.def)S.crs=null;
+    if(!Array.isArray(S.crsCustom))S.crsCustom=[];
     S.pts=(Array.isArray(S.pts)?S.pts:[]).filter(p=>p&&isFinite(p.e)&&isFinite(p.n)).map(p=>({id:String(p.id??''),e:+p.e,n:+p.n,z:p.z==null||p.z===''?null:+p.z}));
     S.meas=Array.isArray(S.meas)?S.meas.filter(m=>m&&Array.isArray(m.pts)&&TNAME_OK(m.type)):[];
     if(!CU[S.cu])S.cu='m';
@@ -675,6 +793,17 @@ function parseNum(x){
   let s=String(x??'').trim().replace(/[−–—]/g,'-');
   s=s.replace(/^[A-Za-z]{1,3}\s*[:=]?\s*(?=[-+\d.])/,'').replace(/\s*(m|mm|ft|E|N|X|Y|Z)\.?$/i,'');
   return parseNumStrict(s);
+}
+const DMS_TOK=/^[-+]?\d{1,3}(\.\d+)?[°º˚](\d{1,2}(\.\d+)?['’′]?)?(\d{1,2}(\.\d+)?["”″]?)?[NSEW]?$/i;
+function parseAngle(x){
+  if(typeof x==='number')return isFinite(x)?x:NaN;
+  let s=String(x??'').trim().toUpperCase().replace(/[−–—]/g,'-');if(!s)return NaN;
+  let sg=1;const h=s.match(/[NSEW]/);if(h){if(h[0]==='S'||h[0]==='W')sg=-1;s=s.replace(/[NSEW]/g,' ').trim()}
+  if(/^-/.test(s)){sg*=-1;s=s.slice(1)}else if(/^\+/.test(s))s=s.slice(1);
+  const parts=s.split(/[°º˚:'’′"”″\s]+/).filter(Boolean);if(!parts.length||parts.length>3)return NaN;
+  const v=parts.map(p=>parseNumStrict(p.replace(/^(\d+),(\d+)$/,'$1.$2')));if(v.some(t=>!isFinite(t)))return NaN;
+  if(parts.length>1&&(v[1]>=60||(v[2]??0)>=60))return NaN;
+  return sg*(v[0]+(v[1]||0)/60+(v[2]||0)/3600);
 }
 function parseLen(str){
   str=String(str??'').trim();if(!str)return NaN;
@@ -891,9 +1020,9 @@ const BV=new Viewer($('#bWrap'),{
     P.forEach((p,i)=>{const [sx,sy]=v.w2s(p.e,p.n),d=Math.hypot(sx-x,sy-y);if(d<best){best=d;pt=i}});
     if(pt==null){best=7;segList().forEach(([i,j],k)=>{const d=distPtSeg(x,y,v.w2s(P[i].e,P[i].n),v.w2s(P[j].e,P[j].n));if(d<best){best=d;edge=k}})}
     bHover.pt=pt;bHover.edge=edge;
-    const [we,wn]=v.s2w(x,y);$('#bCoord').textContent=`E ${fcd(we)}   N ${fcd(wn)}  ${CU[S.cu].l}`;
+    const [we,wn]=v.s2w(x,y),cl=S.crs&&P4?toLL(we,wn):null;$('#bCoord').textContent=`E ${fcd(we)}   N ${fcd(wn)}  ${CU[S.cu].l}${cl?'   ·   '+fmtLLs(cl):''}`;
     let html='';
-    if(pt!=null){const p=P[pt];html=`<b>${esc(p.id||'#'+(pt+1))}</b>E ${fcd(p.e)}<br>N ${fcd(p.n)}${p.z!=null?'<br>Z '+fcd(p.z):''}`}
+    if(pt!=null){const p=P[pt],pl=S.crs&&P4?toLL(p.e,p.n):null;html=`<b>${esc(p.id||'#'+(pt+1))}</b>E ${fcd(p.e)}<br>N ${fcd(p.n)}<br>Z ${p.z!=null?fcd(p.z):'N/A'}${pl?`<br>${llDMS(pl[1],'N','S')}<br>${llDMS(pl[0],'E','W')}`:''}`}
     else if(edge!=null){const [i,j]=segList()[edge],a=P[i],b=P[j],dE=b.e-a.e,dN=b.n-a.n;html=`<b>${esc(a.id)} → ${esc(b.id)}</b>${fmtLen(Math.hypot(dE,dN)*fac())}<br>Brg ${fmtBrg(dE,dN)}<br>ΔE ${fmtLen(dE*fac())} · ΔN ${fmtLen(dN*fac())}`}
     if(html){tip.innerHTML=html;tip.hidden=false;const tw=tip.offsetWidth,th=tip.offsetHeight;tip.style.left=Math.max(4,Math.min(x+16,v.W-tw-6))+'px';tip.style.top=Math.max(4,Math.min(y+16,v.H-th-6))+'px'}else tip.hidden=true;
   },
@@ -1219,7 +1348,7 @@ function textToRows(text){
     // Space/tab separated lines: commas inside numbers are thousands separators. CSV lines keep them as separators.
     if(/\d[ \t]+[-+(]?\d/.test(line))line=line.replace(/(\d),(?=\d{3}(?!\d))/g,'$1');
     const toks=line.split(/[\s,;|=:]+/).filter(Boolean);let label='';const nums=[];
-    for(const t0 of toks){const t=ocrFix(t0);if(isFinite(parseNumStrict(t)))nums.push(t);else if(!nums.length&&!label&&!/^[ENXYZ]$/i.test(t0)&&!/^(easting|northing|elev\w*|level|rl)$/i.test(t0))label=t0}
+    for(const t0 of toks){const t=ocrFix(t0);if(isFinite(parseNumStrict(t))||DMS_TOK.test(t0))nums.push(DMS_TOK.test(t0)?t0:t);else if(!nums.length&&!label&&!/^[ENXYZ]$/i.test(t0)&&!/^(easting|northing|elev\w*|level|rl)$/i.test(t0))label=t0}
     if(nums.length>=2)rows.push([label,...nums]);
   }
   return rows;
@@ -1233,7 +1362,7 @@ function autoMap(rows,header){
   const nc=rows.reduce((m,r)=>Math.max(m,r.length),0),st=[];for(let c=0;c<nc;c++)st.push(colStats(rows,c));
   const m={id:-1,e:-1,n:-1,z:-1};
   if(header){const H=header.map(h=>String(h??'').toLowerCase().trim());const find=(re,skip)=>H.findIndex((h,i)=>h&&re.test(h)&&!skip.includes(i));
-    m.e=find(/east|^e$|^x$|^(x|e)[\s_(.\-[]/,[]);m.n=find(/north|^n$|^y$|^(y|n)[\s_(.\-[]/,[m.e]);
+    m.e=find(/east|^e$|^x$|^(x|e)[\s_(.\-[]|^lon|longitude|^lng/,[]);m.n=find(/north|^n$|^y$|^(y|n)[\s_(.\-[]|^lat/,[m.e]);
     m.z=find(/elev|^z$|^z[\s_(.\-[]|level|^rl\b|^r\.l|height|^h$|^lvl|^ht\b/,[m.e,m.n]);
     m.id=find(/^(pt|pnt|point|id|no|num|number|name|stn|station|label|corner|mark|#|s\.?\s?no|sr|ref|code|bm)\b|point|^no\.|^#/,[m.e,m.n,m.z]);}
   const used=()=>[m.id,m.e,m.n,m.z];
@@ -1258,9 +1387,32 @@ function openReview(r){
   $('#revSheetRow').hidden=!(R.kind==='table'&&R.wb.SheetNames.length>1);
   if(R.kind==='table')$('#revSheet').innerHTML=R.wb.SheetNames.map(s=>`<option${s===R.sheet?' selected':''}>${esc(s)}</option>`).join('');
   $('#revUl').hidden=!(R.src==='pdf'||R.src==='image');$('#revUlChk').checked=false;$('#revUlPageRow').hidden=!(R.src==='pdf'&&R.pdf&&R.pdf.numPages>1);$('#revUlPage').value=1;if(R.pdf)$('#revUlPage').max=R.pdf.numPages;
+  R.srcCrs='proj';if(guessGeo()){R.srcCrs=GEO.id;geoSwapGuess()}
+  $('#revCrs').innerHTML=revCrsOptions();$('#revCrs').value=R.srcCrs;
   $('#revSwap').checked=R.swap;
   renderReview();$('#rev').showModal();
+  if(R.srcCrs!=='proj')proj().then(renderReview).catch(()=>{});
 }
+function revCrsOptions(){
+  const cur=S.crs,o=[`<option value="proj">${cur?'Project system: '+esc(cur.name):'As typed (local grid, no conversion)'}</option>`,`<option value="${GEO.id}">WGS 84 latitude / longitude (degrees or DMS)</option>`];
+  crsAll().filter(c=>!cur||c.id!==cur.id).forEach(c=>o.push(`<option value="${esc(c.id)}">${esc(c.name)} (${esc(c.id)})</option>`));return o.join('');
+}
+function guessGeo(){
+  const H=(R.header||[]).map(h=>String(h).toLowerCase());if(H.some(h=>/^lat/.test(h))&&H.some(h=>/^(lon|lng)|longitude/.test(h)))return true;
+  if(R.kind==='text'&&/\d\s*[°º˚]\s*\d/.test(R.text))return true;
+  const P=R.rows.map(r=>({e:parseNum(r[R.map.e]),n:parseNum(r[R.map.n])})).filter(p=>isFinite(p.e)&&isFinite(p.n));if(P.length<3)return false;
+  const E=P.map(p=>p.e),N=P.map(p=>p.n),sp=a=>Math.max(...a)-Math.min(...a);
+  return E.every(v=>Math.abs(v)<=180)&&N.every(v=>Math.abs(v)<=180)&&sp(E)<.5&&sp(N)<.5&&P.some(p=>!Number.isInteger(p.e))&&(Math.abs(E[0])<=90||Math.abs(N[0])<=90);
+}
+function geoSwapGuess(){
+  if(R.header&&R.map.e>=0&&/lat/i.test(String(R.header[R.map.e]))){R.swap=true;return}if(R.header&&R.map.n>=0&&/lat/i.test(String(R.header[R.map.n]))){R.swap=false;return}
+  const v=c=>R.rows.map(r=>parseAngle(r[c])).filter(isFinite),A=v(R.map.e),B=v(R.map.n);
+  R.swap=!(A.some(x=>Math.abs(x)>90)&&B.every(x=>Math.abs(x)<=90));
+}
+const revGeo=()=>R&&R.srcCrs===GEO.id;
+function revSrcCrs(){return R.srcCrs===GEO.id?GEO:crsAll().find(c=>c.id===R.srcCrs)||null}
+function utmFor(lon,lat){const z=Math.min(60,Math.max(1,Math.floor((lon+180)/6)+1)),s=lat<0;return {id:`EPSG:${s?327:326}${String(z).padStart(2,'0')}`,name:`WGS 84 / UTM zone ${z}${s?'S':'N'}`,area:`UTM zone ${z}, ${s?'southern':'northern'} hemisphere`,def:`+proj=utm +zone=${z}${s?' +south':''} +datum=WGS84 +units=m +no_defs`,units:'m'}}
+$('#revCrs').addEventListener('change',async e=>{R.srcCrs=e.target.value;R.inc=null;if(revGeo()){geoSwapGuess();$('#revSwap').checked=R.swap}renderReview();if(R.srcCrs!=='proj'){try{await proj();renderReview()}catch(err){toast('Projection library did not load',4000)}}});
 function buildRows(){
   let rows,header=null,hdrIdx=-1;
   if(R.kind==='text'){rows=textToRows(R.text)}
@@ -1277,9 +1429,9 @@ function buildRows(){
 }
 function colName(c){if(R.kind==='text')return c===0?'Text label':`Number ${c}`;const L=XLSX.utils.encode_col(c);return R.header&&String(R.header[c]??'').trim()?`${L}: ${String(R.header[c]).trim()}`:`Column ${L}`}
 function reviewParsed(){
-  const m=R.map;return R.rows.map(r=>{
-    const id=m.id>=0?String(r[m.id]??'').trim():'';let e=m.e>=0?parseNum(r[m.e]):NaN,n=m.n>=0?parseNum(r[m.n]):NaN;const zv=m.z>=0?parseNum(r[m.z]):NaN;
-    if(R.swap)[e,n]=[n,e];return {id,e,n,z:isFinite(zv)?zv:null,ok:isFinite(e)&&isFinite(n)};
+  const m=R.map,geo=revGeo(),pa=geo?parseAngle:parseNum;return R.rows.map(r=>{
+    const id=m.id>=0?String(r[m.id]??'').trim():'';let e=m.e>=0?pa(r[m.e]):NaN,n=m.n>=0?pa(r[m.n]):NaN;const zv=m.z>=0?parseNum(r[m.z]):NaN;
+    if(R.swap)[e,n]=[n,e];return {id,e,n,z:isFinite(zv)?zv:null,ok:isFinite(e)&&isFinite(n)&&(!geo||(Math.abs(n)<=90&&Math.abs(e)<=180))};
   });
 }
 function suspicious(P){
@@ -1291,14 +1443,23 @@ function suspicious(P){
 function renderReview(){
   const nc=R.rows.reduce((m,r)=>Math.max(m,r.length),0);
   const sel=(k,lab,req)=>`<span class="lbl">${lab}</span><select class="sel" data-map="${k}">${req?(R.map[k]<0?'<option value="-1" selected>— choose —</option>':''):'<option value="-1">— none —</option>'}${Array.from({length:nc},(_,c)=>`<option value="${c}"${R.map[k]===c?' selected':''}>${esc(colName(c))}</option>`).join('')}</select>`;
-  $('#revMap').innerHTML=sel('id','Point ID')+sel('e','Easting',1)+sel('n','Northing',1)+sel('z','Level');
+  const geo=revGeo(),LE=geo?'Longitude':'Easting',LN=geo?'Latitude':'Northing';
+  $('#revMap').innerHTML=sel('id','Point ID')+sel('e',LE,1)+sel('n',LN,1)+sel('z','Level');
+  $('#revSwap').parentElement.lastChild.textContent=geo?' Swap latitude / longitude':' Swap Easting / Northing';
+  {const src=R.srcCrs==='proj'?null:revSrcCrs(),cur=S.crs;let t='';
+    if(src){const okP=reviewParsed().filter(p=>p.ok);
+      if(cur)t=`Converted from ${src.name} to ${cur.name} when imported.`;
+      else if(src.geo){const lon=okP.reduce((s,p)=>s+p.e,0)/(okP.length||1),lat=okP.reduce((s,p)=>s+p.n,0)/(okP.length||1);t=okP.length?`The project has no coordinate system yet. It will be set to ${utmFor(lon,lat).name} (from the longitudes), and the points converted. Change it later with the coordinate system button.`:''}
+      else t=`The project will be set to ${src.name}. Values are kept as they are.`;
+      if(!P4)t+=' Loading the projection library…'}
+    $('#revCrsNote').textContent=t}
   $('#revHdrRow').hidden=!(R.kind==='table'&&R.hdrIdx>=0);$('#revHdr').checked=R.useHdr;$('#revHdrTxt').textContent=R.hdrIdx>=0?`Row ${R.hdrRow} is the header`:'Use header row';
   const P=reviewParsed();
   if(!R.inc||R.inc.length!==P.length){const sus=suspicious(P);R.inc=P.map((p,i)=>p.ok&&!sus[i])}
   const good=P.filter((p,i)=>p.ok&&R.inc[i]).length;
   $('#revCount').innerHTML=P.length?`<span class="badge ${good?'ok':'bad'}">${good} of ${P.length} rows will be imported</span>`:`<div class="msg warn"><b>!</b><span>No coordinate rows found. ${R.kind==='text'?'Open “Text it read” to correct it, then Read again.':'Try another sheet.'}</span></div>`;
   const idc=(p,k)=>R.map.id<0?`<span style="color:var(--faint)">auto P${k}</span>`:(esc(p.id)||'<span style="color:var(--faint)">(blank)</span>');
-  $('#revTable').innerHTML=P.length?`<thead><tr><th><input type="checkbox" id="revAll" ${R.inc.every(Boolean)?'checked':''}></th><th>#</th><th>ID</th><th class="r">Easting</th><th class="r">Northing</th><th class="r">Level</th></tr></thead><tbody>${P.map((p,i)=>`<tr class="${p.ok?'':'bad'}${R.inc[i]?'':' off'}"><td><input type="checkbox" data-inc="${i}" ${R.inc[i]?'checked':''} ${p.ok?'':'disabled'}></td><td class="m">${i+1}</td><td>${idc(p,i+1)}</td><td class="m r">${isFinite(p.e)?fc(p.e):'<span style="color:var(--err)">?</span>'}</td><td class="m r">${isFinite(p.n)?fc(p.n):'<span style="color:var(--err)">?</span>'}</td><td class="m r">${p.z!=null?fc(p.z):'—'}</td></tr>`).join('')}</tbody>`:'';
+  $('#revTable').innerHTML=P.length?`<thead><tr><th><input type="checkbox" id="revAll" ${R.inc.every(Boolean)?'checked':''}></th><th>#</th><th>ID</th><th class="r">${LE}</th><th class="r">${LN}</th><th class="r">Level</th></tr></thead><tbody>${P.map((p,i)=>`<tr class="${p.ok?'':'bad'}${R.inc[i]?'':' off'}"><td><input type="checkbox" data-inc="${i}" ${R.inc[i]?'checked':''} ${p.ok?'':'disabled'}></td><td class="m">${i+1}</td><td>${idc(p,i+1)}</td><td class="m r">${isFinite(p.e)?(geo?p.e.toFixed(8):fc(p.e)):'<span style="color:var(--err)">?</span>'}</td><td class="m r">${isFinite(p.n)?(geo?p.n.toFixed(8):fc(p.n)):'<span style="color:var(--err)">?</span>'}</td><td class="m r">${p.z!=null?fc(p.z):'N/A'}</td></tr>`).join('')}</tbody>`:'';
   $('#revAppend').disabled=$('#revReplace').disabled=!good;
 }
 $('#revMap').addEventListener('change',e=>{const s=e.target.closest('[data-map]');if(!s)return;R.map[s.dataset.map]=+s.value;R.inc=null;renderReview()});
@@ -1308,14 +1469,28 @@ $('#revHdr').addEventListener('change',e=>{R.useHdr=e.target.checked;buildRows()
 $('#revSheet').addEventListener('change',e=>{R.sheet=e.target.value;R.useHdr=true;buildRows();renderReview()});
 $('#revReparse').addEventListener('click',()=>{R.text=$('#revRaw').value;buildRows();renderReview()});
 async function applyReview(mode){
-  const P=reviewParsed().filter((p,i)=>p.ok&&R.inc[i]);if(!P.length)return;
+  let P=reviewParsed().filter((p,i)=>p.ok&&R.inc[i]);if(!P.length)return;
+  let crsMsg='';
+  if(R.srcCrs!=='proj'){
+    try{await proj()}catch(err){toast('The projection library did not load, so the points cannot be converted. Check your connection.',5000);return}
+    const src=revSrcCrs();if(!src){toast('Pick the coordinate system again');return}
+    let target=S.crs,setNew=false;
+    if(!target){setNew=true;if(src.geo){const lon=P.reduce((s,p)=>s+p.e,0)/P.length,lat=P.reduce((s,p)=>s+p.n,0)/P.length;target=utmFor(lon,lat);if(!CRS_LIB.some(c=>c.id===target.id)&&!S.crsCustom.some(c=>c.id===target.id))S.crsCustom=[target,...S.crsCustom].slice(0,12)}else target={id:src.id,name:src.name,def:src.def,units:crsUnitsOf(src),area:src.area||''}}
+    if(target.id!==src.id){
+      try{const T=conv(src.def,target.def),cuNew=setNew?target.units:S.cu,kk=crsUF(target)/CU[cuNew].f;
+        P=P.map(p=>{const r=T.forward([p.e,p.n]);if(!isFinite(r[0])||!isFinite(r[1]))throw new Error(`point ${p.id||''} is outside the system`);return {...p,e:r[0]*kk,n:r[1]*kk}})}
+      catch(err){toast('Conversion failed: '+err.message,5000);return}
+      crsMsg=` · converted from ${src.geo?'lat / long':src.name}`;
+    }
+    if(setNew){S.crs={id:target.id,name:target.name,def:target.def,units:target.units,area:target.area||''};S.cu=target.units;$('#cuSel').value=S.cu;crsMsg+=` · project set to ${target.name}`}
+  }
   const base=mode==='append'?S.pts.slice():[];
   const ids=new Set(base.map(p=>p.id));let k=base.length;
   P.forEach(p=>{k++;let id=p.id||`P${k}`;if(ids.has(id)){let s=2;while(ids.has(id+'-'+s))s++;id=id+'-'+s}ids.add(id);base.push({id,e:p.e,n:p.n,z:p.z})});
   S.pts=base;
   const ulWanted=$('#revUlChk').checked&&!$('#revUl').hidden,src=R,page=+$('#revUlPage').value||1;
   $('#rev').close();refit();renderAll();save();
-  toast(`${mode==='append'?'Added':'Imported'} ${P.length} point${P.length>1?'s':''}`);
+  toast(`${mode==='append'?'Added':'Imported'} ${P.length} point${P.length>1?'s':''}${crsMsg}`,crsMsg?4200:2400);
   setTab('boundary');
   if(ulWanted){try{if(src.src==='pdf')await underlayFromPdf(src.pdf,Math.max(1,Math.min(src.pdf.numPages,page)),src.base);else if(src.img)setUnderlay({img:src.img,w:src.img.naturalWidth,h:src.img.naturalHeight,name:src.base});toast('Drawing underlay ready in Measure')}catch(e){toast('Underlay failed: '+e.message)}}
 }
@@ -1324,14 +1499,20 @@ $('#revAppend').addEventListener('click',()=>applyReview('append'));
 
 /* ================= Coordinates tab ================= */
 function renderPts(){
-  const tb=$('#ptBody');
-  if(!S.pts.length){tb.innerHTML='<tr><td colspan="6" class="empty">No points yet. Import a file, paste text, load the sample, or press <b>+ Add point</b>.</td></tr>';return}
-  tb.innerHTML=S.pts.map((p,i)=>`<tr data-i="${i}"><td class="ix">${i+1}</td><td><input class="cin id" data-f="id" value="${esc(p.id)}" aria-label="Point ID"></td><td><input class="cin" data-f="e" inputmode="decimal" value="${fc(p.e)}" aria-label="Easting"></td><td><input class="cin" data-f="n" inputmode="decimal" value="${fc(p.n)}" aria-label="Northing"></td><td><input class="cin" data-f="z" inputmode="decimal" value="${fc(p.z)}" placeholder="—" aria-label="Level"></td><td class="acts"><button class="ib" type="button" data-a="up" title="Move up">↑</button> <button class="ib" type="button" data-a="dn" title="Move down">↓</button> <button class="ib del" type="button" data-a="del" title="Delete">✕</button></td></tr>`).join('');
+  const tb=$('#ptBody'),ll=showLL();
+  $('#ptHead').innerHTML=`<tr><th>#</th><th>Point ID</th><th class="r">Easting (E / X)</th><th class="r">Northing (N / Y)</th><th class="r">Level (Z)</th>${ll?'<th>Latitude</th><th>Longitude</th>':''}<th></th></tr>`;
+  $('#llChk').checked=!!S.showLL;
+  if(!S.pts.length){tb.innerHTML=`<tr><td colspan="${ll?8:6}" class="empty">No points yet. Import a file, paste text, load the sample, or press <b>+ Add point</b>.</td></tr>`;return}
+  tb.innerHTML=S.pts.map((p,i)=>`<tr data-i="${i}"><td class="ix">${i+1}</td><td><input class="cin id" data-f="id" value="${esc(p.id)}" aria-label="Point ID"></td><td><input class="cin" data-f="e" inputmode="decimal" value="${fc(p.e)}" aria-label="Easting"></td><td><input class="cin" data-f="n" inputmode="decimal" value="${fc(p.n)}" aria-label="Northing"></td><td><input class="cin" data-f="z" inputmode="decimal" value="${fc(p.z)}" placeholder="N/A" aria-label="Level"></td>${ll?llCells(p):''}<td class="acts"><button class="ib" type="button" data-a="up" title="Move up">↑</button> <button class="ib" type="button" data-a="dn" title="Move down">↓</button> <button class="ib del" type="button" data-a="del" title="Delete">✕</button></td></tr>`).join('');
 }
+const showLL=()=>!!(S.showLL&&S.crs&&P4);
+function llCells(p){const l=toLL(p.e,p.n);return l?`<td class="ll" data-ll="lat">${llDMS(l[1],'N','S')}</td><td class="ll" data-ll="lon">${llDMS(l[0],'E','W')}</td>`:'<td class="ll" data-ll="lat">—</td><td class="ll" data-ll="lon">—</td>'}
+$('#llChk').addEventListener('change',async e=>{S.showLL=e.target.checked;save();if(S.showLL&&S.crs){try{await proj()}catch(err){toast('Projection library did not load');}}renderPts()});
 let derT=0;const later=()=>{clearTimeout(derT);derT=setTimeout(()=>{renderDerived();save()},90)};
 $('#ptBody').addEventListener('input',e=>{
   const inp=e.target.closest('.cin');if(!inp)return;const i=+inp.closest('tr').dataset.i,f=inp.dataset.f,p=S.pts[i];
   if(f==='id'){p.id=inp.value}else{const s=inp.value.trim();if(f==='z'&&s===''){p.z=null;inp.classList.remove('bad')}else{const v=parseNum(s);if(isFinite(v)){p[f]=v;inp.classList.remove('bad')}else inp.classList.add('bad')}}
+  if((f==='e'||f==='n')&&showLL()){const tr=inp.closest('tr'),l=toLL(p.e,p.n);tr.querySelector('[data-ll="lat"]').textContent=l?llDMS(l[1],'N','S'):'—';tr.querySelector('[data-ll="lon"]').textContent=l?llDMS(l[0],'E','W'):'—'}
   later();
 });
 $('#ptBody').addEventListener('click',e=>{
@@ -1431,7 +1612,8 @@ $('#distCsv').addEventListener('click',()=>download('boundary-distances.csv',dis
 $('#mxCopy').addEventListener('click',()=>{const P=S.pts,f=fac();copy([['',...P.map(p=>p.id)],...P.map((a,i)=>[a.id,...P.map((b,j)=>i===j?'':fmtLen(segLen(a,b)*f,false).replace(/,/g,''))])].map(r=>r.join('\t')).join('\n'),'Matrix copied')});
 
 /* ================= Exports ================= */
-$('#csvBtn').addEventListener('click',()=>{if(!S.pts.length){toast('No points to export');return}download('boundary-points.csv',['ID,Easting,Northing,Level',...S.pts.map(p=>[csvCell(p.id),fc(p.e),fc(p.n),fc(p.z)].join(','))].join('\n'),'text/csv')});
+$('#csvBtn').addEventListener('click',()=>{if(!S.pts.length){toast('No points to export');return}const ll=!!(S.crs&&P4);
+  download('boundary-points.csv',[`ID,Easting,Northing,Level${ll?',Latitude,Longitude':''}`,...S.pts.map(p=>{const l=ll?toLL(p.e,p.n):null;return [csvCell(p.id),fc(p.e),fc(p.n),p.z!=null?fc(p.z):'N/A',...(ll?[l?l[1].toFixed(9):'',l?l[0].toFixed(9):'']:[])].join(',')}),...(ll?[`# ${S.crs.name}${S.crs.id?' ('+S.crs.id+')':''}`]:[])].join('\n'),'text/csv')});
 $('#dxfBtn').addEventListener('click',()=>{
   const P=S.pts;if(P.length<2){toast('Need at least two points for a DXF');return}
   const bb=bboxOf(P),h=Math.max(bb.maxE-bb.minE,bb.maxN-bb.minN)/90||1,L=[];const add=(...a)=>L.push(...a.map(String));const n6=v=>(+v).toFixed(6);
@@ -1454,12 +1636,446 @@ $('#mClear').addEventListener('click',()=>{if(!S.meas.length)return;if(!confirm(
 $('#mUndo').addEventListener('click',()=>{if(M.cur){M.cur.pts.pop();if(!M.cur.pts.length)M.cur=null}else if(S.meas.length){S.meas.pop();save();renderMeasList()}MV.request();updHud()});
 $('#mFit').addEventListener('click',()=>MV.fitAll());$('#bFit').addEventListener('click',()=>BV.fitAll());
 
+/* ================= Coordinate systems ================= */
+const GEO={id:'EPSG:4326',name:'WGS 84 latitude / longitude',def:'+proj=longlat +datum=WGS84 +no_defs',geo:true};
+const CRS_LIB=[
+  {g:'Bahrain & Gulf',id:'EPSG:20439',name:'Ain el Abd / UTM zone 39N',area:'Bahrain national grid · eastern Saudi Arabia',def:'+proj=utm +zone=39 +ellps=intl +towgs84=-143,-236,7,0,0,0,0 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:32639',name:'WGS 84 / UTM zone 39N',area:'Bahrain · Qatar · western UAE · eastern Saudi Arabia',def:'+proj=utm +zone=39 +datum=WGS84 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:2932',name:'QND95 / Qatar National Grid',area:'Qatar',def:'+proj=tmerc +lat_0=24.45 +lon_0=51.2166666666667 +k=0.99999 +x_0=200000 +y_0=300000 +ellps=intl +towgs84=-119.4248,-303.65872,-11.00061,1.164298,0.174458,1.096259,3.657065 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:3997',name:'WGS 84 / Dubai Local TM',area:'Dubai',def:'+proj=tmerc +lat_0=0 +lon_0=55.3333333333333 +k=1 +x_0=500000 +y_0=0 +datum=WGS84 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:32640',name:'WGS 84 / UTM zone 40N',area:'Eastern UAE · Oman',def:'+proj=utm +zone=40 +datum=WGS84 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:3440',name:'PSD93 / UTM zone 40N',area:'Oman',def:'+proj=utm +zone=40 +a=6378249.145 +rf=293.465 +towgs84=-180.624,-225.516,173.919,-0.81,-1.898,8.336,16.71006 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:31901',name:'KUDAMS / KTM',area:'Kuwait',def:'+proj=tmerc +lat_0=0 +lon_0=48 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=226.702,-193.337,-35.371,2.229,4.391,-9.238,0.9798 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:20438',name:'Ain el Abd / UTM zone 38N',area:'Central Saudi Arabia · Kuwait',def:'+proj=utm +zone=38 +ellps=intl +towgs84=-143,-236,7,0,0,0,0 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:32638',name:'WGS 84 / UTM zone 38N',area:'Central Saudi Arabia · Kuwait · Iraq',def:'+proj=utm +zone=38 +datum=WGS84 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:20437',name:'Ain el Abd / UTM zone 37N',area:'Western Saudi Arabia',def:'+proj=utm +zone=37 +ellps=intl +towgs84=-143,-236,7,0,0,0,0 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:32637',name:'WGS 84 / UTM zone 37N',area:'Western Saudi Arabia · Jordan',def:'+proj=utm +zone=37 +datum=WGS84 +units=m +no_defs'},
+  {g:'Bahrain & Gulf',id:'EPSG:2318',name:'Ain el Abd / Aramco Lambert',area:'Saudi Aramco areas',def:'+proj=lcc +lat_0=25.08951 +lon_0=48 +lat_1=17 +lat_2=33 +x_0=0 +y_0=0 +ellps=intl +towgs84=-143,-236,7,0,0,0,0 +units=m +no_defs'},
+  {g:'Elsewhere',id:'EPSG:27700',name:'OSGB36 / British National Grid',area:'United Kingdom',def:'+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs'}
+];
+let P4=null;const convC=new Map();
+async function proj(){if(!P4){await loadScript(LIB.proj4);P4=window.proj4}return P4}
+function conv(a,b){const k=a+'|'+b;let c=convC.get(k);if(!c){c=P4(a,b);convC.set(k,c)}return c}
+function crsMeta(def){
+  const p=new P4.Proj(def);const geo=p.projName==='longlat';const u=String(p.units||'').toLowerCase(),tm=p.to_meter;
+  let units='m';if(u==='us-ft'||(tm&&Math.abs(tm-1200/3937)<1e-9))units='usft';else if(u==='ft'||(tm&&Math.abs(tm-.3048)<1e-9))units='ft';
+  return {geo,units};
+}
+const crsUF=c=>CU[(c&&c.units)||'m'].f;
+function toNative(e,n,c=S.crs){const k=fac()/crsUF(c);return [e*k,n*k]}
+function fromNative(x,y,c=S.crs){const k=crsUF(c)/fac();return [x*k,y*k]}
+function toLL(e,n,c=S.crs){if(!c||!P4)return null;try{const r=conv(c.def,GEO.def).forward(toNative(e,n,c));return isFinite(r[0])&&isFinite(r[1])&&Math.abs(r[1])<=90&&Math.abs(r[0])<=540?r:null}catch(err){return null}}
+function llDMS(v,pos,neg){return dms(Math.abs(v),2,2)+(v>=0?pos:neg)}
+const fmtLLs=ll=>ll?`${llDMS(ll[1],'N','S')}  ${llDMS(ll[0],'E','W')}`:'—';
+const fmtLLd=ll=>ll?`${ll[1].toFixed(8)}, ${ll[0].toFixed(8)}`:'';
+function crsFactors(e,n,c=S.crs){
+  if(!c||!P4)return null;
+  try{
+    const p=new P4.Proj(c.def),tm=p.to_meter||1,R=Math.PI/180,[X,Y]=toNative(e,n,c),x=X*tm,y=Y*tm,d=10;
+    const g0=p.inverse({x,y}),gE=p.inverse({x:x+d,y}),gN=p.inverse({x,y:y+d});
+    const a=p.a,es=p.es||0,s2=Math.sin(g0.y)**2,W=Math.sqrt(1-es*s2),Mr=a*(1-es)/W**3,Nr=a/W;
+    const gd=(u,v)=>Math.hypot(Mr*(v.y-u.y),Nr*Math.cos((u.y+v.y)/2)*(v.x-u.x));
+    const k=(d/gd(g0,gE)+d/gd(g0,gN))/2;
+    const q=p.forward({x:g0.x,y:g0.y+1e-6});const gamma=Math.atan2(q.x-x,q.y-y)/R;
+    if(!isFinite(k)||!isFinite(gamma))return null;
+    return {ll:toLL(e,n,c),k,gamma,Rm:Math.sqrt(Mr*Nr)};
+  }catch(err){return null}
+}
+function convText(g){const a=Math.abs(g);return a<1/3600?'0°':`${dms(a,1,0)} ${g<0?'west':'east'}`}
+function siteCentre(){const st=boundaryStats();return st.c}
+function renderCrsPill(){
+  const c=S.crs,pill=$('#crsPill');pill.classList.toggle('local',!c);
+  $('#crsPillName').textContent=c?c.name:'Local grid';
+  $('#crsPillSub').textContent=c?`${c.id||'Custom'} · ${CU[c.units||'m'].l}`:'No coordinate system · set one';
+  $('#crsPillCode').textContent=c?(/^EPSG:\d+$/.test(c.id||'')?c.id.slice(5):'CRS'):'SET';
+  $('#llSw').hidden=!c;$('#kmlBtn').disabled=!c||!S.pts.length;$('#csfCrs').hidden=!c;
+}
+
+/* ---- CRS dialog ---- */
+let crsSel=null;
+function crsAll(){const own=S.crsCustom.slice();if(S.crs&&!CRS_LIB.some(c=>c.id===S.crs.id)&&!own.some(c=>c.id===S.crs.id))own.unshift(S.crs);return [...own.map(c=>({...c,g:'Your systems'})),...CRS_LIB]}
+async function openCrs(){
+  crsSel=S.crs?{...S.crs}:{id:'local'};$('#crsQ').value='';renderCrsList();renderCrsInfo();$('#crsDlg').showModal();
+  try{await proj();renderCrsInfo()}catch(err){$('#crsFoot').textContent='The projection library did not load. Check your internet connection.'}
+}
+function renderCrsList(){
+  const q=$('#crsQ').value.trim().toLowerCase(),all=crsAll();
+  const hit=c=>!q||(c.name+' '+(c.id||'')+' '+(c.area||'')).toLowerCase().includes(q);
+  const row=c=>`<label class="crs-row${crsSel&&crsSel.id===c.id?' sel':''}" data-cid="${esc(c.id)}"><input type="radio" name="crsR" ${crsSel&&crsSel.id===c.id?'checked':''}><b>${esc(c.name)}</b><span>${esc(c.id||'Custom')}${c.area?' · '+esc(c.area):''}</span></label>`;
+  let h='';if(!q||'local site grid none'.includes(q))h+=`<h4>No system</h4>${row({id:'local',name:'Local / site grid',area:'Distances as given. No lat / long.'})}`;
+  const groups=[...new Set(all.map(c=>c.g))];
+  groups.forEach(g=>{const L=all.filter(c=>c.g===g&&hit(c));if(L.length)h+=`<h4>${esc(g)}</h4>`+L.map(row).join('')});
+  $('#crsList').innerHTML=h||'<div class="empty">No match. Try an EPSG code under “Other EPSG code”.</div>';
+}
+function renderCrsInfo(){
+  const c=crsSel,box=$('#crsInfo'),cur=S.crs;
+  const same=(!c||c.id==='local')?!cur:cur&&cur.id===c.id;
+  $('#crsConvert').disabled=!(cur&&c&&c.id!=='local'&&c.id!==cur.id&&S.pts.length&&P4);
+  $('#crsSet').textContent=c&&c.id==='local'?'Use local grid':'Points are in this system';
+  $('#crsFoot').textContent=cur?`Now: ${cur.name}`:'Now: local grid';
+  if(!c||c.id==='local'){box.innerHTML=`<h3>Local / site grid</h3><p class="small">Coordinates are used as they are. Distances, bearings, areas, DXF and layout all work. Lat / long, KML and the scale factor from a projection need a coordinate system.</p>`;return}
+  let h=`<span class="lbl">${esc(c.id||'Custom')}</span><h3>${esc(c.name)}</h3>${c.area?`<p class="small" style="margin:0">${esc(c.area)}</p>`:''}<code>${esc(c.def)}</code>`;
+  const ctr=siteCentre();
+  if(!P4)h+='<p class="small">Loading the projection library…</p>';
+  else if(ctr){
+    const fx=crsFactors(ctr.e,ctr.n,{...c,units:crsUnitsOf(c)});
+    if(fx&&fx.ll){const ll=fx.ll;h+=`<p class="small" style="margin:0 0 6px">If your points are in this system, the site centre is at:</p>
+      <div class="stats one" style="margin:0 0 10px"><div class="stat wide"><span class="lbl">Site centre</span><b style="font-size:16px;font-family:var(--mono)">${esc(fmtLLs(ll))}</b><span>${fmtLLd(ll)}</span></div>
+      <div class="stat"><span class="lbl">Scale factor</span><b>${fx.k.toFixed(6)}</b><span>at the centre</span></div><div class="stat"><span class="lbl">Convergence</span><b style="font-size:15px">${esc(convText(fx.gamma))}</b><span>true N from grid N</span></div></div>
+      <a class="btn sm" href="https://www.google.com/maps?q=${ll[1].toFixed(7)},${ll[0].toFixed(7)}" target="_blank" rel="noopener">Check on Google Maps ↗</a>`}
+    else h+=`<div class="msg warn"><b>!</b><span>Your points don't land anywhere sensible in this system. They are probably in a different one.</span></div>`;
+  }else h+='<p class="small">Add points to see where they fall in this system.</p>';
+  h+=`<p class="small" style="margin:12px 0 0">Lat / long uses the published datum shift, good to a few metres. Grid distances, bearings and areas don't depend on it.</p>`;
+  box.innerHTML=h;
+}
+function crsUnitsOf(c){if(c.units)return c.units;try{return crsMeta(c.def).units}catch(e){return 'm'}}
+$('#crsPill').addEventListener('click',openCrs);
+$('#crsQ').addEventListener('input',renderCrsList);
+$('#crsList').addEventListener('click',e=>{const r=e.target.closest('[data-cid]');if(!r)return;const id=r.dataset.cid;crsSel=id==='local'?{id:'local'}:{...crsAll().find(c=>c.id===id)};delete crsSel.g;renderCrsList();renderCrsInfo()});
+$('#utmHemi').addEventListener('click',e=>{const b=e.target.closest('[data-h]');if(!b)return;$$('#utmHemi button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+function addOwnCrs(c){S.crsCustom=[c,...S.crsCustom.filter(x=>x.id!==c.id)].slice(0,12);crsSel={...c};save();$('#crsQ').value='';renderCrsList();renderCrsInfo();$('#crsList').scrollTop=0}
+$('#utmGo').addEventListener('click',()=>{const z=Math.round(+$('#utmZone').value);if(!(z>=1&&z<=60)){toast('UTM zones run from 1 to 60');return}const s=$('#utmHemi [aria-pressed="true"]').dataset.h==='S';
+  addOwnCrs({id:`EPSG:${s?327:326}${String(z).padStart(2,'0')}`,name:`WGS 84 / UTM zone ${z}${s?'S':'N'}`,area:`UTM zone ${z}, ${s?'southern':'northern'} hemisphere`,def:`+proj=utm +zone=${z}${s?' +south':''} +datum=WGS84 +units=m +no_defs`,units:'m'})});
+$('#crsLook').addEventListener('click',async()=>{
+  const code=$('#crsCode').value.replace(/^\s*epsg:\s*/i,'').trim();if(!/^\d{4,6}$/.test(code)){toast('Type a 4 to 6 digit EPSG code');return}
+  const b=$('#crsLook');b.disabled=true;b.textContent='Looking up…';
+  try{await proj();const r=await fetch(`https://epsg.io/${code}.proj4`);const def=(await r.text()).trim();if(!r.ok||!/^\+proj=/.test(def))throw new Error('no definition found for EPSG:'+code);
+    let name=$('#crsName').value.trim();if(!name){try{const w=await (await fetch(`https://epsg.io/${code}.wkt`)).text();const m=w.match(/^\s*\w+\["([^"]+)"/);if(m)name=m[1]}catch(e){}}
+    useDef(def.replace(/\s*\+type=crs/,''),name||'EPSG:'+code,'EPSG:'+code);
+  }catch(err){toast('Look-up failed: '+err.message,4000)}finally{b.disabled=false;b.textContent='Look up'}
+});
+$('#crsAdd').addEventListener('click',async()=>{const d=$('#crsDef').value.trim();if(!d){toast('Paste a proj4 string or WKT first');return}try{await proj();useDef(d,$('#crsName').value.trim()||'Custom system','CUSTOM:'+Math.abs([...d].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,7)).toString(36))}catch(err){toast('Could not use it: '+err.message,4000)}});
+function useDef(def,name,id){
+  let meta;try{meta=crsMeta(def)}catch(err){throw new Error('that definition is not valid')}
+  if(meta.geo){toast('That is a latitude / longitude system. Pick a projected one with Easting / Northing. Lat / long files can still be imported: choose WGS 84 in the import review.',6000);return}
+  addOwnCrs({id,name,def,units:meta.units,area:'Added by you'});toast(`${name} added`);
+}
+$('#crsSet').addEventListener('click',async()=>{
+  const c=crsSel;if(!c)return;
+  if(c.id==='local'){S.crs=null}else{try{await proj();c.units=crsUnitsOf(c);S.crs={id:c.id,name:c.name,def:c.def,units:c.units,area:c.area||''};S.cu=c.units;$('#cuSel').value=S.cu}catch(err){toast('Projection library did not load',4000);return}}
+  $('#crsDlg').close();renderAll();save();toast(S.crs?`Coordinate system: ${S.crs.name}`:'Using a local grid');
+});
+$('#crsConvert').addEventListener('click',async()=>{
+  const c=crsSel,from=S.crs;if(!c||!from||c.id==='local'||!S.pts.length)return;
+  try{await proj();c.units=crsUnitsOf(c);const T=conv(from.def,c.def),to={id:c.id,name:c.name,def:c.def,units:c.units,area:c.area||''},k=crsUF(to);
+    const mv=p=>{const r=T.forward(toNative(p.e,p.n,from));if(!isFinite(r[0])||!isFinite(r[1]))throw new Error('a point could not be converted');return {...p,e:r[0],n:r[1]}};
+    const pts=S.pts.map(mv),meas=S.meas.map(m=>({...m,pts:m.pts.map(mv)}));
+    S.pts=pts;S.meas=meas;S.crs=to;S.cu=to.units;$('#cuSel').value=S.cu;void k;
+    S.meas.forEach(m=>{if(m.type==='offset'){const ed=offsetInfo(m.pts[0]);if(ed){m.ed=ed;m.pts[1]={e:ed.fe,n:ed.fn,z:null}}}});
+    if(UL){UL=null;renderUl()}
+    $('#crsDlg').close();refit();renderAll();save();toast(`${pts.length} points converted to ${to.name}`,3200);
+  }catch(err){toast('Conversion failed: '+err.message,4500)}
+});
+$('#csfCrs').addEventListener('click',()=>{
+  const c=siteCentre();if(!c||!S.crs){toast('Needs points and a coordinate system');return}
+  if(!P4){proj().then(()=>$('#csfCrs').click());return}
+  const fx=crsFactors(c.e,c.n);if(!fx){toast('Could not work out the scale factor here');return}
+  const zs=S.pts.filter(p=>p.z!=null).map(p=>p.z*fac()),h=zs.length?zs.reduce((a,b)=>a+b,0)/zs.length:0,ef=fx.Rm/(fx.Rm+h),csf=fx.k*ef;
+  S.csf=+csf.toFixed(8);$('#csfIn').value=S.csf.toFixed(6);$('#csfIn').classList.remove('bad');renderDist();save();
+  toast(`CSF ${csf.toFixed(6)} = scale ${fx.k.toFixed(6)} × height ${ef.toFixed(6)} (mean level ${h.toFixed(2)} m, taken as ellipsoidal)`,6000);
+});
+$('#kmlBtn').addEventListener('click',()=>{
+  if(!S.crs||!S.pts.length){toast('KML needs points and a coordinate system');return}
+  const P=S.pts,LL=P.map(p=>toLL(p.e,p.n));if(LL.some(x=>!x)){toast('Some points could not be converted to lat / long');return}
+  const st=boundaryStats(),f=fac(),x=s=>esc(s),cs=a=>a.map(l=>`${l[0].toFixed(9)},${l[1].toFixed(9)},0`).join(' ');
+  const geom=st.closed?`<Polygon><outerBoundaryIs><LinearRing><coordinates>${cs([...LL,LL[0]])}</coordinates></LinearRing></outerBoundaryIs></Polygon>`:`<LineString><coordinates>${cs(LL)}</coordinates></LineString>`;
+  const desc=`${st.closed?'Area '+fmtArea(st.A*f*f).join(' / ')+', perimeter ':'Length '}${fmtLen(st.per*f)}. ${S.crs.name}.`;
+  const kml=`<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Boundary</name>
+<Style id="bnd"><LineStyle><color>ff6045ec</color><width>3</width></LineStyle><PolyStyle><color>406045ec</color></PolyStyle></Style>
+<Style id="pt"><IconStyle><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>
+<Placemark><name>Boundary</name><description>${x(desc)}</description><styleUrl>#bnd</styleUrl>${geom}</Placemark>
+<Folder><name>Points</name>${P.map((p,i)=>`<Placemark><name>${x(p.id)}</name><description>E ${fc(p.e)} N ${fc(p.n)} Z ${p.z!=null?fc(p.z):'N/A'}</description><styleUrl>#pt</styleUrl><Point><coordinates>${LL[i][0].toFixed(9)},${LL[i][1].toFixed(9)},0</coordinates></Point></Placemark>`).join('')}</Folder>
+</Document></kml>`;
+  download('boundary.kml',kml,'application/vnd.google-earth.kml+xml');toast('KML saved. Open it in Google Earth.');
+});
+
+/* ================= Layout sheet ================= */
+const PAPER={A4:[297,210],A3:[420,297],A2:[594,420],A1:[841,594],A0:[1189,841]};
+const STD_SCALES=[10,20,25,50,75,100,125,150,200,250,300,400,500,600,750,1000,1250,1500,2000,2500,3000,4000,5000,7500,10000,12500,15000,20000,25000,50000,100000];
+const LAYERS={LOGO:5,SHEET:7,TITLE:7,TABLES:7,NOTES:7,GRID:8,GRID_TEXT:8,BOUNDARY:1,BOUNDARY_DIMS:3,POINTS:5,POINT_IDS:5,CORNER_COORDS:4,AREA:6,NORTH:7,SCALEBAR:7,MEASURE:30};
+const LHEX={GRID:'#a3abb4',GRID_TEXT:'#6b7480',BOUNDARY:'#d0213a',BOUNDARY_DIMS:'#137a3a',POINTS:'#1d4ed8',POINT_IDS:'#1d4ed8',CORNER_COORDS:'#0e7490',AREA:'#a21caf',MEASURE:'#d97706'};
+const TBF=[['code','Project code'],['project','Project'],['client','Client / owner'],['location','Site / plot'],['title','Sheet title'],['subtitle','Sheet subtitle'],['drawn','Drawn',1],['designed','Designed',1],['checked','Checked',1],['approved','Approved',1],['date','Date'],['qaqc','QAQC reviewer'],['stage','Project stage'],['rev','Revision'],['dwg','Sheet number']];
+function cw(ch){if(/[0-9]/.test(ch))return .78;if(ch===' ')return .39;if(/[.,:;'|!il1]/.test(ch))return .3;if(/[A-Z]/.test(ch))return /[MW]/.test(ch)?1.17:.93;if(/[mw]/.test(ch))return 1.17;if(/[a-z]/.test(ch))return .72;return .8}
+function tw(s,h){let w=0;for(const c of String(s))w+=cw(c);return w*h}
+function fitT(s,h,maxW,minK=.62){s=String(s??'');const w=tw(s,h);if(w<=maxW)return {s,h};const h2=Math.max(h*minK,h*maxW/w);if(tw(s,h2)<=maxW)return {s,h:h2};while(s.length>1&&tw(s+'…',h2)>maxW)s=s.slice(0,-1);return {s:s+'…',h:h2}}
+function wrapT(s,h,maxW){const out=[];for(const para of String(s).split('\n')){let line='';for(const w of para.split(/\s+/).filter(Boolean)){const t=line?line+' '+w:w;if(tw(t,h)<=maxW||!line)line=t;else{out.push(line);line=w}}if(line)out.push(line)}return out}
+function LB(){const it=[];return {it,
+  l(L,a,b,lw=.25){it.push({t:'l',L,a,b,lw})},
+  pl(L,p,c,lw=.25,w){it.push({t:'pl',L,p,c,lw,w})},
+  rect(L,x,y,w,h,lw){this.pl(L,[[x,y],[x+w,y],[x+w,y+h],[x,y+h]],true,lw)},
+  tx(L,p,s,h,ha=0,va=0,r=0,b=false){if(s===''||s==null)return;it.push({t:'tx',L,p,s:String(s),h,ha,va,r,b})},
+  ci(L,p,r,lw=.25){it.push({t:'ci',L,p,r,lw})},
+  so(L,p){it.push({t:'so',L,p})},
+  pt(L,p,w){it.push({t:'pt',L,p,w})},
+  img(L,p,w,h){it.push({t:'img',L,p,w,h})}}}
+function layoutScale(){const ly=S.lay;if(ly.scale==='custom'){const v=parseNumStrict(String(ly.scaleC).replace(/^1\s*:\s*/,''));return v>0?v:null}if(ly.scale==='auto')return null;return +ly.scale||null}
+function buildLayout(){
+  const ly=S.lay,sh=ly.show,[pw,ph]=PAPER[ly.paper]||PAPER.A3,land=ly.orient!=='P',W=land?pw:ph,H=land?ph:pw;
+  const sz=Math.pow(Math.min(W,H)/297,.7),th=2*sz,rh=th*2.05,g=sz,B=LB(),warn=[];
+  const sc=Math.min(W,H)/594,m=Math.max(6,15*sc);  // sc = size relative to the A1 title sheet
+  const P=S.pts,f=fac(),closed=S.closed&&P.length>2,anyZ=P.some(p=>p.z!=null),st=boundaryStats(),uC=CU[S.cu].l,uD=duLabel();
+  const today=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  // sheet: paper edge, drawing frame, title strip on the right (MSCEB A1 title sheet geometry)
+  const SW=77.99*sc,SG=2.96*sc,sx=W-m-SW,F=H-2*m;
+  B.rect('SHEET',0,0,W,H,.1);
+  const area={x:m,y:m,w:sx-SG-m,h:F};B.rect('SHEET',area.x,area.y,area.w,area.h,.35);
+  // notes text
+  const fx=S.crs&&P4&&st.c?crsFactors(st.c.e,st.c.n):null;
+  const notes=[S.crs?`Coordinate system: ${S.crs.name}${/^EPSG:/.test(S.crs.id||'')?' ('+S.crs.id+')':''}.`:'Coordinates are on a local site grid.',
+    `Coordinates in ${({m:'metres',mm:'millimetres',ft:'feet',usft:'US survey feet'})[S.cu]}. Lengths in ${({m:'metres',mm:'millimetres',ft:'feet',ftin:'feet-inches'})[S.du]}.`,
+    S.brg==='quad'?'Bearings are grid quadrant bearings.':'Bearings are grid bearings, clockwise from grid north.',
+    Math.abs(S.csf-1)>1e-12?`Distances are grid distances. Ground = grid ÷ ${(+S.csf).toFixed(6)} (CSF).`:'Distances are grid (plane) distances.'];
+  if(fx&&fx.ll)notes.push(`Site centre ${fmtLLs(fx.ll).replace(/\s+/g,' ')}. Scale factor ${fx.k.toFixed(6)}. True north is ${convText(fx.gamma)} of grid north.`);
+  String(ly.notes||'').split('\n').map(s=>s.trim()).filter(Boolean).forEach(s=>notes.push(s));
+  // schedule panel inside the drawing frame
+  const AH=closed&&sh.area?17*sz:0,useC=sh.table&&P.length,useE=sh.edges&&segList().length>0;
+  const needC=useC?(P.length+2.3)*rh:0,needE=useE?(segList().length+2.3)*rh:0;
+  let vp,panel=null;
+  if(useC||useE||AH){
+    if(land){const PW=Math.max(80,Math.min(105*sz,.38*area.w));panel={x:area.x+area.w-PW,y:area.y,w:PW,h:area.h};vp={x:area.x,y:area.y,w:area.w-PW,h:area.h};B.l('SHEET',[panel.x,area.y],[panel.x,area.y+area.h],.35)}
+    else{const PH=Math.max(.2*area.h,Math.min(.42*area.h,Math.max(needC,needE,AH)+6*sz));panel={x:area.x,y:area.y,w:area.w,h:PH};vp={x:area.x,y:area.y+PH,w:area.w,h:area.h-PH};B.l('SHEET',[area.x,area.y+PH],[area.x+area.w,area.y+PH],.35)}
+  }else vp={...area};
+  // scale & mapping
+  const bb=bboxOf(P),gm=ly.grid!=='off'?9*sz:3*sz,aw=vp.w-2*gm,ah=vp.h-2*gm;
+  let Nreq=null;if(bb){const wE=(bb.maxE-bb.minE)*f,wN=(bb.maxN-bb.minN)*f;Nreq=Math.max(wE*1000/(aw*.76),wN*1000/(ah*.76))}
+  let N=layoutScale();const auto=!N;
+  if(auto)N=Nreq>0?(STD_SCALES.find(s=>s>=Nreq*.999)||Math.ceil(Nreq/50000)*50000):100;
+  const k=N/1000/f,cx=bb?(bb.minE+bb.maxE)/2:0,cy=bb?(bb.minN+bb.maxN)/2:0,vcx=vp.x+vp.w/2,vcy=vp.y+vp.h/2;
+  const mp=(e,n)=>[vcx+(e-cx)/k,vcy+(n-cy)/k];
+  if(bb){const [x0,y0]=mp(bb.minE,bb.minN),[x1,y1]=mp(bb.maxE,bb.maxN);if(x0<vp.x||x1>vp.x+vp.w||y0<vp.y||y1>vp.y+vp.h)warn.push(['err',`The boundary does not fit on ${ly.paper} at 1:${N}. Try 1:${STD_SCALES.find(s=>s>=Nreq)||Math.ceil(Nreq)} or a bigger sheet.`]);else if(!auto&&Nreq&&N>Nreq*3)warn.push(['info',`The boundary is small at 1:${N}. Auto would use 1:${STD_SCALES.find(s=>s>=Nreq)}.`])}
+  const inVp=(x,y,pad=0)=>x>=vp.x+pad&&x<=vp.x+vp.w-pad&&y>=vp.y+pad&&y<=vp.y+vp.h-pad;
+  // grid
+  if(ly.grid!=='off'){
+    const gs=niceStep(45*sz*k),dp=Math.max(0,-Math.floor(Math.log10(gs)+1e-9)),e0=cx-(vp.w/2)*k,e1=cx+(vp.w/2)*k,n0=cy-(vp.h/2)*k,n1=cy+(vp.h/2)*k,arm=2.2*sz,tk=2*sz,lh=th*.8,cl=12*sz;
+    let c1=0;for(let e=Math.ceil(e0/gs)*gs;e<=e1&&c1<200;e+=gs,c1++){const x=mp(e,0)[0];if(x<vp.x+.5||x>vp.x+vp.w-.5)continue;
+      if(ly.grid==='lines')B.l('GRID',[x,vp.y],[x,vp.y+vp.h],.13);else{B.l('GRID',[x,vp.y],[x,vp.y+tk],.18);B.l('GRID',[x,vp.y+vp.h-tk],[x,vp.y+vp.h],.18)}
+      if(x>vp.x+cl&&x<vp.x+vp.w-cl)B.tx('GRID_TEXT',[x,vp.y+tk+g],'E '+e.toFixed(dp),lh,1,0)}
+    c1=0;for(let n=Math.ceil(n0/gs)*gs;n<=n1&&c1<200;n+=gs,c1++){const y=mp(0,n)[1];if(y<vp.y+.5||y>vp.y+vp.h-.5)continue;
+      if(ly.grid==='lines')B.l('GRID',[vp.x,y],[vp.x+vp.w,y],.13);else{B.l('GRID',[vp.x,y],[vp.x+tk,y],.18);B.l('GRID',[vp.x+vp.w-tk,y],[vp.x+vp.w,y],.18)}
+      if(y>vp.y+cl&&y<vp.y+vp.h-cl)B.tx('GRID_TEXT',[vp.x+tk+g+lh,y],'N '+n.toFixed(dp),lh,1,0,90)}
+    if(ly.grid==='cross'){let c2=0;for(let e=Math.ceil(e0/gs)*gs;e<=e1;e+=gs)for(let n=Math.ceil(n0/gs)*gs;n<=n1&&c2<900;n+=gs,c2++){const [x,y]=mp(e,n);if(!inVp(x,y,gm*.7))continue;B.l('GRID',[x-arm,y],[x+arm,y],.18);B.l('GRID',[x,y-arm],[x,y+arm],.18)}}
+  }
+  // boundary
+  if(P.length){
+    const sp=P.map(p=>mp(p.e,p.n)),A=closed?polyArea(P):0,sgn=A>=0?1:-1,c=polyCentroid(P),cp=mp(c.e,c.n);
+    B.pl('BOUNDARY',sp,closed,.5,P.map(p=>[p.e,p.n]));
+    if(sh.dist||sh.brg){const h=th*.95;segList().forEach(([i,j])=>{const a=P[i],b=P[j],dE=b.e-a.e,dN=b.n-a.n,Lr=Math.hypot(dE,dN);if(!Lr)return;
+      const [x1,y1]=sp[i],[x2,y2]=sp[j],pl=Math.hypot(x2-x1,y2-y1);if(pl<7*sz)return;
+      let ox=sgn*dN/Lr,oy=-sgn*dE/Lr;if(!closed){ox=-dN/Lr;oy=dE/Lr}
+      let r=Math.atan2(y2-y1,x2-x1)*180/Math.PI;if(r>90)r-=180;if(r<=-90)r+=180;const mx=(x1+x2)/2,my=(y1+y2)/2,d=g*1.1+h/2;
+      const t1=sh.dist?fmtLen(Lr*f,false):null,t2=sh.brg?fmtBrg(dE,dN):null;
+      if(t1){const t=fitT(t1,h,pl*.92);B.tx('BOUNDARY_DIMS',[mx+ox*d,my+oy*d],t.s,t.h,1,2,r)}
+      if(t2){const t=fitT(t2,h,pl*.92),s=t1?-1:1;B.tx('BOUNDARY_DIMS',[mx+s*ox*d,my+s*oy*d],t.s,t.h,1,2,r)}})}
+    P.forEach((p,i)=>{const [x,y]=sp[i];B.ci('POINTS',[x,y],.75*sz,.3);B.pt('POINTS',[x,y],[p.e,p.n,p.z??0]);
+      if(!sh.ids&&!sh.xy)return;
+      let dx=x-cp[0],dy=y-cp[1];const dl=Math.hypot(dx,dy);if(dl<1e-6){dx=.7;dy=.7}else{dx/=dl;dy/=dl}
+      const L=[];if(sh.ids)L.push({s:p.id||'#'+(i+1),h:th*1.1,ly:'POINT_IDS'});if(sh.xy){L.push({s:'E '+fcd(p.e),h:th*.78,ly:'CORNER_COORDS'},{s:'N '+fcd(p.n),h:th*.78,ly:'CORNER_COORDS'})}
+      const bw=Math.max(...L.map(l=>tw(l.s,l.h))),bh=L.reduce((s,l)=>s+l.h*1.45,0),r=2.2*sz+Math.abs(dx)*bw/2+Math.abs(dy)*bh/2,bx=x+dx*r,by=y+dy*r;
+      let yy=by+bh/2;L.forEach(l=>{yy-=l.h*1.45;B.tx(l.ly,[bx,yy+l.h*.2],l.s,l.h,1,0)})});
+    if(sh.area&&closed){const ar=fmtArea(A*f*f);B.tx('AREA',[cp[0],cp[1]+th*.35],'AREA '+ar[0],th*1.25,1,0);B.tx('AREA',[cp[0],cp[1]-th*1.25],ar[1],th*.9,1,0)}
+  }else B.tx('TITLE',[vcx,vcy],'No boundary yet. Import coordinates first.',th*1.6,1,2);
+  if(sh.meas)S.meas.forEach(mm=>{const Q=mm.pts.map(p=>mp(p.e,p.n));if(Q.length<2&&mm.type!=='offset')return;B.pl('MEASURE',Q,mm.type==='area'&&Q.length>2,.3);
+    const v=mVals(mm),c=mm.type==='area'?mp(polyCentroid(mm.pts).e,polyCentroid(mm.pts).n):[(Q[0][0]+Q[Q.length-1][0])/2,(Q[0][1]+Q[Q.length-1][1])/2];B.tx('MEASURE',[c[0]+g,c[1]+g],`M${mm.id} ${v.main}`,th*.85,0,0)});
+  // north arrow (grid north)
+  {const nx=vp.x+vp.w-gm-9*sz,ny=vp.y+vp.h-gm-12*sz,s=sz;B.ci('NORTH',[nx,ny],6.5*s,.25);
+    const T=[nx,ny+7*s],Lp=[nx-3.4*s,ny-5*s],Rp=[nx+3.4*s,ny-5*s],Np=[nx,ny-2.4*s];B.pl('NORTH',[T,Rp,Np,Lp],true,.3);B.so('NORTH',[T,Rp,Np]);
+    B.tx('NORTH',[nx,ny+8.4*s],'N',th*1.5,1,0,0,true);B.tx('NORTH',[nx,ny-8.6*s],'GRID NORTH',th*.62,1,3)}
+  // scale bar
+  {const Lw=niceStep(48*sz*k),len=Lw/k,x0=vp.x+gm+4*sz,y0=vp.y+gm+5*sz,hb=1.6*sz;
+    for(let i=0;i<4;i++){const xa=x0+i*len/4,xb=x0+(i+1)*len/4;if(i%2===0)B.so('SCALEBAR',[[xa,y0],[xb,y0],[xb,y0+hb],[xa,y0+hb]]);else B.rect('SCALEBAR',xa,y0,len/4,hb,.25)}
+    const u=CU[S.cu].l,fmt=v=>String(+v.toFixed(6));B.tx('SCALEBAR',[x0,y0+hb+g],'0',th*.8,1,0);B.tx('SCALEBAR',[x0+len/2,y0+hb+g],fmt(Lw/2),th*.8,1,0);B.tx('SCALEBAR',[x0+len,y0+hb+g],`${fmt(Lw)} ${u}`,th*.8,1,0);
+    B.tx('SCALEBAR',[x0,y0-g*1.2],`SCALE 1:${N} @${ly.paper}`,th*.9,0,3,0,true)}
+  // schedules
+  const table=(box,title,cols,rows)=>{const tH=rh*1.15,cap=Math.max(0,Math.floor((box.h-tH-rh)/rh));let R=rows,more=0;if(rows.length>cap){R=rows.slice(0,Math.max(0,cap-1));more=rows.length-R.length}
+    const used=tH+rh*(1+R.length+(more?1:0)),top=box.y+box.h,bot=top-used,sw=cols.reduce((s,c)=>s+c.w,0),xs=[box.x];cols.forEach(c=>xs.push(xs[xs.length-1]+c.w/sw*box.w));
+    B.rect('TABLES',box.x,bot,box.w,used,.35);B.tx('TABLES',[box.x+g*1.6,top-tH/2],title,th*1.02,0,2,0,true);B.l('TABLES',[box.x,top-tH],[box.x+box.w,top-tH],.3);B.l('TABLES',[box.x,top-tH-rh],[box.x+box.w,top-tH-rh],.25);
+    for(let c=1;c<cols.length;c++)B.l('TABLES',[xs[c],top-tH],[xs[c],bot+(more?rh:0)],.18);
+    cols.forEach((c,ci)=>{const t=fitT(c.h,th*.72,xs[ci+1]-xs[ci]-2*g);B.tx('TABLES',[c.a?xs[ci+1]-g:xs[ci]+g,top-tH-rh/2],t.s,t.h,c.a?2:0,2)});
+    R.forEach((r,ri)=>{const yc=top-tH-rh*(ri+1.5);if(ri)B.l('TABLES',[box.x,yc+rh/2],[box.x+box.w,yc+rh/2],.1);r.forEach((v,ci)=>{const t=fitT(v,th*.9,xs[ci+1]-xs[ci]-2*g);B.tx('TABLES',[cols[ci].a?xs[ci+1]-g:xs[ci]+g,yc],t.s,t.h,cols[ci].a?2:0,2)})});
+    if(more){B.l('TABLES',[box.x,bot+rh],[box.x+box.w,bot+rh],.18);B.tx('TABLES',[box.x+g,bot+rh/2],`… ${more} more row${more>1?'s':''}: see the CSV export`,th*.8,0,2)}
+    if(more)warn.push(['warn',`${title.charAt(0)+title.slice(1).toLowerCase()} is cut short by ${more} row${more>1?'s':''}. Use a bigger sheet, or the CSV.`]);return used};
+  const coordT=box=>table(box,'COORDINATE SCHEDULE',[{h:'POINT',w:.75},{h:`EASTING (${uC})`,w:1.25,a:1},{h:`NORTHING (${uC})`,w:1.35,a:1},{h:'LEVEL',w:.8,a:1}],P.map((p,i)=>[p.id||'#'+(i+1),fcd(p.e),fcd(p.n),p.z!=null?fcd(p.z):'N/A']));
+  const edgeT=box=>table(box,'BOUNDARY SCHEDULE',[{h:'LINE',w:1},{h:`DISTANCE (${uD})`,w:1.15,a:1},{h:'BEARING',w:1.15,a:1}],segList().map(([i,j])=>{const a=P[i],b=P[j];return [`${a.id}-${b.id}`,fmtLen(segLen(a,b)*f,false),fmtBrg(b.e-a.e,b.n-a.n)]}));
+  const areaB=(x,y,w)=>{const ar=fmtArea(st.A*f*f);B.rect('TABLES',x,y,w,AH,.35);B.tx('TABLES',[x+g*1.6,y+AH-g*1.4],'SITE AREA',th*.72,0,3,0,true);const t=fitT(ar[0],th*1.9,w-4*g);B.tx('AREA',[x+g*1.6,y+AH*.36],t.s,t.h,0,0,0,true);B.tx('TABLES',[x+w-g*1.6,y+AH*.36],`${ar[1]}`,th*.9,2,0);B.tx('TABLES',[x+g*1.6,y+g*1.2],`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75,0,0)};
+  const gap=2.5*sz;
+  if(panel&&land){
+    const x=panel.x+gap,w=panel.w-2*gap;let yb=panel.y+gap;if(AH){areaB(x,yb,w);yb+=AH+gap}
+    const top=panel.y+panel.h-gap,avail=top-yb;
+    if(avail>rh*4&&(needC||needE)){let hc=needC,he=needE;if(needC+needE+gap>avail){const s2=(avail-(needC&&needE?gap:0))/(needC+needE);hc=needC*s2;he=needE*s2}
+      let yt=top;if(needC){coordT({x,y:yt-hc,w,h:hc});yt-=hc+gap}if(needE)edgeT({x,y:yt-he,w,h:he})}
+    else if(needC||needE)warn.push(['warn','No room left for the schedules on this sheet. Use a bigger sheet.']);
+  }else if(panel){
+    const aw2=AH?Math.min(70*sz,.3*panel.w):0,tw2=panel.w-aw2-gap*(AH?3:2),ty=panel.y+gap,thh=panel.h-2*gap;
+    if(useC&&useE){coordT({x:panel.x+gap,y:ty,w:tw2*.55-gap/2,h:thh});edgeT({x:panel.x+gap+tw2*.55+gap/2,y:ty,w:tw2*.45-gap/2,h:thh})}
+    else if(useC)coordT({x:panel.x+gap,y:ty,w:tw2,h:thh});else if(useE)edgeT({x:panel.x+gap,y:ty,w:tw2,h:thh});
+    if(AH)areaB(panel.x+panel.w-gap-aw2,panel.y+panel.h-gap-AH,aw2);
+  }
+  // ---------- title strip ----------
+  titleStrip(B,{sx,m,F,sc,N,notes,today,paper:ly.paper,warn});
+  B.tx('SHEET',[m,m*.42],`Boundary Distance Solver · ${S.crs?S.crs.name+' · ':''}produced ${today}`,Math.min(1.7*sz,m*.32),0,0);
+  return {W,H,N,k,cx,cy,vcx,vcy,vp,auto,items:B.it,warn,sz};
+}
+/* MSCEB A1 title strip. Template units are mm on the A1 sheet (strip 78 mm wide, 564 mm tall), scaled by sc for other sizes. */
+function titleStrip(B,o){
+  const {sx,m,F,sc,N,notes,today,paper,warn}=o,tb=S.lay.tb,L='TITLE',lw=.18,Wt=77.99,Ht=F/sc;
+  // the middle boxes (site, notes, key plan) take up any extra height, e.g. in portrait
+  const extra=Ht-563.98,bx1=75.02+extra*.2,bx2=75.01+extra*.6,bx3=78.07+extra*.2;
+  const yT=d=>m+F-d*sc,yB=v=>m+v*sc,X=u=>sx+u*sc;
+  const hl=(y,u0=0,u1=Wt)=>B.l(L,[X(u0),y],[X(u1),y],lw);
+  const t=(u,y,s,h,ha=0,b=false,maxU)=>{if(s==null||s==='')return;let hh=h*sc,ss=String(s);if(maxU){const r=fitT(ss,hh,maxU*sc);ss=r.s;hh=r.h}B.tx(L,[X(u),y],ss,hh,ha,0,0,b)};
+  // top block
+  [0,9.99,37.93,66.97,108.96,156.04].forEach(d=>hl(yT(d)));
+  t(39,yT(6.68),tb.code,2.51,1,false,74);
+  B.img('LOGO',[X(2.73),yT(36.47)],72.48*sc,24.39*sc);
+  t(3.07,yT(43.77),'P.O. BOX 1166 MANAMA,',2.03);t(74.82,yT(43.77),'KINGDOM OF BAHRAIN',2.03,2);
+  t(3.24,yT(48.25),'TEL: +973 17 815775',2.03);t(74.42,yT(48.25),'FAX: +973 17 825010 / 17910825',2.03,2);
+  t(38.3,yT(51.98),'http://www.msceb.com    e-mail: headoffice@msceb.com',1.75,1);
+  t(38.3,yT(57.06),'LICENCE NO. EPP. BN/10  CLASS A',2.03,1);
+  t(38.5,yT(61.89),'THIS DRAWING IS THE PROPERTY OF MSCEB. IT SHALL NOT BE COPIED',1.38,1);
+  t(38.5,yT(64.09),'OR REPRODUCED IN ANY MANNER WITHOUT THEIR WRITTEN CONSENT.',1.38,1);
+  t(0,yT(75.01),'PROJECT',2.51);
+  wrapT(tb.project||'',3.64*sc,50*sc).slice(0,4).forEach((l,i)=>t(0,yT(82.8+i*5.76),l,3.64));
+  t(0,yT(115.99),'CLIENT / OWNER',2.51);
+  wrapT(tb.client||'',3.64*sc,50*sc).slice(0,4).forEach((l,i)=>t(0,yT(124.71+i*5.76),l,3.64));
+  // site / plot box
+  let d=156.04;
+  if(tb.location){t(0,yT(d+6.26),'SITE / PLOT',2.51);wrapT(tb.location,3.64*sc,76*sc).slice(0,6).forEach((l,i)=>t(0,yT(d+14.96+i*5.76),l,3.64))}
+  d+=bx1;hl(yT(d));
+  // notes box
+  t(0,yT(d+6.26),'NOTES',2.51);
+  {let nh=1.75,pitch=1.5,lines=[];const fitN=()=>{lines=[];notes.forEach((s,i)=>wrapT(`${i+1}. ${s}`,nh*sc,76.5*sc).forEach(l=>lines.push(l)))};fitN();
+    const room=bx2-10.5;while(lines.length*nh*pitch>room&&nh>1.2){nh-=.05;fitN()}
+    const cap=Math.floor(room/(nh*pitch));if(lines.length>cap){warn.push(['warn',`Notes are too long for the title block. ${lines.length-cap} line${lines.length-cap>1?'s were':' was'} left off.`]);lines=lines.slice(0,cap)}
+    lines.forEach((l,i)=>t(0,yT(d+10.6+i*nh*pitch),l,nh))}
+  d+=bx2;hl(yT(d));
+  t(0,yT(d+6.26),'KEY PLAN',2.51);
+  // bottom block (measured up from the frame bottom)
+  [179.84,125.23,83.23,77.31,71.47,65.54,59.61,53.77,47.84,38.02,32.52,16.26,0].forEach(v=>hl(yB(v)));
+  const rl=[130.99,135.98,140.81,145.72,150.55,155.37,160.28,165.11,169.94,174.76];
+  rl.forEach(v=>{hl(yB(v),0,8.05);hl(yB(v),12.36,28.96);hl(yB(v),33.87,Wt)});
+  t(1.29,yB(128.21),'R NO',2.0);t(16.7,yB(128.21),'DATE',2.0);t(57.33,yB(128.21),'DESCRIPTION',2.0,1);
+  const revs=String(S.lay.revs||'').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>s.split(/\s*[|\t;]\s*/));
+  if(revs.length>rl.length)warn.push(['warn',`Only the last ${rl.length} revisions fit in the title block.`]);
+  revs.slice(-rl.length).forEach((r,i)=>{const y=yB(rl[i]+.8);t(4.02,y,r[0]||'',2.0,1,false,7.6);t(20.66,y,r[1]||'',2.0,1,false,16);t(34.4,y,r.slice(2).join(' ')||'',2.0,0,false,43)});
+  t(0,yB(118.3),'SHEET TITLE',2.51);
+  t(0,yB(110.0),tb.title||'',3.55,0,true,77);t(0,yB(94.93),tb.subtitle||'',3.55,0,false,77);
+  t(16.37,yB(79.35),'NAME',1.69);t(46.85,yB(79.35),'CRPEP NO.',1.69);
+  [['DRAWN:','drawn',73.43],['DESIGNED:','designed',67.5],['CHECKED:','checked',61.4],['APPROVED:','approved',55.65]].forEach(([lab,key,v])=>{t(0,yB(v),lab,1.69);t(16.37,yB(v),tb[key]||'',1.89,0,false,29);t(46.85,yB(v),tb[key+'No']||'',1.89,0,false,30)});
+  t(0,yB(49.55),'DATE:',1.81);t(16.37,yB(49.55),tb.date||today,2.03,0,false,29);t(46.68,yB(49.55),'SCALE',1.81);t(56.4,yB(49.55),`1:${N} @${paper}`,2.03,0,false,21);
+  t(0,yB(42.1),'QAQC REVIEWER :',1.81);hl(yB(41.32),21.76,51.82);hl(yB(41.32),53.6,Wt);t(36.77,yB(42.3),tb.qaqc||'',1.89,1,false,29);
+  t(36.77,yB(39.22),'Name',1.23,1);t(63.48,yB(39.22),'Signature',1.23,1);
+  B.l(L,[X(66.64),yB(16.26)],[X(66.64),yB(32.52)],lw);
+  t(0,yB(26.94),'PROJECT STAGE',2.51);t(68.52,yB(26.94),'REV.',2.51);
+  t(.19,yB(19.07),tb.stage||'',3.37,0,true,65);t(72.3,yB(19.07),tb.rev||'',3.37,1,false,10);
+  t(0,yB(10.94),'SHEET NUMBER',2.51);t(-.3,yB(3.07),tb.dwg||'',3.37,0,false,77);
+}
+const LOGO=new Image();LOGO.onload=()=>{LOGO.ok=true;try{const c=document.createElement('canvas');c.width=LOGO.naturalWidth;c.height=LOGO.naturalHeight;c.getContext('2d').drawImage(LOGO,0,0);LOGO.data=c.toDataURL('image/jpeg',.9)}catch(e){}layDirty=true;LV.request()};LOGO.src='msceb-logo.jpg';
+let LAY=null,layDirty=true;
+function getLay(){if(layDirty||!LAY){LAY=buildLayout();layDirty=false;renderLayoutInfo()}return LAY}
+const LV=new Viewer($('#lWrap'),{
+  bounds(){const L=getLay();return {minE:0,minN:0,maxE:L.W,maxN:L.H}},
+  draw(ctx,v){drawLayout(ctx,v,getLay())},
+  move(x,y){const L=LAY;if(!L)return;const [px,py]=LV.s2w(x,y),vp=L.vp;let s=`Sheet ${px.toFixed(1)}, ${py.toFixed(1)} mm`;if(px>=vp.x&&px<=vp.x+vp.w&&py>=vp.y&&py<=vp.y+vp.h)s+=`   ·   E ${fcd(L.cx+(px-L.vcx)*L.k)}  N ${fcd(L.cy+(py-L.vcy)*L.k)}`;$('#lCoord').textContent=s},
+  leave(){$('#lCoord').textContent=''}
+});
+function lcol(L){return LHEX[L]||'#1b1b1b'}
+function drawLayout(ctx,v,L){
+  const [x0,y0]=v.w2s(0,L.H),[x1,y1]=v.w2s(L.W,0);
+  ctx.save();ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=18;ctx.shadowOffsetY=4;ctx.fillStyle='#ffffff';ctx.fillRect(x0,y0,x1-x0,y1-y0);ctx.restore();
+  const z=v.z;ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  for(const it of L.items){
+    const col=lcol(it.L);
+    if(it.t==='l'){ctx.strokeStyle=col;ctx.lineWidth=Math.max(.5,it.lw*z);ctx.beginPath();ctx.moveTo(...v.w2s(...it.a));ctx.lineTo(...v.w2s(...it.b));ctx.stroke()}
+    else if(it.t==='pl'){ctx.strokeStyle=col;ctx.lineWidth=Math.max(.5,it.lw*z);ctx.beginPath();it.p.forEach((p,i)=>i?ctx.lineTo(...v.w2s(...p)):ctx.moveTo(...v.w2s(...p)));if(it.c)ctx.closePath();ctx.stroke()}
+    else if(it.t==='ci'){ctx.strokeStyle=col;ctx.lineWidth=Math.max(.5,it.lw*z);ctx.beginPath();ctx.arc(...v.w2s(...it.p),it.r*z,0,Math.PI*2);ctx.stroke()}
+    else if(it.t==='so'){ctx.fillStyle=col;ctx.beginPath();it.p.forEach((p,i)=>i?ctx.lineTo(...v.w2s(...p)):ctx.moveTo(...v.w2s(...p)));ctx.closePath();ctx.fill()}
+    else if(it.t==='img'){const [ix,iy]=v.w2s(it.p[0],it.p[1]+it.h);if(LOGO.ok){ctx.imageSmoothingQuality='high';ctx.drawImage(LOGO,ix,iy,it.w*z,it.h*z)}else{ctx.fillStyle='#1d3f7a';ctx.font=`700 ${it.h*z*.45}px Arial`;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('MSCEB',ix,iy+it.h*z/2)}}
+    else if(it.t==='tx'){const px=it.h*z/.716;if(px<1.6)continue;const [sx,sy]=v.w2s(...it.p);ctx.save();ctx.translate(sx,sy);ctx.rotate(-it.r*Math.PI/180);ctx.fillStyle=col;ctx.font=`${it.b?'700 ':''}${px}px Arial, Helvetica, sans-serif`;ctx.textAlign=['left','center','right'][it.ha];ctx.textBaseline='alphabetic';ctx.fillText(it.s,0,{0:0,2:it.h/2,3:it.h}[it.va]*z);ctx.restore()}
+  }
+  ctx.restore();
+}
+function renderLayoutInfo(){
+  const L=LAY;if(!L)return;const ly=S.lay;
+  $('#lSub').textContent=`${ly.paper} ${ly.orient==='P'?'portrait':'landscape'} · 1:${L.N}${L.auto?' (auto)':''} · 1 mm on paper = ${+(L.N/1000).toFixed(4)} m`;
+  $('#lScaleTxt').textContent=L.N;
+  const o=$('#lScale').querySelector('option[value="auto"]');if(o)o.textContent=`Auto (fits): 1:${L.auto?L.N:'…'}`;
+  $('#lMsgs').innerHTML=msgsHtml(L.warn.length?L.warn:S.pts.length?[['ok',`Boundary placed at true coordinates, 1:${L.N} on ${ly.paper}.`]]:[['info','Import or type coordinates first.']]);
+}
+function layoutChanged(){layDirty=true;LV.fitted=false;if(S.tab==='layout'){LV.resize();LV.fitAll()}save()}
+function syncLayoutUI(){
+  const ly=S.lay;$('#lPaper').value=ly.paper;$$('#lOrient button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.o===ly.orient)));
+  $('#lScale').innerHTML=`<option value="auto">Auto (fits)</option>${STD_SCALES.map(s=>`<option value="${s}">1:${s}</option>`).join('')}<option value="custom">Custom…</option>`;
+  $('#lScale').value=ly.scale==='auto'||ly.scale==='custom'||STD_SCALES.includes(+ly.scale)?String(ly.scale):'auto';$('#lScaleC').hidden=ly.scale!=='custom';$('#lScaleC').value=ly.scaleC||'';
+  $('#lGrid').value=ly.grid;$$('#lShow [data-ls]').forEach(b=>b.setAttribute('aria-pressed',String(!!ly.show[b.dataset.ls])));
+  const inp=(k,ph,st='')=>`<input class="fin" data-tb="${k}" value="${esc(ly.tb[k]||'')}"${ph?` placeholder="${esc(ph)}"`:''}${st?` style="${st}"`:''}>`;
+  const ph={date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-'),code:'e.g. ABD-ABD-23100',stage:'e.g. TENDER DRAWINGS',dwg:'e.g. 2023100-DR-S-MB-509'};
+  $('#lTb').innerHTML=TBF.map(([k,l,pair])=>`<span class="lbl">${l}</span>${pair?`<div class="row" style="flex-wrap:nowrap">${inp(k,'Name','flex:1;min-width:0')}${inp(k+'No','CRPEP no.','width:96px;flex:none')}</div>`:inp(k,ph[k]||'')}`).join('');
+  $('#lNotes').value=ly.notes||'';$('#lRevs').value=ly.revs||'';
+}
+$('#lPaper').addEventListener('change',e=>{S.lay.paper=e.target.value;layoutChanged()});
+$('#lOrient').addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(!b)return;S.lay.orient=b.dataset.o;$$('#lOrient button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));layoutChanged()});
+$('#lScale').addEventListener('change',e=>{S.lay.scale=e.target.value;$('#lScaleC').hidden=S.lay.scale!=='custom';if(S.lay.scale==='custom'){$('#lScaleC').focus()}layoutChanged()});
+$('#lScaleC').addEventListener('input',e=>{S.lay.scaleC=e.target.value;layoutChanged()});
+$('#lGrid').addEventListener('change',e=>{S.lay.grid=e.target.value;layoutChanged()});
+$('#lShow').addEventListener('click',e=>{const b=e.target.closest('[data-ls]');if(!b)return;const k=b.dataset.ls;S.lay.show[k]=!S.lay.show[k];b.setAttribute('aria-pressed',String(S.lay.show[k]));layDirty=true;LV.request();save()});
+$('#lTb').addEventListener('input',e=>{const i=e.target.closest('[data-tb]');if(!i)return;S.lay.tb[i.dataset.tb]=i.value;layDirty=true;LV.request();save()});
+$('#lNotes').addEventListener('input',e=>{S.lay.notes=e.target.value;layDirty=true;LV.request();save()});
+$('#lRevs').addEventListener('input',e=>{S.lay.revs=e.target.value;layDirty=true;LV.request();save()});
+$('#lFit').addEventListener('click',()=>LV.fitAll());
+function freshLayout(){LAY=buildLayout();layDirty=false;renderLayoutInfo();return LAY}
+function layoutName(L,ext){return `boundary-layout-${S.lay.paper}-1-${L.N}.${ext}`}
+function dxfStr(s){return String(s).replace(/°/g,'%%d').replace(/[^\x20-\x7e]/g,c=>'\\U+'+c.charCodeAt(0).toString(16).toUpperCase().padStart(4,'0'))}
+function layoutDXF(L){
+  const k=L.k,ox=L.cx-L.vcx*k,oy=L.cy-L.vcy*k,W=p=>[ox+p[0]*k,oy+p[1]*k],n6=v=>(+v).toFixed(6),out=[],add=(...a)=>out.push(...a.map(String));
+  const used=[...new Set(L.items.map(i=>i.L))];const [ex0,ey0]=W([0,0]),[ex1,ey1]=W([L.W,L.H]);
+  add(0,'SECTION',2,'HEADER',9,'$ACADVER',1,'AC1009',9,'$INSUNITS',70,{m:6,mm:4,ft:2,usft:2}[S.cu],9,'$EXTMIN',10,n6(ex0),20,n6(ey0),30,0,9,'$EXTMAX',10,n6(ex1),20,n6(ey1),30,0,9,'$LIMMIN',10,n6(ex0),20,n6(ey0),9,'$LIMMAX',10,n6(ex1),20,n6(ey1),9,'$TEXTSTYLE',7,'BDS',0,'ENDSEC');
+  add(0,'SECTION',2,'TABLES');
+  add(0,'TABLE',2,'LTYPE',70,1,0,'LTYPE',2,'CONTINUOUS',70,0,3,'Solid line',72,65,73,0,40,'0.0',0,'ENDTAB');
+  add(0,'TABLE',2,'LAYER',70,used.length+1,0,'LAYER',2,'0',70,0,62,7,6,'CONTINUOUS');used.forEach(l=>add(0,'LAYER',2,l,70,0,62,LAYERS[l]||7,6,'CONTINUOUS'));add(0,'ENDTAB');
+  add(0,'TABLE',2,'STYLE',70,3,0,'STYLE',2,'STANDARD',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'txt',4,'',0,'STYLE',2,'BDS',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'arial.ttf',4,'',0,'STYLE',2,'BDSB',70,0,40,'0.0',41,'1.0',50,'0.0',71,0,42,'2.5',3,'arialbd.ttf',4,'',0,'ENDTAB');
+  add(0,'ENDSEC',0,'SECTION',2,'ENTITIES');
+  for(const it of L.items){
+    if(it.t==='l'){const a=W(it.a),b=W(it.b);add(0,'LINE',8,it.L,10,n6(a[0]),20,n6(a[1]),30,0,11,n6(b[0]),21,n6(b[1]),31,0)}
+    else if(it.t==='pl'){const pts=it.w||it.p.map(W);add(0,'POLYLINE',8,it.L,66,1,10,0,20,0,30,0,70,it.c?1:0);pts.forEach(p=>add(0,'VERTEX',8,it.L,10,n6(p[0]),20,n6(p[1]),30,0));add(0,'SEQEND',8,it.L)}
+    else if(it.t==='ci'){const c=W(it.p);add(0,'CIRCLE',8,it.L,10,n6(c[0]),20,n6(c[1]),30,0,40,n6(it.r*k))}
+    else if(it.t==='so'){const q=it.p.map(W),o=q.length===3?[q[0],q[1],q[2],q[2]]:[q[0],q[1],q[3],q[2]];add(0,'SOLID',8,it.L);o.forEach((p,i)=>add(10+i,n6(p[0]),20+i,n6(p[1]),30+i,0))}
+    else if(it.t==='img'){const [x0,y0]=it.p,w=it.w,h=it.h,T=(p,s,hh,ha,b)=>{const q=W(p);add(0,'TEXT',8,'LOGO',10,n6(q[0]),20,n6(q[1]),30,0,40,n6(hh*k),1,dxfStr(s),50,'0.0000',7,b?'BDSB':'BDS');if(ha)add(72,ha,11,n6(q[0]),21,n6(q[1]),31,0,73,0)};
+      T([x0+w*.24,y0+h*.62],'MSCEB',h*.27,0,true);T([x0+w*.24,y0+h*.45],'MOHAMED SALAHUDDIN',h*.075,0,true);T([x0+w*.24,y0+h*.3],'ARCHITECTS & ENGINEERS',h*.075,0,true);T([x0+w/2,y0+h*.03],'MOHAMED SALAHUDDIN CONSULTING ENGINEERING COMPANY W.L.L',h*.062,1,true);
+      const q=[[x0+w*.02,y0+h*.3],[x0+w*.2,y0+h*.3],[x0+w*.2,y0+h*.95],[x0+w*.02,y0+h*.95]].map(W);add(0,'POLYLINE',8,'LOGO',66,1,10,0,20,0,30,0,70,1);q.forEach(p=>add(0,'VERTEX',8,'LOGO',10,n6(p[0]),20,n6(p[1]),30,0));add(0,'SEQEND',8,'LOGO')}
+    else if(it.t==='pt'){add(0,'POINT',8,it.L,10,n6(it.w[0]),20,n6(it.w[1]),30,n6(it.w[2]))}
+    else if(it.t==='tx'){const p=W(it.p);add(0,'TEXT',8,it.L,10,n6(p[0]),20,n6(p[1]),30,0,40,n6(it.h*k),1,dxfStr(it.s),50,(+it.r).toFixed(4),7,it.b?'BDSB':'BDS');if(it.ha||it.va)add(72,it.ha,11,n6(p[0]),21,n6(p[1]),31,0,73,it.va)}
+  }
+  add(0,'ENDSEC',0,'EOF');return out.join('\r\n');
+}
+function layoutSVG(L){
+  const H=L.H,f3=v=>(+v).toFixed(3),X=p=>f3(p[0]),Y=p=>f3(H-p[1]),o=[];
+  o.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${L.W}mm" height="${L.H}mm" viewBox="0 0 ${L.W} ${L.H}"><rect width="${L.W}" height="${L.H}" fill="#fff"/><g fill="none" stroke-linecap="round" stroke-linejoin="round">`);
+  for(const it of L.items){const c=lcol(it.L);
+    if(it.t==='l')o.push(`<line x1="${X(it.a)}" y1="${Y(it.a)}" x2="${X(it.b)}" y2="${Y(it.b)}" stroke="${c}" stroke-width="${it.lw}"/>`);
+    else if(it.t==='pl')o.push(`<${it.c?'polygon':'polyline'} points="${it.p.map(p=>X(p)+','+Y(p)).join(' ')}" stroke="${c}" stroke-width="${it.lw}"/>`);
+    else if(it.t==='ci')o.push(`<circle cx="${X(it.p)}" cy="${Y(it.p)}" r="${f3(it.r)}" stroke="${c}" stroke-width="${it.lw}"/>`);
+    else if(it.t==='so')o.push(`<polygon points="${it.p.map(p=>X(p)+','+Y(p)).join(' ')}" fill="${c}" stroke="none"/>`);
+    else if(it.t==='img'&&LOGO.data)o.push(`<image x="${f3(it.p[0])}" y="${f3(H-it.p[1]-it.h)}" width="${f3(it.w)}" height="${f3(it.h)}" preserveAspectRatio="none" href="${LOGO.data}"/>`);
+    else if(it.t==='tx')o.push(`<text transform="translate(${X(it.p)} ${Y(it.p)}) rotate(${f3(-it.r)})" y="${f3({0:0,2:it.h/2,3:it.h}[it.va])}" font-family="Arial, Helvetica, sans-serif" font-size="${f3(it.h/.716)}"${it.b?' font-weight="700"':''} text-anchor="${['start','middle','end'][it.ha]}" fill="${c}" stroke="none">${esc(it.s)}</text>`);
+  }
+  o.push('</g></svg>');return o.join('\n');
+}
+$('#lDxf').addEventListener('click',()=>{const L=freshLayout();if(!S.pts.length){toast('Import or type coordinates first');return}download(layoutName(L,'dxf'),layoutDXF(L),'application/dxf');toast(`Layout DXF saved: true coordinates, sheet at 1:${L.N}`,3600)});
+$('#lSvg').addEventListener('click',()=>{const L=freshLayout();download(layoutName(L,'svg'),layoutSVG(L),'image/svg+xml')});
+$('#lPdf').addEventListener('click',()=>{
+  const L=freshLayout(),box=$('#printSheet');box.innerHTML=layoutSVG(L);box.style.cssText=`width:${L.W}mm;height:${L.H}mm;overflow:hidden`;
+  const st=document.createElement('style');st.id='pageSize';st.textContent=`@page{size:${L.W}mm ${L.H}mm;margin:0}@media print{html.print-sheet body{margin:0}}`;document.head.appendChild(st);
+  document.documentElement.classList.add('print-sheet');
+  const done=()=>{document.documentElement.classList.remove('print-sheet');st.remove();box.innerHTML='';window.removeEventListener('afterprint',done)};
+  window.addEventListener('afterprint',done);setTimeout(()=>window.print(),50);
+});
+
 /* ================= Tabs & global render ================= */
 function setTab(t){
-  if(!['coords','boundary','dist','measure'].includes(t))t='coords';
+  const TABS=['coords','boundary','dist','measure','layout'];if(!TABS.includes(t))t='coords';
   S.tab=t;$$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
-  ['coords','boundary','dist','measure'].forEach(k=>$('#tab-'+k).hidden=k!==t);
-  if(t==='boundary')BV.resize();if(t==='measure'){MV.resize();updHud()}
+  TABS.forEach(k=>$('#tab-'+k).hidden=k!==t);
+  if(t==='boundary')BV.resize();if(t==='measure'){MV.resize();updHud()}if(t==='layout'){layDirty=true;LV.resize();LV.fitAll()}
   save();
 }
 $$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
@@ -1473,8 +2089,8 @@ function renderDerived(){
   const tiles=statTiles();$('#coordStats').innerHTML=tiles;$('#bStats').innerHTML=tiles||'<div class="empty" style="grid-column:1/-1">Import or type coordinates to see the area, perimeter and edges.</div>';
   $('#bSub').textContent=P.length?`${P.length} points · coordinates in ${CU[S.cu].l} · lengths in ${duLabel()}`:'No points yet';
   $('#closedChk').checked=S.closed;
-  renderDist();renderMeasList();if(UL)renderCal();
-  BV.request();MV.request();
+  renderDist();renderMeasList();if(UL)renderCal();renderCrsPill();
+  layDirty=true;BV.request();MV.request();if(S.tab==='layout')LV.request();
 }
 function renderAll(){renderPts();renderDerived()}
 
@@ -1498,7 +2114,7 @@ function syncControls(){
   $('#cuSel').value=S.cu;$('#decSel').value=String(S.dec);$('#brgSel').value=S.brg;$('#csfIn').value=(+S.csf).toFixed(6);
   $$('#bLabels [data-lab]').forEach(b=>b.setAttribute('aria-pressed',String(!!S.lab[b.dataset.lab])));
   $$('#snapbar [data-snap]').forEach(b=>b.setAttribute('aria-pressed',String(!!S.snap[b.dataset.snap])));
-  $('#mLab').setAttribute('aria-pressed',String(S.mlab));
+  $('#mLab').setAttribute('aria-pressed',String(S.mlab));syncLayoutUI();
   $$('#tools button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tool===S.tool)));$('#mWrap').classList.toggle('panmode',S.tool==='pan');
   applyTheme(S.theme);
 }
@@ -1534,6 +2150,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&S.tab==='measure'&&M.m
 $('#yr').textContent=new Date().getFullYear();$('#today').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 syncControls();renderAll();renderUl();setTab(S.tab||'coords');
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{BV.request();MV.request()});
+if(S.crs)proj().then(()=>{renderAll()}).catch(()=>toast('Projection library did not load. Lat / long is off until you are online.',4000));
 </script>
 </body>
 </html>
