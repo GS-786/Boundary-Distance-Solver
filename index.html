@@ -779,9 +779,11 @@ function fmtBrg(dE,dN){
   if(S.brg==='quad'){const ns=dN>=0?'N':'S',ew=dE>=0?'E':'W';const q=ns==='N'?(ew==='E'?a:360-a):(ew==='E'?180-a:a-180);return `${ns} ${dms(q,0,2)} ${ew}`}
   return dms(a,0,3);
 }
+// Arabic-Indic and Persian digits to 0-9, Arabic decimal/thousands marks, and invisible direction marks removed
+function normDigits(x){return String(x).replace(/[\u200E\u200F\u061C\u202A-\u202E\u2066-\u2069]/g,'').replace(/[\u0660-\u0669\u06F0-\u06F9]/g,c=>String(c.charCodeAt(0)%16)).replace(/\u066B/g,'.').replace(/[\u066C\u060C]/g,',')}
 function parseNumStrict(x){
   if(typeof x==='number')return isFinite(x)?x:NaN;
-  let s=String(x??'').trim().replace(/[−–—]/g,'-').replace(/\s+/g,'');
+  let s=normDigits(x??'').trim().replace(/[−–—]/g,'-').replace(/\s+/g,'');
   if(!s)return NaN;
   if(/^[-+]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s))s=s.replace(/,/g,'');
   else if(/^[-+]?\d+,\d+$/.test(s))s=s.replace(',','.');
@@ -1303,14 +1305,141 @@ async function pdfText(pdf){
   }
   return out.join('\n');
 }
+// Runs the text recogniser on each source; returns [{text,conf}] in the same order
 async function ocr(sources){
   prog(true,'Loading text recogniser…',3);await loadScript(LIB.tess);
   let k=0;const n=sources.length;
   const w=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')prog(true,`Reading text${n>1?` (${k+1}/${n})`:''}… ${Math.round(m.progress*100)}%`,((k+m.progress)/n)*100);else if(m.status)prog(true,m.status.replace(/^\w/,c=>c.toUpperCase())+'…')}});
-  try{await w.setParameters({preserve_interword_spaces:'1'});let text='';for(;k<n;k++){const {data}=await w.recognize(sources[k]);text+=data.text+'\n'}return text}finally{await w.terminate()}
+  try{await w.setParameters({preserve_interword_spaces:'1'});const out=[];for(;k<n;k++){const {data}=await w.recognize(sources[k]);out.push({text:data.text,conf:data.confidence||0})}return out}finally{await w.terminate()}
 }
 function prepImage(img){const W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;const k=Math.max(1,Math.min(3,2000/Math.max(W,H)));const c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';x.drawImage(img,0,0,c.width,c.height);
   const d=x.getImageData(0,0,c.width,c.height),a=d.data;for(let i=0;i<a.length;i+=4){const g=a[i]*.299+a[i+1]*.587+a[i+2]*.114;a[i]=a[i+1]=a[i+2]=g}x.putImageData(d,0,0);return c}
+/* OCR clean-up: ink mask with table grid lines removed, rescaled to a set text height */
+function inkMask(src,k){
+  const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height;
+  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(W0*k));c.height=Math.max(1,Math.round(H0*k));
+  const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);
+  const w=c.width,h=c.height,N=w*h,a=x.getImageData(0,0,w,h).data,g=new Uint8Array(N),hist=new Float64Array(256);
+  for(let i=0,j=0;j<N;i+=4,j++){const v=255-Math.min(a[i],a[i+1],a[i+2]);g[j]=v;hist[v]++}   // coloured ink counts as ink
+  let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,best=0,th=128;
+  for(let t=0;t<256;t++){wB+=hist[t];if(!wB)continue;const wF=N-wB;if(!wF)break;sB+=t*hist[t];const v=wB*wF*(sB/wB-(sum-sB)/wF)**2;if(v>best){best=v;th=t}}
+  th=Math.max(40,Math.min(th,170));const b=new Uint8Array(N);for(let j=0;j<N;j++)b[j]=g[j]>th?1:0;
+  // remove long straight runs (table borders, underlines)
+  const L=Math.max(40,Math.round(Math.min(w,h)*.15));
+  for(let y=0;y<h;y++){let s=-1;for(let xx=0;xx<=w;xx++){const on=xx<w&&b[y*w+xx];if(on&&s<0)s=xx;else if(!on&&s>=0){if(xx-s>=L)for(let q=s;q<xx;q++)b[y*w+q]=2;s=-1}}}
+  for(let xx=0;xx<w;xx++){let s=-1;for(let y=0;y<=h;y++){const on=y<h&&b[y*w+xx];if(on&&s<0)s=y;else if(!on&&s>=0){if(y-s>=L)for(let q=s;q<y;q++)b[q*w+xx]=2;s=-1}}}
+  for(let j=0;j<N;j++)if(b[j]===2)b[j]=0;
+  return {w,h,b,c,x};
+}
+function maskCanvas(m,thick){
+  let o=m.b;const {w,h}=m;
+  for(let t=0;t<thick;t++){const n=new Uint8Array(w*h);for(let y=1;y<h-1;y++)for(let xx=1;xx<w-1;xx++){const j=y*w+xx;n[j]=o[j]|o[j-1]|o[j+1]|o[j-w]|o[j+w]}o=n}
+  const d=m.x.createImageData(w,h),a=d.data;for(let j=0,i=0;j<w*h;j++,i+=4){const v=o[j]?0:255;a[i]=a[i+1]=a[i+2]=v;a[i+3]=255}
+  m.x.putImageData(d,0,0);return m.c;
+}
+function textHeight(src){
+  const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height,k0=Math.min(1,1600/Math.max(W0,H0));
+  const m=inkMask(src,k0),hs=ARD.comps(m).filter(c=>c.cnt>=6&&c.h>=5&&c.h<=m.h*.25&&c.w<=m.w*.5).map(c=>c.h).sort((a,b)=>a-b);
+  return hs.length?hs[Math.floor(hs.length*.75)]/k0:20;
+}
+function ocrScale(src,H,target){const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height;return Math.min(Math.max(.5,Math.min(4,target/H)),Math.sqrt(2.4e7/(W0*H0)))}
+
+/* Arabic-Indic digit reader (٠١٢٣٤٥٦٧٨٩). The text recogniser misreads these, so each glyph is
+   cut out, skeletonised and matched against the digit shapes of the fonts on this computer. */
+const ARD=(()=>{
+  const G=24,AR='٠١٢٣٤٥٦٧٨٩',FA='۰۱۲۳۴۵۶۷۸۹';let TPL=null;
+  const bin=c=>{const w=c.width,h=c.height,a=c.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,b=new Uint8Array(w*h);for(let j=0;j<w*h;j++)b[j]=a[j*4]<128?1:0;return {w,h,b}};
+  function comps(B){const {w,h,b}=B,lab=new Uint8Array(w*h),out=[],st=[];
+    for(let j=0;j<w*h;j++){if(!b[j]||lab[j])continue;lab[j]=1;st.push(j);let x0=1e9,y0=1e9,x1=-1,y1=-1;const px=[];
+      while(st.length){const q=st.pop(),x=q%w,y=(q-x)/w;px.push(q);if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+        for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=w||yy>=h)continue;const k=yy*w+xx;if(b[k]&&!lab[k]){lab[k]=1;st.push(k)}}}
+      out.push({x0,y0,x1,y1,w:x1-x0+1,h:y1-y0+1,cnt:px.length,px})}
+    return out}
+  function crop(B,c){const m=new Uint8Array(c.w*c.h);for(const q of c.px){const x=q%B.w,y=(q-x)/B.w;m[(y-c.y0)*c.w+(x-c.x0)]=1}return {w:c.w,h:c.h,b:m}}
+  function dilate(M,r){const P=r+1,W=M.w+2*P,H=M.h+2*P;let a=new Uint8Array(W*H);for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)a[(y+P)*W+x+P]=M.b[y*M.w+x];
+    for(let i=0;i<r;i++){const n=new Uint8Array(W*H);for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const j=y*W+x;n[j]=a[j]|a[j-1]|a[j+1]|a[j-W]|a[j+W]}a=n}return {w:W,h:H,b:a}}
+  function thin(M){const {w,h}=M,b=Uint8Array.from(M.b);let ch=true;
+    while(ch){ch=false;for(const pass of [0,1]){const del=[];for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const j=y*w+x;if(!b[j])continue;
+      const p2=b[j-w],p3=b[j-w+1],p4=b[j+1],p5=b[j+w+1],p6=b[j+w],p7=b[j+w-1],p8=b[j-1],p9=b[j-w-1],n=p2+p3+p4+p5+p6+p7+p8+p9;if(n<2||n>6)continue;
+      const s=[p2,p3,p4,p5,p6,p7,p8,p9,p2];let A=0;for(let i=0;i<8;i++)if(!s[i]&&s[i+1])A++;if(A!==1)continue;
+      if(pass?(p2*p4*p8||p2*p6*p8):(p2*p4*p6||p4*p6*p8))continue;del.push(j)}
+      if(del.length){ch=true;del.forEach(j=>b[j]=0)}}}
+    return {w,h,b}}
+  function bbox(M){let x0=1e9,y0=1e9,x1=-1,y1=-1;for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(M.b[y*M.w+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}return x1<0?null:{x0,y0,x1,y1,w:x1-x0+1,h:y1-y0+1}}
+  function feat(M){const bb=bbox(M);if(!bb)return null;const s=(G-4)/Math.max(bb.w,bb.h),f=new Float32Array(G*G),ox=(G-bb.w*s)/2,oy=(G-bb.h*s)/2;
+    for(let y=bb.y0;y<=bb.y1;y++)for(let x=bb.x0;x<=bb.x1;x++)if(M.b[y*M.w+x]){const X=Math.floor(ox+(x-bb.x0+.5)*s),Y=Math.floor(oy+(y-bb.y0+.5)*s);
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=X+dx,yy=Y+dy;if(xx>=0&&yy>=0&&xx<G&&yy<G)f[yy*G+xx]=Math.max(f[yy*G+xx],dx||dy?.6:1)}}
+    const g=new Float32Array(G*G);for(let y=0;y<G;y++)for(let x=0;x<G;x++){let t=0,c=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<G&&yy<G){t+=f[yy*G+xx];c++}}g[y*G+x]=t/c}
+    let m=0;for(const v of g)m+=v;m/=g.length;let n=0;for(let i=0;i<g.length;i++){g[i]-=m;n+=g[i]*g[i]}n=Math.sqrt(n)||1;for(let i=0;i<g.length;i++)g[i]/=n;
+    return {g,asp:bb.w/bb.h}}
+  function templates(){if(TPL)return TPL;TPL=[];
+    const c=document.createElement('canvas');c.width=c.height=120;const x=c.getContext('2d',{willReadFrequently:true});
+    for(const f of ['Arial','Tahoma','Segoe UI','Times New Roman','Microsoft Sans Serif','Courier New','Traditional Arabic','Simplified Arabic','Arabic Typesetting','Sakkal Majalla','Calibri','sans-serif','serif'])
+      for(const [set,fa] of [[AR,0],[FA,1]])for(let d=fa?2:0;d<10;d++)for(const wt of ['400','700']){
+        x.fillStyle='#fff';x.fillRect(0,0,120,120);x.fillStyle='#000';x.font=`${wt} 80px ${/serif$/.test(f)&&!/ /.test(f)?f:`"${f}"`}`;x.textBaseline='middle';x.textAlign='center';x.fillText(set[d],60,60);
+        const B=bin(c),k=comps(B).filter(k=>k.cnt>20).sort((a,b)=>b.cnt-a.cnt)[0];if(!k)continue;const F=feat(thin(crop(B,k)));if(F)TPL.push({d,F})}
+    return TPL}
+  function classify(M,r){const sk=thin(dilate(M,r)),F=feat(sk);if(!F)return null;let best=null;
+    const sc=new Array(10).fill(-9);
+    for(const t of templates()){let s=0;for(let i=0;i<G*G;i++)s+=F.g[i]*t.F.g[i];const ar=Math.log((F.asp+.05)/(t.F.asp+.05));s-=Math.min(.5,ar*ar*.25);if(s>sc[t.d])sc[t.d]=s;if(!best||s>best.s)best={d:t.d,s}}
+    let d=best.d;
+    // ٢ ٣ ٤ look alike to template matching. ٢ and ٣ stand on a straight vertical stem, ٤ does not;
+    // ٢ has one or two prongs on top, ٣ has three.
+    if([2,3,4].includes(d)&&[2,3,4].filter(v=>v!==d&&sc[v]>=best.s-.08).length){const bb=bbox(sk),xs=[];let ok=true,mx=0;
+      for(let y=bb.y0+Math.round(bb.h*.5);y<=bb.y0+Math.round(bb.h*.95);y++){let runs=0,on=0,cx=0;for(let x=bb.x0;x<=bb.x1;x++){const v=sk.b[y*sk.w+x];if(v&&!on){runs++;cx=x}on=v}if(runs>1)ok=false;if(runs)xs.push(cx)}
+      const stem=ok&&xs.length&&Math.max(...xs)-Math.min(...xs)<=Math.max(3,bb.h*.18);
+      for(let y=bb.y0+Math.round(bb.h*.03);y<=bb.y0+Math.round(bb.h*.35);y++){let runs=0,on=0;for(let x=bb.x0;x<=bb.x1;x++){const v=sk.b[y*sk.w+x];if(v&&!on)runs++;on=v}mx=Math.max(mx,runs)}
+      d=stem?(mx>=3?3:2):4}
+    return {d,s:best.s}}
+  // canvas: black ink on white, grid removed. Returns lines of ASCII numbers, columns right-to-left (Arabic reading order).
+  function read(canvas,k){const B=bin(canvas),cs=comps(B).filter(c=>c.cnt>=4),out=[];if(!cs.length)return out;
+    const hs=cs.map(c=>c.h).sort((a,b)=>a-b),med=hs[Math.floor(hs.length/2)];
+    const big=cs.filter(c=>c.h>=med*.6).sort((a,b)=>(a.y0+a.y1)-(b.y0+b.y1)),lines=[];
+    for(const c of big){const cy=(c.y0+c.y1)/2;let L=lines.find(L=>cy>=L.y0-L.hh*.15&&cy<=L.y1+L.hh*.15);if(!L){L={y0:c.y0,y1:c.y1,hh:c.h,items:[]};lines.push(L)}L.items.push(c);L.y0=Math.min(L.y0,c.y0);L.y1=Math.max(L.y1,c.y1);L.hh=Math.max(L.hh,c.h)}
+    const used=new Set(big);for(const c of cs){if(used.has(c))continue;const cy=(c.y0+c.y1)/2,L=lines.find(L=>cy>=L.y0-L.hh*.35&&cy<=L.y1+L.hh*.35);if(L)L.items.push(c)}
+    lines.sort((a,b)=>a.y0-b.y0);
+    for(const L of lines){
+      const th=L.items.map(c=>c.h).sort((a,b)=>b-a),H=th[Math.min(th.length-1,Math.floor(th.length*.3))]||L.hh,r=Math.max(1,Math.round(H/25));
+      const tall=L.items.filter(c=>c.h>H*.75),med=a=>a.sort((p,q)=>p-q)[Math.floor(a.length/2)];
+      const base=tall.length?med(tall.map(c=>c.y1)):L.y1,top=tall.length?med(tall.map(c=>c.y0)):L.y0;
+      const gl=L.items.sort((a,b)=>a.x0-b.x0).map(c=>{let ch;
+        const rc=((c.y0+c.y1)/2-top)/Math.max(1,base-top);
+        if(c.h<H*.8&&c.w<H*.4&&(c.y1>base+H*.08||rc>.78)&&rc>.5)ch='.';                // comma or ٫: a small mark sitting on or hanging below the baseline
+        else if(c.h<H*.45&&c.w<H*.45)ch=rc>.15&&rc<=.78?'0':'?';                       // Arabic zero: a small dot or diamond at mid height
+        else{const k=classify(crop(B,c),r);ch=k&&k.s>=.45?String(k.d):'?'}
+        return {c,ch}});
+      // join glyphs into numbers: close edges, or digit-to-digit spacing (fixed-width fonts leave wide gaps around ١ and ٠)
+      const cx=gl.map(g=>(g.c.x0+g.c.x1)/2),dd=cx.slice(1).map((v,n)=>v-cx[n]).sort((a,b)=>a-b),pitch=dd.length?dd[Math.floor(dd.length/2)]:H;
+      const toks=[];let cur=null;gl.forEach((g,n)=>{if(cur&&(g.c.x0-cur.x1<=H*.55||cx[n]-cx[n-1]<=Math.min(pitch*1.5,H*1.1))){cur.s+=g.ch;cur.x1=Math.max(cur.x1,g.c.x1)}else{cur={x1:g.c.x1,s:g.ch};toks.push(cur)}});
+      const good=toks.map(t=>t.s).filter(s=>!/\?/.test(s)&&/\d/.test(s)).map(s=>s.replace(/^\.+|\.+$/g,'').replace(/\.(?=.*\.)/g,''));
+      if(good.filter(s=>s.replace(/\D/g,'').length>=3).length>=2)out.push({y:(L.y0+L.y1)/2/k,h:H/k,toks:good.reverse()})}   // skip headings: Arabic letters can look like ١ or ٠
+    return out}
+  // Read at three sizes and vote digit by digit: a glyph misread at one size is outvoted by the other two
+  function readMulti(src,H){
+    const runs=[50,62,76].map(t=>{const k=ocrScale(src,H,t);return read(maskCanvas(inkMask(src,k),0),k)}),groups=[];
+    runs.forEach((ls,ri)=>ls.forEach(l=>{let g=groups.find(g=>Math.abs(g.y-l.y)<g.h*.5);if(!g){g={y:l.y,h:l.h,c:[]};groups.push(g)}g.c.push({ri,toks:l.toks})}));
+    return groups.filter(g=>g.c.length>=2).sort((a,b)=>a.y-b.y).map(g=>{
+      const shape=t=>t.map(s=>s.replace(/\d/g,'d')).join(' '),cnt={};g.c.forEach(c=>cnt[shape(c.toks)]=(cnt[shape(c.toks)]||0)+1);
+      const best=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0],C=g.c.filter(c=>shape(c.toks)===best).sort((a,b)=>Math.abs(a.ri-1)-Math.abs(b.ri-1));
+      return C[0].toks.map((s,ti)=>[...s].map((ch,ci)=>{const v={};C.forEach(c=>{const x=c.toks[ti][ci];v[x]=(v[x]||0)+1});return Object.keys(v).sort((a,b)=>v[b]-v[a]||(b===ch)-(a===ch))[0]}).join('')).join('\t')}).join('\n')}
+  return {readMulti,comps};
+})();
+
+/* Image -> text: cleaned image through the recogniser; Arabic-Indic digit reader and the plain image as fall-backs */
+async function readImages(srcs){
+  const n=t=>textToRows(t).length,H=srcs.map((s,i)=>{prog(true,`Cleaning up image${srcs.length>1?` ${i+1}/${srcs.length}`:''}…`,3);return textHeight(s)});
+  // Two clean versions: as drawn (best for normal fonts) and with strokes thickened (best for thin CAD fonts). Keep the better read.
+  const cv=srcs.map((s,i)=>maskCanvas(inkMask(s,ocrScale(s,H[i],40)),0)),ck=srcs.map((s,i)=>maskCanvas(inkMask(s,ocrScale(s,H[i],40)),1));
+  const r=await ocr([...cv,...ck]),m=srcs.length,join=a=>a.map(o=>o.text).join('\n'),conf=a=>a.reduce((t,o)=>t+o.conf,0)/a.length;
+  const A=r.slice(0,m),B=r.slice(m),ta=join(A),tb=join(B);
+  let text=n(ta)>n(tb)||(n(ta)===n(tb)&&conf(A)>=conf(B))?ta:tb;
+  if(n(text)>=2)return {text,how:''};
+  prog(true,'Checking for Arabic-Indic digits…',97);await new Promise(r=>setTimeout(r,20));
+  const ar=srcs.map((s,i)=>ARD.readMulti(s,H[i])).join('\n\n');
+  if(n(ar)>=Math.max(2,n(text)+1))return {text:ar,how:'Arabic-Indic digits'};
+  const plain=join(await ocr(srcs.map(prepImage)));if(n(plain)>n(text))text=plain;
+  return {text,how:''};
+}
 async function handleFile(file){
   if(!file)return;const n=file.name.toLowerCase(),t=file.type||'';
   try{
@@ -1323,16 +1452,16 @@ async function handleFile(file){
 }
 async function importPdf(file){
   prog(true,'Opening PDF…',5);const lib=await pdfjs();const pdf=await lib.getDocument({data:await file.arrayBuffer()}).promise;
-  let text=await pdfText(pdf);let ocrd=false;
+  let text=await pdfText(pdf);let ocrd=false,how='';
   if(text.replace(/\s/g,'').length<20){
     const N=Math.min(pdf.numPages,4),srcs=[];for(let p=1;p<=N;p++){prog(true,`No text layer. Preparing page ${p} for OCR…`,p/N*100);srcs.push((await pdfPageCanvas(pdf,p,3000)).canvas)}
-    text=await ocr(srcs);ocrd=true;
+    const r=await readImages(srcs);text=r.text;how=r.how;ocrd=true;
   }
-  openReview({name:file.name+(ocrd?' (scanned, read by OCR)':` (${pdf.numPages} page${pdf.numPages>1?'s':''})`),base:file.name,kind:'text',text,src:'pdf',pdf,editRaw:ocrd});
+  openReview({name:file.name+(ocrd?` (scanned, read by OCR${how?', '+how:''})`:` (${pdf.numPages} page${pdf.numPages>1?'s':''})`),base:file.name,kind:'text',text,src:'pdf',pdf,editRaw:ocrd,arDigits:!!how});
 }
 async function importImage(file){
-  prog(true,'Loading image…',2);const img=await loadImg(file);const text=await ocr([prepImage(img)]);
-  openReview({name:file.name+' (read by OCR)',base:file.name,kind:'text',text,src:'image',img,editRaw:true});
+  prog(true,'Loading image…',2);const img=await loadImg(file);const {text,how}=await readImages([img]);
+  openReview({name:file.name+` (read by OCR${how?', '+how:''})`,base:file.name,kind:'text',text,src:'image',img,editRaw:true,arDigits:!!how});
 }
 async function importSheet(file){
   prog(true,'Loading spreadsheet reader…',20);await loadScript(LIB.xlsx);prog(true,'Reading sheet…',60);
@@ -1343,10 +1472,11 @@ function ocrFix(t){const digits=t.replace(/[^0-9]/g,'').length;if(digits>=3&&dig
 function textToRows(text){
   const rows=[];
   for(let line of String(text).split(/\r?\n/)){
-    line=line.replace(/[−–—]/g,'-');
+    line=normDigits(line).replace(/[−–—]/g,'-');
     if(!/\d/.test(line))continue;
-    // Space/tab separated lines: commas inside numbers are thousands separators. CSV lines keep them as separators.
-    if(/\d[ \t]+[-+(]?\d/.test(line))line=line.replace(/(\d),(?=\d{3}(?!\d))/g,'$1');
+    // Space/tab separated lines: a comma inside a number is a thousands separator when the digits are grouped in
+    // threes (1,234,567.89), otherwise a decimal comma (403124,960). CSV lines keep commas as separators.
+    if(/\d[ \t]+[-+(]?\d/.test(line))line=line.replace(/(^|[^\d.,])(\d{1,3}(?:,\d{3})+)(?![\d,])/g,(m,a,b)=>a+b.replace(/,/g,'')).replace(/(\d),(\d)/g,'$1.$2');
     const toks=line.split(/[\s,;|=:]+/).filter(Boolean);let label='';const nums=[];
     for(const t0 of toks){const t=ocrFix(t0);if(isFinite(parseNumStrict(t))||DMS_TOK.test(t0))nums.push(DMS_TOK.test(t0)?t0:t);else if(!nums.length&&!label&&!/^[ENXYZ]$/i.test(t0)&&!/^(easting|northing|elev\w*|level|rl)$/i.test(t0))label=t0}
     if(nums.length>=2)rows.push([label,...nums]);
@@ -1457,7 +1587,7 @@ function renderReview(){
   const P=reviewParsed();
   if(!R.inc||R.inc.length!==P.length){const sus=suspicious(P);R.inc=P.map((p,i)=>p.ok&&!sus[i])}
   const good=P.filter((p,i)=>p.ok&&R.inc[i]).length;
-  $('#revCount').innerHTML=P.length?`<span class="badge ${good?'ok':'bad'}">${good} of ${P.length} rows will be imported</span>`:`<div class="msg warn"><b>!</b><span>No coordinate rows found. ${R.kind==='text'?'Open “Text it read” to correct it, then Read again.':'Try another sheet.'}</span></div>`;
+  $('#revCount').innerHTML=P.length?`<span class="badge ${good?'ok':'bad'}">${good} of ${P.length} rows will be imported</span>${R.arDigits?`<div class="msg warn" style="margin-top:8px"><b>!</b><span>Read from Arabic-Indic digits by shape matching. Check every digit against the image before importing.</span></div>`:''}`:`<div class="msg warn"><b>!</b><span>No coordinate rows found. ${R.kind==='text'?'Open “Text it read” to correct it, then Read again.':'Try another sheet.'}</span></div>`;
   const idc=(p,k)=>R.map.id<0?`<span style="color:var(--faint)">auto P${k}</span>`:(esc(p.id)||'<span style="color:var(--faint)">(blank)</span>');
   $('#revTable').innerHTML=P.length?`<thead><tr><th><input type="checkbox" id="revAll" ${R.inc.every(Boolean)?'checked':''}></th><th>#</th><th>ID</th><th class="r">${LE}</th><th class="r">${LN}</th><th class="r">Level</th></tr></thead><tbody>${P.map((p,i)=>`<tr class="${p.ok?'':'bad'}${R.inc[i]?'':' off'}"><td><input type="checkbox" data-inc="${i}" ${R.inc[i]?'checked':''} ${p.ok?'':'disabled'}></td><td class="m">${i+1}</td><td>${idc(p,i+1)}</td><td class="m r">${isFinite(p.e)?(geo?p.e.toFixed(8):fc(p.e)):'<span style="color:var(--err)">?</span>'}</td><td class="m r">${isFinite(p.n)?(geo?p.n.toFixed(8):fc(p.n)):'<span style="color:var(--err)">?</span>'}</td><td class="m r">${p.z!=null?fc(p.z):'N/A'}</td></tr>`).join('')}</tbody>`:'';
   $('#revAppend').disabled=$('#revReplace').disabled=!good;

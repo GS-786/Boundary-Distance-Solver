@@ -8,7 +8,7 @@ Read site coordinates from a PDF, Excel/CSV, image or manual entry. See the boun
 
 | Tab | What it does |
 | --- | --- |
-| **B-01 Coordinates** | Import a PDF schedule (text layer, or OCR if scanned), Excel/CSV, a photo or screenshot (OCR), or pasted text. Review the columns it found, then replace or append. Edit points by hand. |
+| **B-01 Coordinates** | Import a PDF schedule (text layer, or OCR if scanned), Excel/CSV, a photo or screenshot (OCR), or pasted text. OCR removes table grid lines first and reads thin CAD fonts; Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩, with ٫ or comma decimals) are read by a built-in digit matcher, so check those digits before importing. Review the columns it found, then replace or append. Edit points by hand. |
 | **B-02 Boundary** | Zoomable plan with edge distances, bearings, point IDs, coordinates and area. Hover a corner or edge for details. |
 | **B-03 Distances** | Every edge with ΔE, ΔN, distance, bearing, ground distance (scale factor) and slope/grade when levels exist. Point-to-point calculator and distance matrix. |
 | **B-04 Measure** | Distance, path, area, angle and square offset to the boundary. Snaps to corners, midpoints, edges, perpendiculars and earlier measurements; Shift for ortho. Load a PDF page or image as an underlay and calibrate it by drawing scale, a known distance, or two known coordinates. |
