@@ -1958,11 +1958,17 @@ function buildLayout(){
   if(fx&&fx.ll)notes.push(`Site centre ${fmtLLs(fx.ll).replace(/\s+/g,' ')}. Scale factor ${fx.k.toFixed(6)}. True north is ${convText(fx.gamma)} of grid north.`);
   String(ly.notes||'').split('\n').map(s=>s.trim()).filter(Boolean).forEach(s=>notes.push(s));
   // schedule panel inside the drawing frame
-  const AH=closed&&sh.area?17*sz:0,useC=sh.table&&P.length,useE=sh.edges&&segList().length>0;
+  const AH=closed&&sh.area?17*sz:0,useC=sh.table&&P.length,useE=sh.edges&&segList().length>0,gap=2.5*sz;
+  const colsC=[{h:'POINT'},{h:`EASTING (${uC})`},{h:`NORTHING (${uC})`},{h:'LEVEL'}],rowsC=P.map((p,i)=>[p.id||'#'+(i+1),fcd(p.e),fcd(p.n),p.z!=null?fcd(p.z):'N/A']);
+  const colsE=[{h:'LINE'},{h:`DISTANCE (${uD})`},{h:'BEARING'}],rowsE=segList().map(([i,j])=>{const a=P[i],b=P[j];return [`${a.id}-${b.id}`,fmtLen(segLen(a,b)*f,false),fmtBrg(b.e-a.e,b.n-a.n)]});
+  // natural column widths: widest header or value plus padding (the table spreads any spare width in proportion)
+  const natW=(cols,rows,title)=>{cols.forEach((c,ci)=>c.w=Math.max(tw(c.h,th*.72),...rows.map(r=>tw(r[ci],th*.9)))+3*g);return Math.max(cols.reduce((t,c)=>t+c.w,0),tw(title,th*1.02)+3.2*g)};
+  const wantC=natW(colsC,rowsC,'COORDINATE SCHEDULE'),wantE=natW(colsE,rowsE,'BOUNDARY SCHEDULE');
+  const wantA=AH?(()=>{const ar=fmtArea(st.A*f*f);return Math.max(tw(`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75),tw(ar[0],th*1.6)+tw(ar[1],th*.9))+5*g})():0;
   const needC=useC?(P.length+2.3)*rh:0,needE=useE?(segList().length+2.3)*rh:0;
   let vp,panel=null;
   if(useC||useE||AH){
-    if(land){const PW=Math.max(80,Math.min(105*sz,.38*area.w));panel={x:area.x+area.w-PW,y:area.y,w:PW,h:area.h};vp={x:area.x,y:area.y,w:area.w-PW,h:area.h};B.l('SHEET',[panel.x,area.y],[panel.x,area.y+area.h],.35)}
+    if(land){const PW=Math.min(.38*area.w,Math.max(40*sz,(useC?wantC:0),(useE?wantE:0),wantA)+2*gap);panel={x:area.x+area.w-PW,y:area.y,w:PW,h:area.h};vp={x:area.x,y:area.y,w:area.w-PW,h:area.h};B.l('SHEET',[panel.x,area.y],[panel.x,area.y+area.h],.35)}
     else{const PH=Math.max(.2*area.h,Math.min(.42*area.h,Math.max(needC,needE,AH)+6*sz));panel={x:area.x,y:area.y,w:area.w,h:PH};vp={x:area.x,y:area.y+PH,w:area.w,h:area.h-PH};B.l('SHEET',[area.x,area.y+PH],[area.x+area.w,area.y+PH],.35)}
   }else vp={...area};
   // scale & mapping
@@ -2020,14 +2026,13 @@ function buildLayout(){
     const used=tH+rh*(1+R.length+(more?1:0)),top=box.y+box.h,bot=top-used,sw=cols.reduce((s,c)=>s+c.w,0),xs=[box.x];cols.forEach(c=>xs.push(xs[xs.length-1]+c.w/sw*box.w));
     B.rect('TABLES',box.x,bot,box.w,used,.35);B.tx('TABLES',[box.x+g*1.6,top-tH/2],title,th*1.02,0,2,0,true);B.l('TABLES',[box.x,top-tH],[box.x+box.w,top-tH],.3);B.l('TABLES',[box.x,top-tH-rh],[box.x+box.w,top-tH-rh],.25);
     for(let c=1;c<cols.length;c++)B.l('TABLES',[xs[c],top-tH],[xs[c],bot+(more?rh:0)],.18);
-    cols.forEach((c,ci)=>{const t=fitT(c.h,th*.72,xs[ci+1]-xs[ci]-2*g);B.tx('TABLES',[c.a?xs[ci+1]-g:xs[ci]+g,top-tH-rh/2],t.s,t.h,c.a?2:0,2)});
-    R.forEach((r,ri)=>{const yc=top-tH-rh*(ri+1.5);if(ri)B.l('TABLES',[box.x,yc+rh/2],[box.x+box.w,yc+rh/2],.1);r.forEach((v,ci)=>{const t=fitT(v,th*.9,xs[ci+1]-xs[ci]-2*g);B.tx('TABLES',[cols[ci].a?xs[ci+1]-g:xs[ci]+g,yc],t.s,t.h,cols[ci].a?2:0,2)})});
+    cols.forEach((c,ci)=>{const t=fitT(c.h,th*.72,xs[ci+1]-xs[ci]-2*g);B.tx('TABLES',[xs[ci]+g,top-tH-rh/2],t.s,t.h,0,2)});
+    R.forEach((r,ri)=>{const yc=top-tH-rh*(ri+1.5);if(ri)B.l('TABLES',[box.x,yc+rh/2],[box.x+box.w,yc+rh/2],.1);r.forEach((v,ci)=>{const t=fitT(v,th*.9,xs[ci+1]-xs[ci]-2*g);B.tx('TABLES',[xs[ci]+g,yc],t.s,t.h,0,2)})});
     if(more){B.l('TABLES',[box.x,bot+rh],[box.x+box.w,bot+rh],.18);B.tx('TABLES',[box.x+g,bot+rh/2],`… ${more} more row${more>1?'s':''}: see the CSV export`,th*.8,0,2)}
     if(more)warn.push(['warn',`${title.charAt(0)+title.slice(1).toLowerCase()} is cut short by ${more} row${more>1?'s':''}. Use a bigger sheet, or the CSV.`]);return used};
-  const coordT=box=>table(box,'COORDINATE SCHEDULE',[{h:'POINT',w:.75},{h:`EASTING (${uC})`,w:1.25,a:1},{h:`NORTHING (${uC})`,w:1.35,a:1},{h:'LEVEL',w:.8,a:1}],P.map((p,i)=>[p.id||'#'+(i+1),fcd(p.e),fcd(p.n),p.z!=null?fcd(p.z):'N/A']));
-  const edgeT=box=>table(box,'BOUNDARY SCHEDULE',[{h:'LINE',w:1},{h:`DISTANCE (${uD})`,w:1.15,a:1},{h:'BEARING',w:1.15,a:1}],segList().map(([i,j])=>{const a=P[i],b=P[j];return [`${a.id}-${b.id}`,fmtLen(segLen(a,b)*f,false),fmtBrg(b.e-a.e,b.n-a.n)]}));
+  const coordT=box=>table(box,'COORDINATE SCHEDULE',colsC,rowsC);
+  const edgeT=box=>table(box,'BOUNDARY SCHEDULE',colsE,rowsE);
   const areaB=(x,y,w)=>{const ar=fmtArea(st.A*f*f);B.rect('TABLES',x,y,w,AH,.35);B.tx('TABLES',[x+g*1.6,y+AH-g*1.4],'SITE AREA',th*.72,0,3,0,true);const t=fitT(ar[0],th*1.9,w-4*g);B.tx('AREA',[x+g*1.6,y+AH*.36],t.s,t.h,0,0,0,true);B.tx('TABLES',[x+w-g*1.6,y+AH*.36],`${ar[1]}`,th*.9,2,0);B.tx('TABLES',[x+g*1.6,y+g*1.2],`Perimeter ${fmtLen(st.per*f)} · ${P.length} corners`,th*.75,0,0)};
-  const gap=2.5*sz;
   if(panel&&land){
     const x=panel.x+gap,w=panel.w-2*gap;let yb=panel.y+gap;if(AH){areaB(x,yb,w);yb+=AH+gap}
     const top=panel.y+panel.h-gap,avail=top-yb;
@@ -2056,7 +2061,7 @@ function titleStrip(B,o){
   // top block
   [0,9.99,37.93,66.97,108.96,156.04].forEach(d=>hl(yT(d)));
   t(39,yT(6.68),tb.code,2.51,1,false,74);
-  B.img('LOGO',[X(2.73),yT(36.47)],72.48*sc,24.39*sc);
+  {const bw=72.48,bh=24.39,ar=LOGO.ok?LOGO.naturalWidth/LOGO.naturalHeight:LOGO_AR,w=Math.min(bw,bh*ar),h=w/ar;B.img('LOGO',[X(2.73+(bw-w)/2),yT(36.47)+(bh-h)/2*sc],w*sc,h*sc)}
   t(3.07,yT(43.77),'P.O. BOX 1166 MANAMA,',2.03);t(74.82,yT(43.77),'KINGDOM OF BAHRAIN',2.03,2);
   t(3.24,yT(48.25),'TEL: +973 17 815775',2.03);t(74.42,yT(48.25),'FAX: +973 17 825010 / 17910825',2.03,2);
   t(38.3,yT(51.98),'http://www.msceb.com    e-mail: headoffice@msceb.com',1.75,1);
@@ -2099,7 +2104,27 @@ function titleStrip(B,o){
   t(.19,yB(19.07),tb.stage||'',3.37,0,true,65);t(72.3,yB(19.07),tb.rev||'',3.37,1,false,10);
   t(0,yB(10.94),'SHEET NUMBER',2.51);t(-.3,yB(3.07),tb.dwg||'',3.37,0,false,77);
 }
-const LOGO=new Image();LOGO.onload=()=>{LOGO.ok=true;try{const c=document.createElement('canvas');c.width=LOGO.naturalWidth;c.height=LOGO.naturalHeight;c.getContext('2d').drawImage(LOGO,0,0);LOGO.data=c.toDataURL('image/jpeg',.9)}catch(e){}layDirty=true;LV.request()};LOGO.src='msceb-logo.jpg';
+const LOGO=new Image();LOGO.onload=()=>{LOGO.ok=true;try{const c=document.createElement('canvas');c.width=LOGO.naturalWidth;c.height=LOGO.naturalHeight;c.getContext('2d').drawImage(LOGO,0,0);LOGO.data=c.toDataURL('image/png')}catch(e){}LOGO.vec=null;layDirty=true;LV.request()};LOGO.src='msceb-logo.png';
+const LOGO_AR=782/262;
+// AutoCAD colour index: nearest ACI to an RGB colour (R12 DXF has no true colour)
+const ACI=(()=>{const t=[null,[255,0,0],[255,255,0],[0,255,0],[0,255,255],[0,0,255],[255,0,255],null,[128,128,128],[192,192,192]];
+  for(let n=10;n<250;n++){const h=Math.floor((n-10)/10)*15,s=(n-10)%10,v=[255,255,165,165,127,127,76,76,38,38][s]/255,sat=s%2?.5:1,f=(k)=>{const kk=(k+h/60)%6;return v-v*sat*Math.max(0,Math.min(kk,4-kk,1))};t[n]=[f(5),f(3),f(1)].map(x=>Math.round(x*255))}
+  [51,91,132,173,214].forEach((g,i)=>t[250+i]=[g,g,g]);
+  return rgb=>{let b=7,bd=1e9;t.forEach((c,n)=>{if(!c)return;const d=(c[0]-rgb[0])**2+(c[1]-rgb[1])**2+(c[2]-rgb[2])**2;if(d<bd){bd=d;b=n}});return b}})();
+// The logo as filled rectangles for CAD: each pixel is snapped to the logo's own colours, runs of one colour are
+// merged row by row, then stacked runs are merged into rectangles. White is left empty.
+function logoVector(){
+  if(LOGO.vec)return LOGO.vec;if(!LOGO.ok)return null;
+  const RW=640,RH=Math.round(RW/(LOGO.naturalWidth/LOGO.naturalHeight)),c=document.createElement('canvas');c.width=RW;c.height=RH;
+  const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#fff';x.fillRect(0,0,RW,RH);x.imageSmoothingQuality='high';x.drawImage(LOGO,0,0,RW,RH);
+  const a=x.getImageData(0,0,RW,RH).data,PAL=[[255,255,255],[22,60,110],[132,134,135],[226,40,37]],cls=new Uint8Array(RW*RH);
+  for(let j=0;j<RW*RH;j++){let b=0,bd=1e9;for(let q=0;q<PAL.length;q++){const d=(a[j*4]-PAL[q][0])**2+(a[j*4+1]-PAL[q][1])**2+(a[j*4+2]-PAL[q][2])**2;if(d<bd){bd=d;b=q}}cls[j]=b}
+  const rects=[];let open=new Map();
+  for(let y=0;y<=RH;y++){const next=new Map();
+    if(y<RH)for(let x0=0;x0<RW;){const q=cls[y*RW+x0];let x1=x0+1;while(x1<RW&&cls[y*RW+x1]===q)x1++;if(q){const key=x0+','+x1+','+q,r=open.get(key);if(r){r.y1=y+1;open.delete(key);next.set(key,r)}else next.set(key,{x0,x1,y0:y,y1:y+1,q})}x0=x1}
+    open.forEach(r=>rects.push(r));open=next}
+  return LOGO.vec={RW,RH,rects,aci:PAL.map((c,i)=>i===3?1:ACI(c))};   // logo red as plain ACI red
+}
 let LAY=null,layDirty=true;
 function getLay(){if(layDirty||!LAY){LAY=buildLayout();layDirty=false;renderLayoutInfo()}return LAY}
 const LV=new Viewer($('#lWrap'),{
@@ -2169,6 +2194,9 @@ function layoutDXF(L){
     else if(it.t==='pl'){const pts=it.w||it.p.map(W);add(0,'POLYLINE',8,it.L,66,1,10,0,20,0,30,0,70,it.c?1:0);pts.forEach(p=>add(0,'VERTEX',8,it.L,10,n6(p[0]),20,n6(p[1]),30,0));add(0,'SEQEND',8,it.L)}
     else if(it.t==='ci'){const c=W(it.p);add(0,'CIRCLE',8,it.L,10,n6(c[0]),20,n6(c[1]),30,0,40,n6(it.r*k))}
     else if(it.t==='so'){const q=it.p.map(W),o=q.length===3?[q[0],q[1],q[2],q[2]]:[q[0],q[1],q[3],q[2]];add(0,'SOLID',8,it.L);o.forEach((p,i)=>add(10+i,n6(p[0]),20+i,n6(p[1]),30+i,0))}
+    else if(it.t==='img'&&logoVector()){const V=logoVector(),[x0,y0]=it.p,sx=it.w/V.RW,sy=it.h/V.RH;
+      for(const r of V.rects){const q=[[x0+r.x0*sx,y0+it.h-r.y1*sy],[x0+r.x1*sx,y0+it.h-r.y1*sy],[x0+r.x0*sx,y0+it.h-r.y0*sy],[x0+r.x1*sx,y0+it.h-r.y0*sy]].map(W);
+        add(0,'SOLID',8,'LOGO',62,V.aci[r.q]);q.forEach((p,i)=>add(10+i,n6(p[0]),20+i,n6(p[1]),30+i,0))}}
     else if(it.t==='img'){const [x0,y0]=it.p,w=it.w,h=it.h,T=(p,s,hh,ha,b)=>{const q=W(p);add(0,'TEXT',8,'LOGO',10,n6(q[0]),20,n6(q[1]),30,0,40,n6(hh*k),1,dxfStr(s),50,'0.0000',7,b?'BDSB':'BDS');if(ha)add(72,ha,11,n6(q[0]),21,n6(q[1]),31,0,73,0)};
       T([x0+w*.24,y0+h*.62],'MSCEB',h*.27,0,true);T([x0+w*.24,y0+h*.45],'MOHAMED SALAHUDDIN',h*.075,0,true);T([x0+w*.24,y0+h*.3],'ARCHITECTS & ENGINEERS',h*.075,0,true);T([x0+w/2,y0+h*.03],'MOHAMED SALAHUDDIN CONSULTING ENGINEERING COMPANY W.L.L',h*.062,1,true);
       const q=[[x0+w*.02,y0+h*.3],[x0+w*.2,y0+h*.3],[x0+w*.2,y0+h*.95],[x0+w*.02,y0+h*.95]].map(W);add(0,'POLYLINE',8,'LOGO',66,1,10,0,20,0,30,0,70,1);q.forEach(p=>add(0,'VERTEX',8,'LOGO',10,n6(p[0]),20,n6(p[1]),30,0));add(0,'SEQEND',8,'LOGO')}
