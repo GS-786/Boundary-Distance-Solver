@@ -2,9 +2,9 @@
 
 Read site coordinates from a PDF, Excel/CSV, image or manual entry. See the boundary drawn with every distance, bearing and area, measure on screen with CAD-style snaps, issue a title-block layout sheet to CAD, map the surroundings, and set out boreholes and tests.
 
-(Formerly Boundary Distance Solver; the repository and web address keep that name.)
+(Formerly Boundary Distance Solver.)
 
-**Live:** https://gs-786.github.io/Boundary-Distance-Solver/
+**Live:** https://gs-786.github.io/Site-Plan-Solver/
 
 ## Tabs
 
